@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@prisma/client": ["./lib/generated/prisma/client"],
+      "@lib/*": ["./lib/*"]
     }
   },
   "include": [
@@ -29,6 +31,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "app/api/employees"  ],
   "exclude": ["node_modules"]
 }
