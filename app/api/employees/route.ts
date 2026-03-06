@@ -1,4 +1,4 @@
-import { getEmployees } from "../../../lib/services/employee/getEmployees";
+import { getEmployees } from "@/lib/services/employee/getEmployees";
 
 export async function GET() {
   const employees = await getEmployees();
