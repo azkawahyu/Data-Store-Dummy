@@ -39,7 +39,7 @@ model employees {
   no_hp      String?     @db.VarChar(20)
   email      String?     @db.VarChar(150)
   created_at DateTime?   @default(now()) @db.Timestamp(6)
-  updated_at DateTime?   @default(now()) @db.Timestamp(6)
+  updated_at DateTime?   @updatedAt
   documents  documents[]
   users      users?
 }

@@ -1,46 +1,102 @@
 import { prisma } from "@/lib/prisma";
-
+import { Prisma } from "@prisma/client";
 import { getEmployeeById } from "@/lib/services/employee/getEmployeeById";
+import { updateEmployee } from "@/lib/services/employee/updateEmployee";
 
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params;
+  try {
+    const { id } = await context.params;
 
-  const employee = await getEmployeeById(id);
+    const employee = await getEmployeeById(id);
 
-  return Response.json(employee);
+    if (!employee) {
+      return Response.json(
+        { message: "Employee not found" },
+        { status: 404 }
+      );
+    }
+
+    return Response.json(employee);
+
+  } catch (error) {
+    console.error("GET Employee Error:", error);
+
+    return Response.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
 
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const body = await req.json();
+  try {
+    const { id } = await params;
+    const body = await req.json();
 
-  const employee = await prisma.employees.update({
-    where: {
-      id: Number(params.id)
-    },
-    data: {
-      nama: body.nama
+    const employee = await updateEmployee(id, body);
+
+    return Response.json(employee);
+
+  } catch (error) {
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return Response.json(
+        { message: "Employee not found" },
+        { status: 404 }
+      );
     }
-  });
 
-  return Response.json(employee);
+    return Response.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  await prisma.employees.delete({
-    where: {
-      id: Number(params.id)
-    }
-  });
+  try {
+    const { id } = await params;
 
-  return Response.json({ message: "deleted" });
+    await prisma.employees.delete({
+      where: {
+        id: Number(id)
+      }
+    });
+
+    return Response.json({
+      message: "Employee deleted successfully"
+    });
+
+  } catch (error) {
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return Response.json(
+        { message: "Employee not found" },
+        { status: 404 }
+      );
+    }
+
+    console.error("DELETE employee error:", error);
+
+    return Response.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
