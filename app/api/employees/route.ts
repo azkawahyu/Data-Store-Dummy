@@ -1,5 +1,7 @@
 import { getEmployees } from "@/lib/services/employee/getEmployees";
 import { createEmployee } from "@/lib/services/employee/createEmployee";
+import { employeeSchema } from "@/lib/validations/employeeValidations";
+import { z } from "zod";
 
 
 export async function GET() {
@@ -23,14 +25,16 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    if (!body.nama || !body.nip) {
-      return Response.json(
-        { message: "nama and nip are required" },
+    const process = employeeSchema.safeParse(body);
+
+    if (!process.success) {
+    return Response.json(
+        { message: process.error.issues },
         { status: 400 }
-      );
+    );
     }
 
-    const employee = await createEmployee(body);
+    const employee = await createEmployee(process.data);
 
     return Response.json(
       {
@@ -41,12 +45,18 @@ export async function POST(request: Request) {
     );
 
   } catch (error) {
+  console.error("ERROR:", error);
 
-    console.error("CREATE employee error:", error);
-
+  if (error instanceof z.ZodError) {
     return Response.json(
-      { message: "Failed to create employee" },
-      { status: 500 }
+      { message: error.issues },
+      { status: 400 }
     );
   }
+
+  return Response.json(
+    { message: "Internal server error" },
+    { status: 500 }
+  );
+}
 }
