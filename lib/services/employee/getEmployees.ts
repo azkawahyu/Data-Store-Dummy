@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
 
 export async function getEmployees() {
-  return prisma.employees.findMany({orderBy: {id: "desc"}});
+  return prisma.employees.findMany({ orderBy: { id: "desc" } });
 }

@@ -32,7 +32,8 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "app/api/employees",
-    "app/api/documents"
+    "app/api/documents",
+    "app/api/auth"
   ],
   "exclude": ["node_modules"]
 }
