@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
-export async function updateUser(id: string, data: Prisma.usersUpdateInput) {
-  return prisma.users.update({
+export async function updateRole(id: string, data: Prisma.rolesUpdateInput) {
+  return prisma.roles.update({
     where: {
       id: id,
     },

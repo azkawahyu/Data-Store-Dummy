@@ -4,7 +4,7 @@ export async function deleteUser(id: string) {
   console.log("User deleted successfully:", id);
   return prisma.users.delete({
     where: {
-      id: Number(id),
+      id: id,
     },
   });
 }

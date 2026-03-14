@@ -2,47 +2,28 @@ import { getEmployees } from "@/lib/services/employee/getEmployees";
 import { createEmployee } from "@/lib/services/employee/createEmployee";
 import { employeeSchema } from "@/lib/validations/employeeValidations";
 import { z } from "zod";
-import { requireJWT } from "@/lib/auth-jwt";
+import { getUser } from "@/lib/getUser";
 
 export async function GET(request: Request) {
-  try {
-    const user = requireJWT(request);
+  const { role } = getUser(request);
 
-    console.log("User dari token:", user);
-
-    const employees = await getEmployees();
-
-    return Response.json(employees);
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === "TOKEN_NOT_FOUND") {
-        return Response.json(
-          { message: "Token tidak ditemukan" },
-          { status: 401 },
-        );
-      }
-
-      if (error.message === "INVALID_TOKEN_FORMAT") {
-        return Response.json(
-          { message: "Format token salah" },
-          { status: 401 },
-        );
-      }
-
-      if (error.message === "INVALID_TOKEN") {
-        return Response.json(
-          { message: "Token tidak valid atau expired" },
-          { status: 401 },
-        );
-      }
-    }
-
-    return Response.json({ message: "Unauthorized" }, { status: 401 });
+  if (role !== "admin") {
+    return Response.json({ message: "Forbidden" }, { status: 403 });
   }
+
+  const employees = await getEmployees();
+
+  return Response.json(employees);
 }
 
 export async function POST(request: Request) {
   try {
+    const { role } = getUser(request);
+
+    if (role !== "admin") {
+      return Response.json({ message: "Forbidden" }, { status: 403 });
+    }
+
     const body = await request.json();
 
     const process = employeeSchema.safeParse(body);

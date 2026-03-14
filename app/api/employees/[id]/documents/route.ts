@@ -1,10 +1,23 @@
+import { requireJWT } from "@/lib/auth-jwt";
+import { requireRole } from "@/lib/require-role";
 import { getDocumentsByEmployee } from "@lib/services/employee/getDocumentsByEmployee";
 
 export async function GET(
-  req: Request,
+  request: Request,
   { params }: { params: { id: string } },
 ) {
   try {
+    // const user = requireJWT(request);
+
+    // if (!user.role || typeof user.role !== "string") {
+    //   return Response.json(
+    //     { message: "User role is required" },
+    //     { status: 400 },
+    //   );
+    // }
+
+    // requireRole({ ...user, role: user.role as string }, ["admin"]);
+
     const employeeId = Number(params.id);
 
     if (isNaN(employeeId)) {

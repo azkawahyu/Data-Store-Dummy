@@ -8,8 +8,8 @@ datasource db {
 }
 
 model activity_logs {
-  id          Int       @id @default(autoincrement())
-  user_id     Int?
+  id          String    @id @default(uuid()) @db.Uuid
+  user_id     String?   @db.Uuid
   action      String?   @db.VarChar(100)
   description String?
   created_at  DateTime? @default(now()) @db.Timestamp(6)
@@ -17,19 +17,22 @@ model activity_logs {
 }
 
 model documents {
-  id            Int        @id @default(autoincrement())
-  employee_id   Int?
+  id            String     @id @default(uuid()) @db.Uuid
+  employee_id   String?    @db.Uuid
   document_type String     @db.VarChar(50)
-  file_path     String
+  file_path     String // <-- jangan @db.Uuid, ini path file
+  file_name     String
+  file_size     Int
+  mime_type     String
   uploaded_at   DateTime?  @default(now()) @db.Timestamp(6)
-  verified_by   Int?
+  verified_by   String?    @db.Uuid // <-- samakan dengan users.id
   verified_at   DateTime?  @db.Timestamp(6)
   employees     employees? @relation(fields: [employee_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users         users?     @relation(fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model employees {
-  id         Int         @id @default(autoincrement())
+  id         String      @id @default(uuid()) @db.Uuid
   nip        String      @unique @db.VarChar(50)
   nama       String      @db.VarChar(150)
   jabatan    String?     @db.VarChar(100)
@@ -37,7 +40,7 @@ model employees {
   status     String?     @db.VarChar(50)
   alamat     String?
   no_hp      String?     @db.VarChar(20)
-  email      String?     @db.VarChar(150) 
+  email      String?     @db.VarChar(150)
   created_at DateTime?   @default(now()) @db.Timestamp(6)
   updated_at DateTime?   @updatedAt
   documents  documents[]
@@ -45,18 +48,18 @@ model employees {
 }
 
 model roles {
-  id    Int     @id @default(autoincrement())
+  id    String  @id @default(uuid()) @db.Uuid
   name  String  @unique @db.VarChar(50)
   users users[]
 }
 
 model users {
-  id            Int             @id @default(autoincrement())
+  id            String          @id @default(uuid()) @db.Uuid
+  employee_id   String?         @unique @db.Uuid // one-to-one: wajib unique
+  role_id       String?         @db.Uuid
   username      String          @unique @db.VarChar(100)
   password_hash String
   email         String?         @db.VarChar(150)
-  role_id       Int?
-  employee_id   Int?            @unique
   created_at    DateTime?       @default(now()) @db.Timestamp(6)
   activity_logs activity_logs[]
   documents     documents[]

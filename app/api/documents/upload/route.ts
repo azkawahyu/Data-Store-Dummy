@@ -58,10 +58,13 @@ export async function POST(req: Request) {
       await writeFile(filePath, buffer);
 
       documentsData.push({
-        employee_id: parsed.data.employee_id,
+        employee_id: String(parsed.data.employee_id),
         document_type: parsed.data.document_type,
         file_path: `/uploads/documents/${fileName}`,
         uploaded_at: new Date(),
+        file_name: file.name,
+        file_size: file.size,
+        mime_type: file.type,
       });
     }
 

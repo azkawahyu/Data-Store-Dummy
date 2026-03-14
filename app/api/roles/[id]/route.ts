@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import { getRoleById } from "@/lib/services/roles/getRoleById";
 import { Prisma } from "@prisma/client";
-import { getEmployeeById } from "@/lib/services/employee/getEmployeeById";
-import { updateUser } from "@/lib/services/users/updateUser";
+import { deleteRole } from "@/lib/services/roles/deleteRole";
+import { updateRole } from "@/lib/services/roles/updateRole";
 
 export async function GET(
   request: Request,
@@ -10,15 +11,15 @@ export async function GET(
   try {
     const { id } = await context.params;
 
-    const employee = await getEmployeeById(id);
+    const role = await getRoleById(id);
 
-    if (!employee) {
-      return Response.json({ message: "Employee not found" }, { status: 404 });
+    if (!role) {
+      return Response.json({ message: "Role not found" }, { status: 404 });
     }
 
-    return Response.json(employee);
+    return Response.json(role);
   } catch (error) {
-    console.error("GET Employee Error:", error);
+    console.error("GET Role Error:", error);
 
     return Response.json({ message: "Internal server error" }, { status: 500 });
   }
@@ -32,15 +33,15 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    const user = await updateUser(id, body);
+    const role = await updateRole(id, body);
 
-    return Response.json(user);
+    return Response.json(role);
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2025"
     ) {
-      return Response.json({ message: "User not found" }, { status: 404 });
+      return Response.json({ message: "Role not found" }, { status: 404 });
     }
 
     return Response.json({ message: "Internal server error" }, { status: 500 });

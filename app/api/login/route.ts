@@ -7,8 +7,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { username, password } = body;
 
-    console.log("Login attempt:", { username, password });
-
     if (!username || !password) {
       return Response.json(
         { message: "Username dan password wajib diisi" },
@@ -28,16 +26,13 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log(
-      "Comparing password:",
-      password,
-      "with hash:",
-      user.password_hash,
-    );
+    console.log("User found:", user);
+    console.log("Comparing password:", {
+      inputPassword: password,
+      storedHash: user.password_hash,
+    });
 
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
-
-    console.log("Password match:", passwordMatch);
 
     if (!passwordMatch) {
       return Response.json(
@@ -47,7 +42,7 @@ export async function POST(request: Request) {
     }
 
     const token = signToken({
-      userId: user.id,
+      userId: Number(user.id),
       username: user.username,
       role: user.roles?.name,
     });

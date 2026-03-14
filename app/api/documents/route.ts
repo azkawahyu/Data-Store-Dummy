@@ -28,7 +28,13 @@ export async function POST(request: Request) {
       return Response.json({ message: process.error.issues }, { status: 400 });
     }
 
-    const document = await createDocument(process.data);
+    // Add missing fields: file_name, file_size, mime_type
+    const document = await createDocument({
+      ...process.data,
+      file_name: body.file_name,
+      file_size: body.file_size,
+      mime_type: body.mime_type,
+    });
 
     return Response.json(
       {
