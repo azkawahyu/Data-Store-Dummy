@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { getEmployeeById } from "@/lib/services/employee/getEmployeeById";
+import { getUserById } from "@/lib/services/users/getUserById";
 import { updateUser } from "@/lib/services/users/updateUser";
 
 export async function GET(
@@ -10,15 +10,15 @@ export async function GET(
   try {
     const { id } = await context.params;
 
-    const employee = await getEmployeeById(id);
+    const user = await getUserById(id);
 
-    if (!employee) {
-      return Response.json({ message: "Employee not found" }, { status: 404 });
+    if (!user) {
+      return Response.json({ message: "User not found" }, { status: 404 });
     }
 
-    return Response.json(employee);
+    return Response.json(user);
   } catch (error) {
-    console.error("GET Employee Error:", error);
+    console.error("GET User Error:", error);
 
     return Response.json({ message: "Internal server error" }, { status: 500 });
   }

@@ -37,7 +37,6 @@ export default function DashboardPage() {
     async function loadData() {
       try {
         const dataEmployee = await apiFetch("/api/employees");
-        console.log("Employee Data:", dataEmployee);
         setEmployees(dataEmployee);
 
         const dataDocument = await apiFetch("/api/documents");

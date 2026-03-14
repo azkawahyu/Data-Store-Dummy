@@ -26,12 +26,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("User found:", user);
-    console.log("Comparing password:", {
-      inputPassword: password,
-      storedHash: user.password_hash,
-    });
-
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!passwordMatch) {
@@ -42,7 +36,7 @@ export async function POST(request: Request) {
     }
 
     const token = signToken({
-      userId: Number(user.id),
+      userId: user.id,
       username: user.username,
       role: user.roles?.name,
     });

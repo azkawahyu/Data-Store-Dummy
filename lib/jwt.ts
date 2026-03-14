@@ -3,7 +3,7 @@ import jwt, { Secret, SignOptions } from "jsonwebtoken";
 const JWT_SECRET: Secret = process.env.JWT_SECRET as string;
 
 export interface JwtPayload {
-  userId: number;
+  userId: string | number;
   username: string;
   role?: string;
 }

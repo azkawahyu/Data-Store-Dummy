@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-export async function verifyDocument(documentId: number, verifiedBy: number) {
+export async function verifyDocument(documentId: string, verifiedBy: string) {
   return prisma.documents.update({
     where: {
       id: documentId,
@@ -8,6 +8,7 @@ export async function verifyDocument(documentId: number, verifiedBy: number) {
     data: {
       verified_by: verifiedBy,
       verified_at: new Date(),
+      status: "verified",
     },
   });
 }

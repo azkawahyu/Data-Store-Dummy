@@ -2,9 +2,16 @@ import { getDocuments } from "@/lib/services/document/getDocuments";
 import { createDocument } from "@/lib/services/document/createDocument";
 import { documentCreateSchema } from "@/lib/validations/documentValidations";
 import z from "zod";
+import { getUser } from "@/lib/getUser";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { role } = getUser(request);
+
+    if (role !== "admin") {
+      return Response.json({ message: "Forbidden" }, { status: 403 });
+    }
+
     const documents = await getDocuments();
 
     return Response.json(documents);

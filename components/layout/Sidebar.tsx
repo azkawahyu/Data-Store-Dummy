@@ -12,7 +12,7 @@ export default function Sidebar() {
         padding: "20px",
       }}
     >
-      <h2 style={{ marginBottom: "30px" }}>Admin Panel</h2>
+      <h2 style={{ marginBottom: "30px" }}></h2>
 
       <nav style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
         <Link href="/dashboard" style={{ color: "white" }}>
@@ -20,15 +20,15 @@ export default function Sidebar() {
         </Link>
 
         <Link href="/employees" style={{ color: "white" }}>
-          Employees
+          Pegawai
         </Link>
 
         <Link href="/documents" style={{ color: "white" }}>
-          Documents
+          Dokumen
         </Link>
 
         <Link href="/users" style={{ color: "white" }}>
-          Users
+          Pengguna
         </Link>
       </nav>
     </aside>

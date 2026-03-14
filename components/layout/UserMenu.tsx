@@ -50,9 +50,27 @@ export default function UserMenu() {
         if (payload.role) setRole(payload.role);
 
         const userId = payload.userId;
+        console.log("User ID from token:", userId);
+
         if (!userId) return;
 
-        const res = await fetch(`/api/employees/${userId}`, {
+        const getUserData = await fetch(`/api/user/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+
+        if (!getUserData.ok) {
+          console.error("Failed to fetch user data");
+          return;
+        }
+
+        const userDataJson = await getUserData.json();
+        const employeeId =
+          userDataJson?.data?.employee_id ||
+          userDataJson?.employee_id ||
+          userId;
+
+        const res = await fetch(`/api/employees/${employeeId}`, {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
         });

@@ -25,11 +25,17 @@ export function proxy(request: NextRequest) {
   }
 
   const token = authHeader.split(" ")[1];
+  console.log("Received token:", token);
 
   try {
     const payload = verifyToken(token);
 
     const requestHeaders = new Headers(request.headers);
+    console.log(
+      "Original Headers:",
+      Object.fromEntries(requestHeaders.entries()),
+    );
+
     requestHeaders.set("x-user-id", String(payload.userId));
     requestHeaders.set("x-user-role", String(payload.role));
 

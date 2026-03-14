@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import { verifyDocument } from "@/lib/services/document/verifyDocument";
 import { getEmployeeById } from "@/lib/services/employee/getEmployeeById";
 
@@ -7,18 +6,20 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    console.log("Document ID:", await params);
     const { id } = await params;
-    const documentId = Number(id);
+    const documentId = id; // treat as UUID string
 
-    if (isNaN(documentId)) {
-      return Response.json(
-        { message: "Document ID tidak valid" },
-        { status: 400 },
-      );
+    interface VerifyBody {
+      verified_by?: string;
+      [key: string]: unknown;
     }
 
-    const body = await req.json();
+    let body: VerifyBody = {};
+    try {
+      body = await req.json() as VerifyBody;
+    } catch {
+      body = {};
+    }
 
     const { verified_by } = body;
 
@@ -29,7 +30,9 @@ export async function PATCH(
       );
     }
 
-    const getEmployee = await getEmployeeById(verified_by.toString());
+    const verifiedByStr = String(verified_by);
+
+    const getEmployee = await getEmployeeById(verifiedByStr);
 
     if (!getEmployee) {
       return Response.json(
@@ -38,14 +41,7 @@ export async function PATCH(
       );
     }
 
-    if (verified_by !== 1 && verified_by !== 2) {
-      return Response.json(
-        { message: "Hanya admin yang dapat memverifikasi dokumen" },
-        { status: 403 },
-      );
-    }
-
-    const document = await verifyDocument(documentId, verified_by);
+    const document = await verifyDocument(documentId, verifiedByStr);
 
     return Response.json({
       success: true,
