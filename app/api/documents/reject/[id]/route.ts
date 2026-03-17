@@ -1,31 +1,24 @@
-import { verifyDocument } from "@/lib/services/document/verifyDocument";
+import { rejectDocument } from "@/lib/services/document/rejectDocument";
 import { getUserById } from "@/lib/services/users/getUserById";
-import { getUser } from "@/lib/getUser";
 import { createActivity } from "@/lib/logActivity";
 import { getDocumentById } from "@/lib/services/document/getDocumentById";
 
 export async function PATCH(
-  request: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { role } = getUser(request);
-
-    if (role !== "admin") {
-      return Response.json({ message: "Forbidden" }, { status: 403 });
-    }
-
     const { id } = await params;
     const documentId = id;
 
-    interface VerifyBody {
+    interface RejectBody {
       verified_by?: string;
       [key: string]: unknown;
     }
 
-    let body: VerifyBody = {};
+    let body: RejectBody = {};
     try {
-      body = (await request.json()) as VerifyBody;
+      body = (await req.json()) as RejectBody;
     } catch {
       body = {};
     }
@@ -41,9 +34,9 @@ export async function PATCH(
 
     const verifiedByStr = String(verified_by);
 
-    const userToVerify = await getUserById(verifiedByStr);
+    const getUser = await getUserById(verifiedByStr);
 
-    if (!userToVerify) {
+    if (!getUser) {
       return Response.json(
         { message: "User yang memverifikasi tidak ditemukan" },
         { status: 404 },
@@ -54,27 +47,27 @@ export async function PATCH(
 
     if (!getDocument) {
       return Response.json(
-        { message: "Document yang akan diverifikasi tidak ditemukan" },
+        { message: "Document yang akan ditolak tidak ditemukan" },
         { status: 404 },
       );
     }
 
-    const document = await verifyDocument(documentId, verifiedByStr);
+    const document = await rejectDocument(documentId, verifiedByStr);
 
     await createActivity({
       userId: verifiedByStr,
-      action: `verify_document ${getDocument?.file_name ?? ""}`,
+      action: `reject_document ${getDocument?.file_name ?? ""}`,
       description: {
         documentId: documentId,
         documentName: getDocument?.file_name ?? null,
-        verifiedBy: verifiedByStr,
-        message: "verified",
+        rejectedBy: verifiedByStr,
+        message: "rejected",
       },
     });
 
     return Response.json({
       success: true,
-      message: "Document berhasil diverifikasi",
+      message: "Document berhasil ditolak",
       data: document,
     });
   } catch (error: unknown) {

@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { uploadDocumentSchema } from "@/lib/validations/document.schema";
 import { validateFile } from "@/utils/fileUpload";
+import { getUser } from "@/lib/getUser";
+import { createActivity } from "@/lib/logActivity";
 
 import { writeFile } from "fs/promises";
 import path from "path";
@@ -70,6 +72,17 @@ export async function POST(req: Request) {
 
     const result = await prisma.documents.createMany({
       data: documentsData,
+    });
+
+    const { userId } = getUser(req as Request);
+    await createActivity({
+      userId: userId ?? null,
+      action: "upload_document",
+      description: {
+        employeeId: String(parsed.data.employee_id),
+        files: documentsData.map((d) => d.file_name),
+        message: "uploaded",
+      },
     });
 
     return Response.json({

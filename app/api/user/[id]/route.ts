@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { getUserById } from "@/lib/services/users/getUserById";
 import { updateUser } from "@/lib/services/users/updateUser";
+import { getUser } from "@/lib/getUser";
+import { createActivity } from "@/lib/logActivity";
 
 export async function GET(
   request: Request,
@@ -34,6 +36,13 @@ export async function PUT(
 
     const user = await updateUser(id, body);
 
+    const { userId } = getUser(req);
+    await createActivity({
+      userId: userId ?? null,
+      action: "update_user",
+      description: { userId: id, message: "updated" },
+    });
+
     return Response.json(user);
   } catch (error) {
     if (
@@ -58,6 +67,13 @@ export async function DELETE(
       where: {
         id: id,
       },
+    });
+
+    const { userId } = getUser(req);
+    await createActivity({
+      userId: userId ?? null,
+      action: "delete_user",
+      description: { userId: id, message: "deleted" },
     });
 
     return Response.json({

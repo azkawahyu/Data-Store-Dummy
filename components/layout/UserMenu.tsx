@@ -50,7 +50,6 @@ export default function UserMenu() {
         if (payload.role) setRole(payload.role);
 
         const userId = payload.userId;
-        console.log("User ID from token:", userId);
 
         if (!userId) return;
 
@@ -106,9 +105,23 @@ export default function UserMenu() {
 
   return (
     <div ref={wrapperRef} style={{ position: "relative" }}>
+      <style>{`
+        @media (max-width: 640px) {
+          .user-menu-button span:nth-child(2) {
+            display: none;
+          }
+          .user-menu-dropdown {
+            right: -10px !important;
+            left: auto;
+            min-width: 180px;
+          }
+        }
+      `}</style>
+
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
+        className="user-menu-button"
         style={{
           display: "flex",
           alignItems: "center",
@@ -118,6 +131,7 @@ export default function UserMenu() {
           padding: "8px 10px",
           cursor: "pointer",
           background: "white",
+          minWidth: "fit-content",
         }}
       >
         <span
@@ -131,6 +145,7 @@ export default function UserMenu() {
             alignItems: "center",
             justifyContent: "center",
             fontSize: 14,
+            flexShrink: 0,
           }}
         >
           👤
@@ -139,10 +154,12 @@ export default function UserMenu() {
         <span
           style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}
         >
-          <span style={{ fontWeight: 600, fontSize: 13 }}>{name}</span>
+          <span style={{ fontWeight: 600, fontSize: "clamp(12px, 2vw, 13px)" }}>
+            {name}
+          </span>
           <span
             style={{
-              fontSize: 11,
+              fontSize: "clamp(10px, 1.5vw, 11px)",
               color: "#64748b",
               textTransform: "capitalize",
             }}
@@ -154,6 +171,7 @@ export default function UserMenu() {
 
       {open && (
         <div
+          className="user-menu-dropdown"
           style={{
             position: "absolute",
             right: 0,
@@ -165,6 +183,7 @@ export default function UserMenu() {
             boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
             padding: 8,
             zIndex: 20,
+            maxWidth: "90vw",
           }}
         >
           <div style={{ padding: "8px 10px", fontSize: 13, color: "#64748b" }}>

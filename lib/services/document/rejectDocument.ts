@@ -1,12 +1,12 @@
 import { prisma } from "@/lib/prisma";
 
-export async function verifyDocument(documentId: string, verifiedBy: string) {
+export async function rejectDocument(documentId: string, verifiedBy: string) {
   const doc = await prisma.documents.update({
     where: { id: documentId },
     data: {
       verified_by: verifiedBy,
       verified_at: new Date(),
-      status: "verified",
+      status: "rejected",
     },
     include: {
       users: {

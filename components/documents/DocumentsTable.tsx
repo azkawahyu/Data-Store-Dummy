@@ -9,6 +9,8 @@ interface Props {
   onView: (doc: DocumentItem) => void;
   onVerify: (doc: DocumentItem) => void;
   onReject: (doc: DocumentItem) => void;
+  selectedIds?: string[];
+  onSelectionChange?: (ids: string[]) => void;
 }
 
 export default function DocumentsTable({
@@ -17,7 +19,11 @@ export default function DocumentsTable({
   onView,
   onVerify,
   onReject,
+  selectedIds,
+  onSelectionChange,
 }: Props) {
+  const selected = new Set(selectedIds ?? []);
+
   return (
     <div
       style={{
@@ -27,66 +33,209 @@ export default function DocumentsTable({
         background: "white",
       }}
     >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.2fr 0.8fr 1fr 0.9fr 0.9fr 1.2fr",
-          gap: 8,
-          padding: "10px 12px",
-          background: "#f8fafc",
-          borderBottom: "1px solid #e2e8f0",
-          fontWeight: 600,
-          fontSize: 13,
-        }}
-      >
-        <div>Pegawai</div>
-        <div>Tipe</div>
-        <div>File</div>
-        <div>Uploaded</div>
-        <div>Status</div>
-        <div>Aksi</div>
-      </div>
+      <style>{`
+        @media (max-width: 768px) {
+          .docs-desktop { display: none; }
+          .docs-mobile { display: block; }
+        }
+        @media (min-width: 769px) {
+          .docs-desktop { display: block; }
+          .docs-mobile { display: none; }
+        }
+      `}</style>
 
-      {rows.map((d) => (
+      {/* Desktop */}
+      <div className="docs-desktop">
         <div
-          key={d.id}
           style={{
             display: "grid",
-            gridTemplateColumns: "1.2fr 0.8fr 1fr 0.9fr 0.9fr 1.2fr",
+            gridTemplateColumns: "40px 1.2fr 0.8fr 1fr 0.9fr 0.9fr 1.2fr",
             gap: 8,
             padding: "10px 12px",
-            borderBottom: "1px solid #f1f5f9",
-            alignItems: "center",
-            fontSize: 14,
+            background: "#f8fafc",
+            borderBottom: "1px solid #e2e8f0",
+            fontWeight: 600,
+            fontSize: 13,
           }}
         >
-          <div>{d.employeeName}</div>
-          <div>{d.documentType}</div>
+          <div>
+            <input
+              type="checkbox"
+              checked={rows.length > 0 && rows.every((r) => selected.has(r.id))}
+              onChange={(e) => {
+                if (!onSelectionChange) return;
+                if (e.target.checked) onSelectionChange(rows.map((r) => r.id));
+                else onSelectionChange([]);
+              }}
+            />
+          </div>
+          <div>Pegawai</div>
+          <div>Tipe</div>
+          <div>File</div>
+          <div>Uploaded</div>
+          <div>Status</div>
+          <div>Aksi</div>
+        </div>
+
+        {rows.map((d) => (
           <div
-            title={d.fileName}
+            key={d.id}
             style={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+              display: "grid",
+              gridTemplateColumns: "40px 1.2fr 0.8fr 1fr 0.9fr 0.9fr 1.2fr",
+              gap: 8,
+              padding: "10px 12px",
+              borderBottom: "1px solid #f1f5f9",
+              alignItems: "center",
+              fontSize: 14,
             }}
           >
-            {d.fileName}
+            <div>
+              <input
+                type="checkbox"
+                checked={selected.has(d.id)}
+                onChange={(e) => {
+                  if (!onSelectionChange) return;
+                  const next = new Set(selected);
+                  if (e.target.checked) next.add(d.id);
+                  else next.delete(d.id);
+                  onSelectionChange(Array.from(next));
+                }}
+              />
+            </div>
+            <div>{d.employeeName}</div>
+            <div>{d.documentType}</div>
+            <div
+              title={d.fileName}
+              style={{
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {d.fileName}
+            </div>
+            <div>
+              {new Date(d.uploadedAt).toLocaleDateString("id-ID", {
+                timeZone: "Asia/Jakarta",
+              })}
+            </div>
+            <div>
+              <DocumentStatusBadge status={d.status} />
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              <button onClick={() => onView(d)}>View</button>
+              {canManage && d.status === "pending" && (
+                <>
+                  <button onClick={() => onVerify(d)}>Verify</button>
+                  <button onClick={() => onReject(d)}>Reject</button>
+                </>
+              )}
+            </div>
           </div>
-          <div>{new Date(d.uploadedAt).toLocaleDateString("id-ID")}</div>
-          <div>
-            <DocumentStatusBadge status={d.status} />
+        ))}
+      </div>
+
+      {/* Mobile */}
+      <div className="docs-mobile">
+        {onSelectionChange && rows.length > 0 && (
+          <div
+            style={{
+              padding: 12,
+              borderBottom: "1px solid #e2e8f0",
+              background: "#f8fafc",
+            }}
+          >
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 13,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={
+                  rows.length > 0 && rows.every((r) => selected.has(r.id))
+                }
+                onChange={(e) => {
+                  if (e.target.checked)
+                    onSelectionChange(rows.map((r) => r.id));
+                  else onSelectionChange([]);
+                }}
+              />
+              Pilih semua
+            </label>
           </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            <button onClick={() => onView(d)}>View</button>
-            {canManage && d.status === "pending" && (
-              <>
-                <button onClick={() => onVerify(d)}>Verify</button>
-                <button onClick={() => onReject(d)}>Reject</button>
-              </>
-            )}
+        )}
+
+        {rows.map((d) => (
+          <div
+            key={d.id}
+            style={{
+              padding: 12,
+              borderBottom: "1px solid #f1f5f9",
+              display: "grid",
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 8,
+                alignItems: "center",
+              }}
+            >
+              <div style={{ fontWeight: 600 }}>{d.employeeName}</div>
+              <input
+                type="checkbox"
+                checked={selected.has(d.id)}
+                onChange={(e) => {
+                  if (!onSelectionChange) return;
+                  const next = new Set(selected);
+                  if (e.target.checked) next.add(d.id);
+                  else next.delete(d.id);
+                  onSelectionChange(Array.from(next));
+                }}
+              />
+            </div>
+
+            <div style={{ fontSize: 13, color: "#475569" }}>
+              Tipe: {d.documentType}
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                color: "#475569",
+                wordBreak: "break-word",
+              }}
+            >
+              File: {d.fileName}
+            </div>
+            <div style={{ fontSize: 13, color: "#475569" }}>
+              Upload:{" "}
+              {new Date(d.uploadedAt).toLocaleDateString("id-ID", {
+                timeZone: "Asia/Jakarta",
+              })}
+            </div>
+            <div>
+              <DocumentStatusBadge status={d.status} />
+            </div>
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button onClick={() => onView(d)}>View</button>
+              {canManage && d.status === "pending" && (
+                <>
+                  <button onClick={() => onVerify(d)}>Verify</button>
+                  <button onClick={() => onReject(d)}>Reject</button>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       {rows.length === 0 && (
         <div style={{ padding: 14, color: "#64748b" }}>

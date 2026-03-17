@@ -3,6 +3,7 @@ import { createDocument } from "@/lib/services/document/createDocument";
 import { documentCreateSchema } from "@/lib/validations/documentValidations";
 import z from "zod";
 import { getUser } from "@/lib/getUser";
+import { createActivity } from "@/lib/logActivity";
 
 export async function GET(request: Request) {
   try {
@@ -41,6 +42,17 @@ export async function POST(request: Request) {
       file_name: body.file_name,
       file_size: body.file_size,
       mime_type: body.mime_type,
+    });
+
+    const { userId } = getUser(request);
+    await createActivity({
+      userId: userId ?? null,
+      action: "create_document",
+      description: {
+        documentId: document.id,
+        fileName: document.file_name,
+        message: "created",
+      },
     });
 
     return Response.json(

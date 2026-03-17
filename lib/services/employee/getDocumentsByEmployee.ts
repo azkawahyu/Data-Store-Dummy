@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getDocumentsByEmployee(employeeId: number) {
+export async function getDocumentsByEmployee(employeeId: string) {
   return prisma.documents.findMany({
     where: {
       employee_id: employeeId,

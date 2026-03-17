@@ -5,8 +5,8 @@ interface CreateUserInput {
   username: string;
   password: string;
   email?: string;
-  role_id?: number;
-  employee_id?: number;
+  role_id?: string;
+  employee_id?: string;
 }
 
 export async function createUser(data: CreateUserInput) {

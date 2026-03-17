@@ -22,13 +22,34 @@ function StatCard({ title, value }: { title: string; value: number }) {
   );
 }
 
-export default function DocumentsStats({ total, pending, verified, rejected }: Props) {
+export default function DocumentsStats({
+  total,
+  pending,
+  verified,
+  rejected,
+}: Props) {
   return (
-    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
-      <StatCard title="Total" value={total} />
-      <StatCard title="Pending" value={pending} />
-      <StatCard title="Verified" value={verified} />
-      <StatCard title="Rejected" value={rejected} />
-    </div>
+    <>
+      <style>{`
+        .documents-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+          margin-bottom: 14px;
+        }
+        @media (min-width: 1024px) {
+          .documents-stats-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+
+      <div className="documents-stats-grid">
+        <StatCard title="Total" value={total} />
+        <StatCard title="Pending" value={pending} />
+        <StatCard title="Verified" value={verified} />
+        <StatCard title="Rejected" value={rejected} />
+      </div>
+    </>
   );
 }

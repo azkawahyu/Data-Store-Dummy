@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { getEmployeeById } from "@/lib/services/employee/getEmployeeById";
 import { updateEmployee } from "@/lib/services/employee/updateEmployee";
 import { getUser } from "@/lib/getUser";
+import { createActivity } from "@/lib/logActivity";
 
 export async function GET(
   request: Request,
@@ -52,6 +53,16 @@ export async function PUT(
 
     const employee = await updateEmployee(id, body);
 
+    await createActivity({
+      userId: userId ?? null,
+      action: "update_employee",
+      description: {
+        employeeId: id,
+        employeeName: employeeOwner?.nama ?? null,
+        message: "updated",
+      },
+    });
+
     return Response.json(employee);
   } catch (error) {
     if (
@@ -87,6 +98,16 @@ export async function DELETE(
     await prisma.employees.delete({
       where: {
         id: id,
+      },
+    });
+
+    await createActivity({
+      userId: userId ?? null,
+      action: "delete_employee",
+      description: {
+        employeeId: id,
+        employeeName: employeeOwner?.nama ?? null,
+        message: "deleted",
       },
     });
 

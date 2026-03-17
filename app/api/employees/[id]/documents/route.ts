@@ -1,10 +1,10 @@
 import { requireJWT } from "@/lib/auth-jwt";
 import { requireRole } from "@/lib/require-role";
-import { getDocumentsByEmployee } from "@lib/services/employee/getDocumentsByEmployee";
+import { getDocumentsByEmployee } from "@/lib/services/employee/getDocumentsByEmployee";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // const user = requireJWT(request);
@@ -18,16 +18,16 @@ export async function GET(
 
     // requireRole({ ...user, role: user.role as string }, ["admin"]);
 
-    const employeeId = Number(params.id);
+    const { id } = await params;
 
-    if (isNaN(employeeId)) {
+    if (!id || typeof id !== "string") {
       return Response.json(
         { message: "Employee ID tidak valid" },
         { status: 400 },
       );
     }
 
-    const documents = await getDocumentsByEmployee(employeeId);
+    const documents = await getDocumentsByEmployee(id);
 
     return Response.json({
       success: true,

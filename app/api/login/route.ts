@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { signToken } from "@/lib/jwt";
 import bcrypt from "bcrypt";
+import { createActivity } from "@/lib/logActivity";
 
 export async function POST(request: Request) {
   try {
@@ -39,6 +40,12 @@ export async function POST(request: Request) {
       userId: user.id,
       username: user.username,
       role: user.roles?.name,
+    });
+
+    await createActivity({
+      userId: user.id,
+      action: "login",
+      description: { username: user.username, message: "login" },
     });
 
     return Response.json({

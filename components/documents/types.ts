@@ -10,6 +10,7 @@ export interface DocumentItem {
   mimeType: string;
   uploadedAt: string;
   status: DocumentStatus;
+  verifiedBy?: string;
   verifiedByName?: string;
   verifiedAt?: string;
 }

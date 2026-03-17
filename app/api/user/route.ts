@@ -2,6 +2,7 @@ import { getUsers } from "@/lib/services/users/getAllUsers";
 import { createUser } from "@/lib/services/users/createUser";
 import { requireRole } from "@/lib/require-role";
 import { requireJWT } from "@/lib/auth-jwt";
+import { createActivity } from "@/lib/logActivity";
 
 export async function GET() {
   try {
@@ -45,6 +46,16 @@ export async function POST(request: Request) {
       email,
       role_id,
       employee_id,
+    });
+
+    await createActivity({
+      userId: userCreate.id ?? null,
+      action: "create_user",
+      description: {
+        userId: userCreate.id,
+        username: userCreate.username,
+        message: "created",
+      },
     });
 
     return Response.json(

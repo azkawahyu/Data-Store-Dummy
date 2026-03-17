@@ -3,8 +3,11 @@ import { getDocumentById } from "@/lib/services/document/getDocumentById";
 import { updateDocument } from "@/lib/services/document/updateDocument";
 import { deleteDocument } from "@/lib/services/document/deleteDocument";
 import { getRoleById } from "@/lib/services/roles/getRoleById";
+import { getUser } from "@/lib/getUser";
+import { createActivity } from "@/lib/logActivity";
 import { unlink } from "fs/promises";
 import path from "path";
+import { get } from "http";
 
 export async function GET(
   request: Request,
@@ -49,7 +52,24 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
+    const getDocument = await getDocumentById(id);
+
+    if (!getDocument) {
+      return Response.json({ message: "Document not found" }, { status: 404 });
+    }
+
     const documentUpdate = await updateDocument(id, body);
+
+    const { userId } = getUser(req);
+    await createActivity({
+      userId: userId ?? null,
+      action: `update_document ${getDocument.file_name}`,
+      description: {
+        documentId: id,
+        documentName: getDocument?.file_name ?? null,
+        message: "updated",
+      },
+    });
 
     return Response.json(documentUpdate);
   } catch (error) {
@@ -66,12 +86,12 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const documentId = params.id;
+    const { id: documentId } = await params;
 
-    if (isNaN(Number(documentId))) {
+    if (!documentId || typeof documentId !== "string") {
       return Response.json(
         { message: "Document ID tidak valid" },
         { status: 400 },
@@ -92,6 +112,17 @@ export async function DELETE(
     await unlink(filePath).catch(() => {});
 
     await deleteDocument(documentId);
+
+    const { userId } = getUser(req);
+    await createActivity({
+      userId: userId ?? null,
+      action: `delete_document ${document.file_name}`,
+      description: {
+        documentId: documentId,
+        documentName: document?.file_name ?? null,
+        message: "deleted",
+      },
+    });
 
     return Response.json({
       success: true,

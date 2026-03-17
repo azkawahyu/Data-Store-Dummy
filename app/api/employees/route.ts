@@ -3,6 +3,7 @@ import { createEmployee } from "@/lib/services/employee/createEmployee";
 import { employeeSchema } from "@/lib/validations/employeeValidations";
 import { z } from "zod";
 import { getUser } from "@/lib/getUser";
+import { createActivity } from "@/lib/logActivity";
 
 export async function GET(request: Request) {
   const { role } = getUser(request);
@@ -33,6 +34,17 @@ export async function POST(request: Request) {
     }
 
     const employee = await createEmployee(process.data);
+
+    const { userId } = getUser(request);
+    await createActivity({
+      userId: userId ?? null,
+      action: "create_employee",
+      description: {
+        employeeId: employee.id,
+        name: (employee.nama as string | null) ?? null,
+        message: "created",
+      },
+    });
 
     return Response.json(
       {

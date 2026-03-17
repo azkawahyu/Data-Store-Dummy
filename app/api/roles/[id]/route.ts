@@ -3,6 +3,8 @@ import { getRoleById } from "@/lib/services/roles/getRoleById";
 import { Prisma } from "@prisma/client";
 import { deleteRole } from "@/lib/services/roles/deleteRole";
 import { updateRole } from "@/lib/services/roles/updateRole";
+import { getUser } from "@/lib/getUser";
+import { createActivity } from "@/lib/logActivity";
 
 export async function GET(
   request: Request,
@@ -34,6 +36,13 @@ export async function PUT(
     const body = await req.json();
 
     const role = await updateRole(id, body);
+    
+    const { userId } = getUser(req);
+    await createActivity({
+      userId: userId ?? null,
+      action: "update_role",
+      description: { roleId: id, message: "updated" },
+    });
 
     return Response.json(role);
   } catch (error) {
@@ -59,6 +68,13 @@ export async function DELETE(
       where: {
         id: id,
       },
+    });
+    
+    const { userId } = getUser(req);
+    await createActivity({
+      userId: userId ?? null,
+      action: "delete_role",
+      description: { roleId: id, message: "deleted" },
     });
 
     return Response.json({
