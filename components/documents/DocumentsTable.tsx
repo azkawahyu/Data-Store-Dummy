@@ -124,13 +124,19 @@ export default function DocumentsTable({
               <DocumentStatusBadge status={d.status} />
             </div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              <button onClick={() => onView(d)}>View</button>
-              {canManage && d.status === "pending" && (
-                <>
-                  <button onClick={() => onVerify(d)}>Verify</button>
-                  <button onClick={() => onReject(d)}>Reject</button>
-                </>
-              )}
+              <button
+                onClick={() => onView(d)}
+                style={{
+                  border: "1px solid #cbd5e1",
+                  background: "#fff",
+                  color: "#0f172a",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                  cursor: "pointer",
+                }}
+              >
+                View
+              </button>
             </div>
           </div>
         ))}
@@ -225,13 +231,19 @@ export default function DocumentsTable({
             </div>
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button onClick={() => onView(d)}>View</button>
-              {canManage && d.status === "pending" && (
-                <>
-                  <button onClick={() => onVerify(d)}>Verify</button>
-                  <button onClick={() => onReject(d)}>Reject</button>
-                </>
-              )}
+              <button
+                onClick={() => onView(d)}
+                style={{
+                  border: "1px solid #cbd5e1",
+                  background: "#fff",
+                  color: "#0f172a",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                  cursor: "pointer",
+                }}
+              >
+                View
+              </button>
             </div>
           </div>
         ))}

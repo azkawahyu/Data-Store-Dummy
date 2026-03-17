@@ -12,6 +12,24 @@ interface Props {
   onReject?: (doc: DocumentItem) => void;
 }
 
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "140px 1fr",
+        gap: 8,
+        alignItems: "start",
+      }}
+    >
+      <div style={{ color: "#64748b", fontSize: 13 }}>{label}</div>
+      <div style={{ color: "#0f172a", fontSize: 14, wordBreak: "break-word" }}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
 export default function DocumentDetailModal({
   open,
   data,
@@ -28,38 +46,47 @@ export default function DocumentDetailModal({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(15, 23, 42, 0.35)",
+        background: "rgba(15, 23, 42, 0.45)",
         display: "grid",
         placeItems: "center",
-        zIndex: 50,
+        zIndex: 60,
         padding: 12,
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(720px, 100%)",
+          width: "min(760px, 100%)",
           maxHeight: "90vh",
           overflowY: "auto",
           background: "white",
-          borderRadius: 12,
+          borderRadius: 14,
           border: "1px solid #e2e8f0",
-          padding: 16,
+          boxShadow: "0 16px 40px rgba(2,6,23,.18)",
         }}
       >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            marginBottom: 10,
+            alignItems: "center",
+            padding: "14px 16px",
+            borderBottom: "1px solid #e2e8f0",
+            position: "sticky",
+            top: 0,
+            background: "white",
+            zIndex: 1,
           }}
         >
-          <h3 style={{ margin: 0 }}>Detail Dokumen</h3>
+          <h3 style={{ margin: 0, fontSize: 18 }}>Detail Dokumen</h3>
           <button
             onClick={onClose}
             style={{
-              border: "none",
-              background: "transparent",
+              border: "1px solid #e2e8f0",
+              background: "#fff",
+              borderRadius: 8,
+              width: 32,
+              height: 32,
               cursor: "pointer",
             }}
           >
@@ -67,76 +94,99 @@ export default function DocumentDetailModal({
           </button>
         </div>
 
-        <div style={{ display: "grid", gap: 8 }}>
-          <div>
-            <b>Pegawai:</b> {data.employeeName}
-          </div>
-          <div>
-            <b>Tipe:</b> {data.documentType}
-          </div>
-          <div>
-            <b>File:</b> {data.fileName}
-          </div>
-          <div>
-            <b>Status:</b> <DocumentStatusBadge status={data.status} />
-          </div>
-          <div>
-            <b>Upload:</b>{" "}
-            {new Date(data.uploadedAt).toLocaleString("id-ID", {
+        <div style={{ padding: 16, display: "grid", gap: 12 }}>
+          <InfoRow label="Pegawai" value={data.employeeName} />
+          <InfoRow label="Tipe Dokumen" value={data.documentType} />
+          <InfoRow label="Nama File" value={data.fileName} />
+          <InfoRow
+            label="Status"
+            value={<DocumentStatusBadge status={data.status} />}
+          />
+          <InfoRow
+            label="Tanggal Upload"
+            value={new Date(data.uploadedAt).toLocaleString("id-ID", {
               timeZone: "Asia/Jakarta",
             })}
-          </div>
-          <div>
-            <b>Diverifikasi oleh:</b> {data.verifiedByName ?? "-"}
-          </div>
+          />
+          <InfoRow
+            label="Diverifikasi Oleh"
+            value={data.verifiedByName ?? "-"}
+          />
         </div>
 
         <div
           style={{
-            marginTop: 14,
+            padding: 16,
+            borderTop: "1px solid #e2e8f0",
             display: "flex",
-            gap: 12,
-            alignItems: "center",
+            gap: 8,
             flexWrap: "wrap",
+            justifyContent: "space-between",
           }}
         >
-          <a href={data.filePath} target="_blank" rel="noopener noreferrer">
+          <a
+            href={data.filePath}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              border: "1px solid #cbd5e1",
+              background: "#fff",
+              color: "#0f172a",
+              textDecoration: "none",
+              borderRadius: 8,
+              padding: "8px 12px",
+            }}
+          >
             Buka File
           </a>
 
-          {data && (
-            <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-              {canManage && onVerify && (
-                <button
-                  onClick={async () => {
-                    try {
-                      await onVerify(data);
-                    } catch (e) {
-                      console.error(e);
-                    }
-                    onClose();
-                  }}
-                >
-                  Verify
-                </button>
-              )}
+          <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+            {canManage && onReject && data.status === "pending" && (
+              <button
+                onClick={async () => {
+                  try {
+                    await onReject(data);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                  onClose();
+                }}
+                style={{
+                  border: "1px solid #fecaca",
+                  background: "#fef2f2",
+                  color: "#b91c1c",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                Reject
+              </button>
+            )}
 
-              {canManage && onReject && (
-                <button
-                  onClick={async () => {
-                    try {
-                      await onReject(data);
-                    } catch (e) {
-                      console.error(e);
-                    }
-                    onClose();
-                  }}
-                >
-                  Reject
-                </button>
-              )}
-            </div>
-          )}
+            {canManage && onVerify && data.status === "pending" && (
+              <button
+                onClick={async () => {
+                  try {
+                    await onVerify(data);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                  onClose();
+                }}
+                style={{
+                  border: "1px solid #bae6fd",
+                  background: "#ecfeff",
+                  color: "#0e7490",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                Verify
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

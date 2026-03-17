@@ -49,12 +49,12 @@ export function formatActivityDescription({
     return `${actor} membuat user baru: ${name}`;
   }
   if (action === "update_user") {
-    const targetId = (desc.userId as string) ?? "-";
-    return `${actor} memperbarui user dengan ID: ${targetId}`;
+    const targetName = (desc.username as string) ?? "-";
+    return `${actor} memperbarui user dengan nama: ${targetName}`;
   }
   if (action === "delete_user") {
-    const targetId = (desc.userId as string) ?? "-";
-    return `${actor} menghapus user dengan ID: ${targetId}`;
+    const targetName = (desc.username as string) ?? "-";
+    return `${actor} menghapus user dengan nama: ${targetName}`;
   }
 
   // role
@@ -69,10 +69,11 @@ export function formatActivityDescription({
 
   // employee
   if (action === "create_employee") {
-    const name = (desc.name as string) ?? "-";
+    const name = (desc.employeeName as string) ?? "-";
     return `${actor} membuat data karyawan baru: ${name}`;
   }
   if (action === "update_employee") {
+    console.log("desc", desc);
     const name = (desc.employeeName as string) ?? "-";
     return `${actor} memperbarui data karyawan: ${name}`;
   }

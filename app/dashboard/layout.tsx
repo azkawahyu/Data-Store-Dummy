@@ -1,5 +1,5 @@
-import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
+import Sidebar from "@/components/layout/Sidebar";
 
 export default function DashboardLayout({
   children,
@@ -7,13 +7,32 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+      }}
+    >
+      <style>{`
+        @media (min-width: 769px) {
+          .dashboard-layout-wrapper {
+            display: flex;
+            flex-direction: row !important;
+          }
+        }
+      `}</style>
 
-      <div style={{ flex: 1 }}>
-        <Header />
+      <Header />
 
-        <main style={{ padding: "20px" }}>{children}</main>
+      <div
+        className="dashboard-layout-wrapper"
+        style={{ display: "flex", flexDirection: "column", flex: 1 }}
+      >
+        <Sidebar />
+        <main style={{ padding: 24, flex: 1, overflowY: "auto" }}>
+          {children}
+        </main>
       </div>
     </div>
   );

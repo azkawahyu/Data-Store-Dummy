@@ -38,13 +38,20 @@ export async function PUT(
   try {
     const { userId, role } = getUser(request);
 
+    const employeeId = (await params).id;
+
     if (userId === null || role === null) {
       return Response.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const employeeOwner = await getEmployeeById(userId);
+    console.log("User ID:", userId);
+    console.log("User Role:", role);
 
-    if (!employeeOwner) {
+    const employeeOwner = await getEmployeeById(employeeId);
+
+    console.log("Employee Owner:", employeeOwner);
+
+    if (!employeeOwner && role !== "admin") {
       return Response.json({ message: "Employee not found" }, { status: 404 });
     }
 

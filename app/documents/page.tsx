@@ -459,7 +459,7 @@ export default function DocumentsPage() {
         <div className="documents-page-actions flex items-center gap-3">
           <button
             onClick={() => setOpenUpload(true)}
-            className="bg-slate-800 text-white px-3 py-2 rounded-md text-sm"
+            className="bg-cyan-600 text-white px-3 py-2 rounded-md text-sm"
           >
             Upload Dokumen
           </button>

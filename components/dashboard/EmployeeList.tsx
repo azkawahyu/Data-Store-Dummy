@@ -56,17 +56,122 @@ export default function EmployeeList({ employees }: Props) {
   }, [employees, debouncedSearch, sortOrder]);
 
   return (
-    <div style={{ marginTop: "30px" }}>
-      <div
-        style={{
-          marginBottom: 12,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          position: "relative",
-          gap: 12,
-        }}
-      >
+    <div style={{ marginTop: "30px", minWidth: 0 }}>
+      <style>{`
+        .employee-toolbar {
+          margin-bottom: 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: relative;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .employee-toolbar-actions {
+          display: flex;
+          gap: 8px;
+          position: relative;
+          margin-left: auto;
+        }
+
+        .employee-head,
+        .employee-row {
+          display: grid;
+          grid-template-columns: minmax(140px, 220px) 1px minmax(0, 1fr);
+          column-gap: 16px;
+          align-items: center;
+        }
+
+        .employee-head {
+          padding: 8px 12px;
+          background: #f8fafc;
+          border-top: 1px solid #e2e8f0;
+          border-bottom: 1px solid #e2e8f0;
+          font-weight: 600;
+          font-size: 13px;
+          color: #334155;
+        }
+
+        .employee-row {
+          border-bottom: 1px solid #ccc;
+          padding: 10px 12px;
+          box-sizing: border-box;
+        }
+
+        .employee-divider {
+          width: 1px;
+          height: 16px;
+          background: #cbd5e1;
+        }
+
+        .employee-cell {
+          min-width: 0;
+        }
+
+        .employee-label {
+          display: none;
+          margin-bottom: 4px;
+          font-size: 12px;
+          color: #64748b;
+          font-weight: 600;
+        }
+
+        .employee-value {
+          display: block;
+          font-size: 16px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        @media (max-width: 768px) {
+          .employee-toolbar {
+            align-items: stretch;
+          }
+
+          .employee-toolbar-actions {
+            width: 100%;
+            justify-content: flex-end;
+          }
+
+          .employee-head {
+            display: none;
+          }
+
+          .employee-row {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            background: white;
+          }
+
+          .employee-divider {
+            display: none;
+          }
+
+          .employee-label {
+            display: block;
+          }
+
+          .employee-value {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+            word-break: break-word;
+          }
+
+          .employee-search-popover {
+            left: 0;
+            right: 0;
+            width: auto !important;
+          }
+        }
+      `}</style>
+
+      <div className="employee-toolbar">
         <div>
           <h2 style={{ margin: 0 }}>Data Pegawai</h2>
           <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 13 }}>
@@ -74,10 +179,7 @@ export default function EmployeeList({ employees }: Props) {
           </p>
         </div>
 
-        <div
-          ref={searchBoxRef}
-          style={{ display: "flex", gap: 8, position: "relative" }}
-        >
+        <div ref={searchBoxRef} className="employee-toolbar-actions">
           <button
             type="button"
             onClick={() => setSearchOpen((p) => !p)}
@@ -112,6 +214,7 @@ export default function EmployeeList({ employees }: Props) {
 
           {searchOpen && (
             <div
+              className="employee-search-popover"
               style={{
                 position: "absolute",
                 right: 0,
@@ -144,68 +247,26 @@ export default function EmployeeList({ employees }: Props) {
         </div>
       </div>
 
-      <div
-        style={{
-          padding: "8px 12px",
-          display: "grid",
-          gridTemplateColumns: "220px 1px 1fr",
-          columnGap: "16px",
-          alignItems: "center",
-          background: "#f8fafc",
-          borderTop: "1px solid #e2e8f0",
-          borderBottom: "1px solid #e2e8f0",
-          fontWeight: 600,
-          fontSize: 13,
-          color: "#334155",
-        }}
-      >
+      <div className="employee-head">
         <div>Nama</div>
-        <div
-          aria-hidden
-          style={{ width: 1, height: 14, background: "#cbd5e1" }}
-        />
+        <div className="employee-divider" aria-hidden />
         <div>Jabatan</div>
       </div>
 
       {displayedEmployees.map((emp) => (
-        <div
-          key={emp.id}
-          style={{
-            borderBottom: "1px solid #ccc",
-            padding: "10px 12px",
-            boxSizing: "border-box",
-            display: "grid",
-            gridTemplateColumns: "220px 1px 1fr",
-            alignItems: "center",
-            columnGap: "16px",
-          }}
-        >
-          <div
-            title={emp.nama}
-            style={{
-              fontSize: "16px",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {emp.nama}
+        <div key={emp.id} className="employee-row">
+          <div className="employee-cell">
+            <span className="employee-label">Nama</span>
+            <span className="employee-value" title={emp.nama}>
+              {emp.nama}
+            </span>
           </div>
 
-          <div
-            aria-hidden
-            style={{ width: 1, height: 16, backgroundColor: "#cbd5e1" }}
-          />
+          <div className="employee-divider" aria-hidden />
 
-          <div
-            style={{
-              fontSize: "16px",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {emp.jabatan}
+          <div className="employee-cell">
+            <span className="employee-label">Jabatan</span>
+            <span className="employee-value">{emp.jabatan}</span>
           </div>
         </div>
       ))}
