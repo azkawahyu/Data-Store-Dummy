@@ -1,12 +1,31 @@
 "use client";
 
-import DashboardStats from "@/components/dashboard/DashboardStats";
-import EmployeeList from "@/components/dashboard/EmployeeList";
+import StatisticsPieCharts from "@/components/dashboard/StatisticsPieCharts";
+import DashboardTrend from "@/components/dashboard/DashboardTrend";
+import DashboardTopEmployees from "@/components/dashboard/DashboardTopEmployees";
+import DashboardPendingTable from "@/components/dashboard/DashboardPendingTable";
+import DashboardRecentActivity from "@/components/dashboard/DashboardRecentActivity";
 
 type Employee = {
-  id: number;
-  nama: string;
-  jabatan: string;
+  id: string;
+  unit: string | null;
+};
+
+type Document = {
+  id: string;
+  document_type: string;
+  status: string;
+  file_name?: string;
+  employee_name?: string | null;
+  uploaded_at?: string | null;
+};
+
+type Activity = {
+  id: string;
+  action?: string | null;
+  description?: string | null;
+  created_at?: string | null;
+  username?: string | null;
 };
 
 type Role = "admin" | "employee" | "hr";
@@ -14,17 +33,26 @@ type Role = "admin" | "employee" | "hr";
 interface Props {
   role: Role;
   employees: Employee[];
-  documentCount: number;
+  documents: Document[];
+  activities: Activity[];
 }
 
 export default function RoleDashboard({
   role,
   employees,
-  documentCount,
+  documents,
+  activities,
 }: Props) {
+  const pendingDocs = documents.filter((d) => d.status === "pending");
+
   return (
-    <div style={{ display: "grid", gap: 16 }}>
+    <div className="dash-root" style={{ display: "grid", gap: 16 }}>
       <style>{`
+        .dash-root {
+          display: grid;
+          gap: 16px;
+        }
+
         .dash-welcome {
           border: 1px solid #e2e8f0;
           background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -39,6 +67,29 @@ export default function RoleDashboard({
           font-weight: 700;
           word-break: break-word;
         }
+
+        .dash-two-col {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+
+        @media (max-width: 900px) {
+          .dash-two-col {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .dash-root {
+            gap: 12px;
+          }
+
+          .dash-welcome {
+            padding: 12px;
+            border-radius: 12px;
+          }
+        }
       `}</style>
 
       <section className="dash-welcome">
@@ -47,32 +98,17 @@ export default function RoleDashboard({
         </h2>
       </section>
 
-      {(role === "admin" || role === "hr") && (
-        <>
-          <DashboardStats
-            employeeCount={employees.length}
-            documentCount={documentCount}
-          />
-          <EmployeeList employees={employees} />
-        </>
-      )}
+      <StatisticsPieCharts employees={employees} documents={documents} />
 
-      {role === "employee" && (
-        <>
-          <DashboardStats employeeCount={0} documentCount={documentCount} />
-          <div
-            style={{
-              border: "1px solid #e2e8f0",
-              borderRadius: 12,
-              padding: 16,
-              background: "#fff",
-              wordBreak: "break-word",
-            }}
-          >
-            Fokus Anda: upload dan melihat dokumen Anda sendiri.
-          </div>
-        </>
-      )}
+      <div className="dash-two-col">
+        <DashboardTrend documents={documents} />
+        <DashboardTopEmployees documents={documents} />
+      </div>
+
+      <div className="dash-two-col">
+        <DashboardPendingTable documents={pendingDocs} />
+        <DashboardRecentActivity activities={activities} />
+      </div>
     </div>
   );
 }

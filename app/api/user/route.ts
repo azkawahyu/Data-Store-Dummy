@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    const { username, password, email, role_id, employee_id } = body;
+    const { username, password, nip, email, role_id, employee_id } = body;
 
     if (!username || !password) {
       return Response.json(
@@ -43,6 +43,7 @@ export async function POST(request: Request) {
     const userCreate = await createUser({
       username,
       password,
+      nip,
       email,
       role_id,
       employee_id,
@@ -65,6 +66,9 @@ export async function POST(request: Request) {
           id: userCreate.id,
           username: userCreate.username,
           email: userCreate.email,
+          employee_id: userCreate.employee_id,
+          link_status: userCreate.link_status,
+          link_message: userCreate.link_message,
           role: {
             role_id: userCreate.role_id,
           },

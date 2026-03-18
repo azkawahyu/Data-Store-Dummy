@@ -44,19 +44,52 @@ export default function ActivityPage() {
   }, []);
 
   return (
-    <div className="w-full p-4 sm:p-6">
+    <div className="page-shell">
       <style>{`
-        @media (max-width: 640px) {
-          .activity-header {
+        .activity-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .activity-search-input {
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          padding: 9px 12px;
+          font-size: 14px;
+          color: #334155;
+          min-width: 260px;
+          outline: none;
+        }
+        .activity-search-input:focus {
+          border-color: #94a3b8;
+          box-shadow: 0 0 0 2px rgba(148,163,184,.2);
+        }
+
+        .activity-refresh-btn {
+          border: 1px solid #0f172a;
+          background: #0f172a;
+          color: #fff;
+          border-radius: 8px;
+          padding: 9px 12px;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .activity-refresh-btn:hover {
+          background: #1e293b;
+        }
+
+        @media (max-width: 768px) {
+          .activity-actions {
+            width: 100%;
             flex-direction: column;
-            gap: 16px !important;
-          }
-          .activity-search-group {
-            flex-direction: column;
-            width: 100% !important;
+            align-items: stretch;
           }
           .activity-search-input {
-            width: 100% !important;
+            min-width: 0;
+            width: 100%;
           }
           .activity-refresh-btn {
             width: 100%;
@@ -64,37 +97,39 @@ export default function ActivityPage() {
         }
       `}</style>
 
-      <header className="activity-header flex items-center justify-between mb-4 gap-3">
+      <header className="page-header">
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">
-            Log Aktivitas
-          </h1>
-          <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            Riwayat aktivitas sistem
-          </p>
+          <h1 className="page-title">Log Aktivitas</h1>
+          <p className="page-subtitle">Riwayat aktivitas sistem</p>
         </div>
 
-        <div className="activity-search-group flex items-center gap-3">
+        <div className="activity-actions">
           <input
             type="text"
             placeholder="Cari user, aksi, dan deskripsi..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="activity-search-input border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 w-64"
+            className="activity-search-input"
           />
           <button
             onClick={() => {
               setLoading(true);
               load();
             }}
-            className="activity-refresh-btn bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded-md text-sm whitespace-nowrap flex-shrink-0"
+            className="activity-refresh-btn"
           >
             Refresh
           </button>
         </div>
       </header>
 
-      <ActivityList activities={activities} loading={loading} search={search} />
+      <div className="page-panel" style={{ padding: 12 }}>
+        <ActivityList
+          activities={activities}
+          loading={loading}
+          search={search}
+        />
+      </div>
     </div>
   );
 }

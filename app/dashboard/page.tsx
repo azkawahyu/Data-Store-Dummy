@@ -7,14 +7,32 @@ import RoleDashboard from "@/components/dashboard/RoleDashboard";
 import type { Role } from "@/types/role";
 
 type Employee = {
-  id: number;
-  nama: string;
-  jabatan: string;
+  id: string;
+  unit: string | null;
 };
 
 type Document = {
-  id: number;
-  title: string;
+  id: string;
+  document_type: string;
+  status: string;
+  file_name?: string;
+  employee_name?: string | null;
+  uploaded_at?: string | null;
+};
+
+type Activity = {
+  id: string;
+  action?: string | null;
+  description?: string | null;
+  created_at?: string | null;
+  username?: string | null;
+};
+
+type UserProfile = {
+  id: string;
+  employee_id: string | null;
+  link_status?: "linked_manual" | "linked_auto" | "unlinked" | "conflict";
+  link_message?: string;
 };
 
 const validRoles = [
@@ -28,7 +46,9 @@ export default function DashboardPage() {
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [role, setRole] = useState<Role>("employee");
+  const [profileStatus, setProfileStatus] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,14 +71,31 @@ export default function DashboardPage() {
         console.warn("Invalid role in token payload:", parsedRole);
         setRole("employee");
       }
+
+      const userId = (payload.userId ?? payload.sub ?? "").toString();
+      if (userId) {
+        apiFetch(`/api/user/${userId}`)
+          .then((profile) => {
+            if (profile && typeof profile === "object") {
+              setProfileStatus(profile as UserProfile);
+            }
+          })
+          .catch(() => {
+            setProfileStatus(null);
+          });
+      }
     }
 
     async function loadData() {
       try {
         const dataEmployee = await apiFetch("/api/employees");
         const dataDocument = await apiFetch("/api/documents");
+        const dataActivity = await apiFetch("/api/activity").catch(() => null);
         setEmployees(Array.isArray(dataEmployee) ? dataEmployee : []);
         setDocuments(Array.isArray(dataDocument) ? dataDocument : []);
+        if (dataActivity?.data && Array.isArray(dataActivity.data)) {
+          setActivities(dataActivity.data);
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -72,11 +109,28 @@ export default function DashboardPage() {
   if (loading) return <div>Loading dashboard...</div>;
 
   return (
-    <div className="w-full p-4 sm:p-6 space-y-6">
+    <div className="w-full max-w-7xl mx-auto p-2 sm:p-4 md:p-5 space-y-4 sm:space-y-6">
+      {profileStatus && !profileStatus.employee_id && (
+        <div
+          className={`rounded-xl border px-4 py-3 text-sm ${
+            profileStatus.link_status === "conflict"
+              ? "border-amber-300 bg-amber-50 text-amber-800"
+              : "border-cyan-200 bg-cyan-50 text-cyan-800"
+          }`}
+        >
+          <p className="font-semibold">Data pegawai belum terhubung</p>
+          <p className="mt-1">
+            {profileStatus.link_message ??
+              "Akun Anda belum terkait ke data pegawai. Jika Anda merasa data sudah dibuat admin, silakan hubungi admin untuk mengaitkan akun ini."}
+          </p>
+        </div>
+      )}
+
       <RoleDashboard
         role={role}
         employees={employees}
-        documentCount={documents.length}
+        documents={documents}
+        activities={activities}
       />
     </div>
   );

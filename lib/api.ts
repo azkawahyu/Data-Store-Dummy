@@ -1,6 +1,5 @@
 export async function apiFetch(url: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");
-  console.log("Token dari localStorage:", token ? "ada" : "tidak ada");
 
   function parseJwt(token?: string) {
     try {

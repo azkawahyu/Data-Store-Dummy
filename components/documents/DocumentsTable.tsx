@@ -9,6 +9,8 @@ interface Props {
   onView: (doc: DocumentItem) => void;
   onVerify: (doc: DocumentItem) => void;
   onReject: (doc: DocumentItem) => void;
+  onEdit?: (doc: DocumentItem) => void;
+  onDelete?: (doc: DocumentItem) => void;
   selectedIds?: string[];
   onSelectionChange?: (ids: string[]) => void;
 }
@@ -19,6 +21,8 @@ export default function DocumentsTable({
   onView,
   onVerify,
   onReject,
+  onEdit,
+  onDelete,
   selectedIds,
   onSelectionChange,
 }: Props) {
@@ -34,6 +38,19 @@ export default function DocumentsTable({
       }}
     >
       <style>{`
+        .doc-action-btn {
+          border: none;
+          background: none;
+          cursor: pointer;
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 13px;
+          color: #64748b;
+          transition: background .15s, color .15s;
+        }
+        .doc-action-btn:hover { background: #f1f5f9; color: #0f172a; }
+        .doc-action-btn.delete:hover { background: #fee2e2; color: #dc2626; }
+
         @media (max-width: 768px) {
           .docs-desktop { display: none; }
           .docs-mobile { display: block; }
@@ -70,9 +87,9 @@ export default function DocumentsTable({
             />
           </div>
           <div>Pegawai</div>
-          <div>Tipe</div>
+          <div>Jenis Dokumen</div>
           <div>File</div>
-          <div>Uploaded</div>
+          <div>Diunggah</div>
           <div>Status</div>
           <div>Aksi</div>
         </div>
@@ -124,19 +141,24 @@ export default function DocumentsTable({
               <DocumentStatusBadge status={d.status} />
             </div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              <button
-                onClick={() => onView(d)}
-                style={{
-                  border: "1px solid #cbd5e1",
-                  background: "#fff",
-                  color: "#0f172a",
-                  borderRadius: 8,
-                  padding: "6px 10px",
-                  cursor: "pointer",
-                }}
-              >
-                View
+              <button onClick={() => onView(d)} className="doc-action-btn">
+                👁️ View
               </button>
+
+              {/* {canManage && onEdit && (
+                <button onClick={() => onEdit(d)} className="doc-action-btn">
+                  ✏️ Edit
+                </button>
+              )} */}
+
+              {canManage && onDelete && (
+                <button
+                  onClick={() => onDelete(d)}
+                  className="doc-action-btn delete"
+                >
+                  🗑️ Hapus
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -209,7 +231,7 @@ export default function DocumentsTable({
             </div>
 
             <div style={{ fontSize: 13, color: "#475569" }}>
-              Tipe: {d.documentType}
+              Jenis Dokumen: {d.documentType}
             </div>
             <div
               style={{
@@ -221,7 +243,7 @@ export default function DocumentsTable({
               File: {d.fileName}
             </div>
             <div style={{ fontSize: 13, color: "#475569" }}>
-              Upload:{" "}
+              Diunggah:{" "}
               {new Date(d.uploadedAt).toLocaleDateString("id-ID", {
                 timeZone: "Asia/Jakarta",
               })}
@@ -231,19 +253,24 @@ export default function DocumentsTable({
             </div>
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button
-                onClick={() => onView(d)}
-                style={{
-                  border: "1px solid #cbd5e1",
-                  background: "#fff",
-                  color: "#0f172a",
-                  borderRadius: 8,
-                  padding: "6px 10px",
-                  cursor: "pointer",
-                }}
-              >
-                View
+              <button onClick={() => onView(d)} className="doc-action-btn">
+                👁️ View
               </button>
+
+              {canManage && onEdit && (
+                <button onClick={() => onEdit(d)} className="doc-action-btn">
+                  ✏️ Edit
+                </button>
+              )}
+
+              {canManage && onDelete && (
+                <button
+                  onClick={() => onDelete(d)}
+                  className="doc-action-btn delete"
+                >
+                  🗑️ Hapus
+                </button>
+              )}
             </div>
           </div>
         ))}

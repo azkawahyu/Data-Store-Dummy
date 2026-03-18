@@ -67,8 +67,8 @@ export default function DocumentsToolbar(props: Props) {
         >
           <option value="all">Semua Status</option>
           <option value="pending">Pending</option>
-          <option value="verified">Verified</option>
-          <option value="rejected">Rejected</option>
+          <option value="verified">Disetujui</option>
+          <option value="rejected">Ditolak</option>
         </select>
 
         <select

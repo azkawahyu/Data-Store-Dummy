@@ -73,7 +73,6 @@ export function formatActivityDescription({
     return `${actor} membuat data karyawan baru: ${name}`;
   }
   if (action === "update_employee") {
-    console.log("desc", desc);
     const name = (desc.employeeName as string) ?? "-";
     return `${actor} memperbarui data karyawan: ${name}`;
   }

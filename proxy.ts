@@ -42,10 +42,8 @@ export function proxy(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.log("JWT ERROR:", err);
-
     return NextResponse.json(
-      { message: "Token tidak valid atau expired" },
+      { message: `Token tidak valid atau expired, error : ${err}` },
       { status: 401 },
     );
   }

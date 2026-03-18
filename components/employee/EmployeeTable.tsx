@@ -16,80 +16,118 @@ export default function EmployeeTable({
   return (
     <>
       <style>{`
+        /* ── Desktop table ── */
         .emp-table-wrap {
           border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          background: white;
+          border-radius: 14px;
+          background: #fff;
           overflow-x: auto;
-          box-shadow: 0 2px 8px rgba(15,23,42,.05);
+          box-shadow: 0 2px 10px rgba(99,102,241,.06);
         }
         .emp-table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 14px;
-          min-width: 640px;
+          font-size: 13.5px;
+          min-width: 650px;
         }
         .emp-table thead {
-          background: #f8fafc;
-          border-bottom: 1px solid #e2e8f0;
+          background: linear-gradient(90deg,#eef2ff 0%,#e0e7ff 100%);
+          border-bottom: 2px solid #c7d2fe;
         }
         .emp-table th {
-          padding: 12px 16px;
+          padding: 11px 14px;
           text-align: left;
-          font-weight: 600;
-          font-size: 12px;
-          color: #475569;
+          font-weight: 700;
+          font-size: 11px;
+          color: #4338ca;
           text-transform: uppercase;
-          letter-spacing: .05em;
+          letter-spacing: .06em;
           white-space: nowrap;
         }
         .emp-table td {
-          padding: 12px 16px;
+          padding: 11px 14px;
           border-bottom: 1px solid #f1f5f9;
           color: #1e293b;
           vertical-align: middle;
         }
         .emp-table tbody tr:last-child td { border-bottom: none; }
-        .emp-table tbody tr:hover { background: #f8fafc; }
+        .emp-table tbody tr:hover { background: #f5f7ff; }
+
+        .emp-nip-cell {
+          color: #6366f1;
+          font-family: monospace;
+          font-size: 12px;
+          background: #eef2ff;
+          border-radius: 6px;
+          padding: 2px 7px;
+          display: inline-block;
+        }
 
         .emp-badge {
           display: inline-block;
           padding: 3px 10px;
           border-radius: 999px;
           font-size: 11px;
-          font-weight: 600;
+          font-weight: 700;
         }
         .emp-badge-tetap   { background: #dcfce7; color: #166534; }
         .emp-badge-kontrak { background: #fef9c3; color: #854d0e; }
 
         .emp-action-btn {
           border: none;
-          background: none;
           cursor: pointer;
-          padding: 4px 8px;
-          border-radius: 6px;
-          font-size: 13px;
-          color: #64748b;
-          transition: background .15s, color .15s;
+          padding: 5px 10px;
+          border-radius: 7px;
+          font-size: 12px;
+          font-weight: 600;
+          transition: background .15s, transform .1s;
         }
-        .emp-action-btn:hover        { background: #f1f5f9; color: #0f172a; }
-        .emp-action-btn.delete:hover { background: #fee2e2; color: #dc2626; }
+        .emp-action-btn.edit {
+          background: #ede9fe;
+          color: #7c3aed;
+        }
+        .emp-action-btn.edit:hover {
+          background: #ddd6fe;
+          transform: scale(1.04);
+        }
+        .emp-action-btn.delete {
+          background: #fee2e2;
+          color: #dc2626;
+        }
+        .emp-action-btn.delete:hover {
+          background: #fecaca;
+          transform: scale(1.04);
+        }
+
+        /* ── Unit chips ── */
+        .emp-unit-chip {
+          display: inline-block;
+          padding: 2px 9px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 600;
+          background: #e0f2fe;
+          color: #0369a1;
+        }
 
         /* ── Mobile cards ── */
         .emp-card-list { display: none; }
 
         @media (max-width: 640px) {
           .emp-table-wrap { display: none; }
-          .emp-card-list  { display: grid; gap: 10px; }
+          .emp-card-list  {
+            display: grid;
+            gap: 10px;
+          }
 
           .emp-card {
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 14px 16px;
-            background: white;
+            background: #fff;
             display: grid;
-            gap: 4px;
-            box-shadow: 0 2px 8px rgba(15,23,42,.05);
+            gap: 6px;
+            box-shadow: 0 2px 10px rgba(99,102,241,.08);
+            border: 1px solid #e0e7ff;
           }
           .emp-card-header {
             display: flex;
@@ -97,15 +135,30 @@ export default function EmployeeTable({
             align-items: flex-start;
             gap: 8px;
           }
-          .emp-card-name  { font-size: 15px; font-weight: 600; color: #0f172a; }
-          .emp-card-nip   { font-size: 12px; color: #94a3b8; }
-          .emp-card-meta  { font-size: 13px; color: #475569; }
-          .emp-card-email { font-size: 12px; color: #64748b; word-break: break-all; }
+          .emp-card-name  {
+            font-size: 15px;
+            font-weight: 700;
+            color: #312e81;
+          }
+          .emp-card-nip {
+            font-size: 11px;
+            background: #eef2ff;
+            color: #6366f1;
+            padding: 1px 7px;
+            border-radius: 6px;
+            display: inline-block;
+            font-family: monospace;
+            margin-top: 2px;
+          }
+          .emp-card-meta  { font-size: 12.5px; color: #475569; }
+          .emp-card-email { font-size: 12px; color: #6366f1; word-break: break-all; }
+          .emp-card-hp    { font-size: 12px; color: #64748b; }
           .emp-card-footer {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            margin-top: 6px;
+            justify-content: flex-end;
+            gap: 6px;
+            margin-top: 4px;
           }
         }
       `}</style>
@@ -122,15 +175,15 @@ export default function EmployeeTable({
               <th>Unit</th>
               <th>Email</th>
               <th>No. HP</th>
-              {canManage && <th>Aksi</th>}
+              {canManage && <th style={{ textAlign: "right" }}>Aksi</th>}
             </tr>
           </thead>
           <tbody>
             {employees.length === 0 ? (
               <tr>
                 <td
-                  colSpan={canManage ? 9 : 8}
-                  style={{ textAlign: "center", color: "#94a3b8", padding: 32 }}
+                  colSpan={canManage ? 8 : 7}
+                  style={{ textAlign: "center", color: "#94a3b8", padding: 36 }}
                 >
                   Data tidak ditemukan.
                 </td>
@@ -138,33 +191,33 @@ export default function EmployeeTable({
             ) : (
               employees.map((emp, i) => (
                 <tr key={emp.id}>
-                  <td style={{ color: "#94a3b8", width: 36 }}>{i + 1}</td>
-                  <td
-                    style={{
-                      color: "#64748b",
-                      fontFamily: "monospace",
-                      fontSize: 12,
-                    }}
-                  >
-                    {emp.nip}
+                  <td style={{ color: "#94a3b8", width: 36, fontWeight: 500 }}>
+                    {i + 1}
                   </td>
-                  <td style={{ fontWeight: 500 }}>{emp.nama}</td>
-                  <td>{emp.jabatan}</td>
-                  <td>{emp.unit}</td>
-                  <td style={{ color: "#64748b", fontSize: 13 }}>
+                  <td>
+                    <span className="emp-nip-cell">{emp.nip}</span>
+                  </td>
+                  <td style={{ fontWeight: 600, color: "#312e81" }}>
+                    {emp.nama}
+                  </td>
+                  <td style={{ color: "#475569" }}>{emp.jabatan}</td>
+                  <td>
+                    <span className="emp-unit-chip">{emp.unit}</span>
+                  </td>
+                  <td style={{ color: "#6366f1", fontSize: 12.5 }}>
                     {emp.email}
                   </td>
-                  <td style={{ color: "#64748b", fontSize: 13 }}>
+                  <td style={{ color: "#64748b", fontSize: 12.5 }}>
                     {emp.no_hp}
                   </td>
                   {canManage && (
-                    <td style={{ whiteSpace: "nowrap" }}>
+                    <td style={{ whiteSpace: "nowrap", textAlign: "right" }}>
                       <button
-                        className="emp-action-btn"
+                        className="emp-action-btn edit"
                         onClick={() => onEdit(emp)}
                       >
                         ✏️ Edit
-                      </button>
+                      </button>{" "}
                       <button
                         className="emp-action-btn delete"
                         onClick={() => onDelete(emp)}
@@ -183,37 +236,40 @@ export default function EmployeeTable({
       {/* Mobile cards */}
       <div className="emp-card-list">
         {employees.length === 0 ? (
-          <p style={{ color: "#94a3b8" }}>Data tidak ditemukan.</p>
+          <p
+            style={{ color: "#94a3b8", textAlign: "center", padding: "16px 0" }}
+          >
+            Data tidak ditemukan.
+          </p>
         ) : (
           employees.map((emp) => (
             <div key={emp.id} className="emp-card">
               <div className="emp-card-header">
                 <div>
                   <div className="emp-card-name">{emp.nama}</div>
-                  <div className="emp-card-nip">{emp.nip}</div>
+                  <span className="emp-card-nip">{emp.nip}</span>
                 </div>
+                <span className="emp-unit-chip" style={{ flexShrink: 0 }}>
+                  {emp.unit}
+                </span>
               </div>
-              <div className="emp-card-meta">
-                {emp.jabatan} — {emp.unit}
-              </div>
+              <div className="emp-card-meta">{emp.jabatan}</div>
               <div className="emp-card-email">{emp.email}</div>
-              <div className="emp-card-meta">{emp.no_hp}</div>
+              <div className="emp-card-hp">{emp.no_hp}</div>
               {canManage && (
                 <div className="emp-card-footer">
-                  <div style={{ display: "flex", gap: 4 }}>
-                    <button
-                      className="emp-action-btn"
-                      onClick={() => onEdit(emp)}
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      className="emp-action-btn delete"
-                      onClick={() => onDelete(emp)}
-                    >
-                      🗑️ Hapus
-                    </button>
-                  </div>
+                  <button
+                    className="emp-action-btn edit"
+                    onClick={() => onEdit(emp)}
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    className="emp-action-btn delete"
+                    onClick={() => onDelete(emp)}
+                  >
+                    🗑️ Hapus
+                  </button>
                 </div>
               )}
             </div>
@@ -222,4 +278,11 @@ export default function EmployeeTable({
       </div>
     </>
   );
+}
+
+interface Props {
+  employees: Employee[];
+  canManage: boolean;
+  onEdit: (emp: Employee) => void;
+  onDelete: (emp: Employee) => void;
 }

@@ -327,14 +327,14 @@ export default function UploadDocumentModal({
             <button
               type="button"
               onClick={handleClose}
-              className="px-3 py-2 text-sm"
+              className="bg-red-500 px-3 py-2 text-sm hover:bg-red-700 text-white rounded-md"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="bg-slate-800 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60"
+              className="bg-cyan-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60 hover:bg-cyan-700"
             >
               {loading ? "Mengunggah..." : "Upload"}
             </button>

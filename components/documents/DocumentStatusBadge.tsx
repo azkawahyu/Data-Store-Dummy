@@ -5,8 +5,8 @@ const STATUS_STYLE: Record<
   { bg: string; color: string; label: string }
 > = {
   pending: { bg: "#fef3c7", color: "#92400e", label: "Pending" },
-  verified: { bg: "#dcfce7", color: "#166534", label: "Verified" },
-  rejected: { bg: "#fee2e2", color: "#991b1b", label: "Rejected" },
+  verified: { bg: "#dcfce7", color: "#166534", label: "Disetujui" },
+  rejected: { bg: "#fee2e2", color: "#991b1b", label: "Ditolak" },
 };
 
 const FALLBACK_STYLE = { bg: "#e5e7eb", color: "#374151", label: "Unknown" };

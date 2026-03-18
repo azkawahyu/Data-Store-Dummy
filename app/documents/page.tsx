@@ -6,6 +6,8 @@ import DocumentsStats from "@/components/documents/DocumentsStats";
 import DocumentsTable from "@/components/documents/DocumentsTable";
 import DocumentsToolbar from "@/components/documents/DocumentsToolbar";
 import UploadDocumentModal from "@/components/documents/UploadDocumentModal";
+import DocumentDeleteModal from "@/components/documents/DocumentDeleteModal";
+import DeleteConfirmModal from "@/components/common/DeleteConfirmModal";
 import { DocumentItem, DocumentStatus } from "@/components/documents/types";
 
 import { useRouter } from "next/navigation";
@@ -13,6 +15,8 @@ import { apiFetch } from "@/lib/api";
 import { useToast } from "@/components/ToastProvider";
 
 type SortValue = "newest" | "oldest" | "az" | "za";
+
+const PAGE_SIZE = 7;
 
 export default function DocumentsPage() {
   const [rows, setRows] = useState<DocumentItem[]>([]);
@@ -30,6 +34,11 @@ export default function DocumentsPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [canManage, setCanManage] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<DocumentItem | null>(null);
+
+  // pagination
+  const [page, setPage] = useState(1);
 
   const router = useRouter();
   const toast = useToast();
@@ -60,9 +69,6 @@ export default function DocumentsPage() {
     async function load() {
       try {
         const token = localStorage.getItem("token");
-
-        // console.log("Token:", token);
-
         if (!token) {
           router.push("/login");
           return;
@@ -70,15 +76,18 @@ export default function DocumentsPage() {
 
         const payload = parseJwt(token);
         if (payload) {
-          const id = payload.userId ?? payload.sub ?? payload.userId;
+          const id = payload.userId ?? payload.sub;
           setUserId(id ? String(id) : null);
-          const role = (payload.role ?? "").toString().toLowerCase();
-          setCanManage(role === "admin" || role === "hr");
+
+          const role = String(payload.role ?? "")
+            .trim()
+            .toLowerCase();
+          const isManager = role === "admin" || role === "hr";
+
+          setCanManage(isManager);
         }
 
         const data = await apiFetch("/api/documents");
-
-        // console.log("Documents Data:", data);
 
         const list = (
           Array.isArray(data) ? data : (data?.data ?? [])
@@ -143,7 +152,9 @@ export default function DocumentsPage() {
       }
     }
     load();
-  }, []);
+  }, [router]);
+
+  useEffect(() => {}, [canManage]);
 
   const docTypeOptions = useMemo(
     () =>
@@ -181,6 +192,21 @@ export default function DocumentsPage() {
 
     return out;
   }, [rows, debouncedSearch, status, docType, sort]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, status, docType, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const paginatedRows = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
 
   const stats = useMemo(() => {
     const total = rows.length;
@@ -425,41 +451,35 @@ export default function DocumentsPage() {
     }
   }
 
-  return (
-    <div className="w-full p-4 sm:p-6 space-y-6">
-      <style>{`
-        @media (max-width: 768px) {
-          .documents-page-header {
-            flex-direction: column;
-            align-items: flex-start !important;
-            gap: 12px;
-          }
-          .documents-page-actions {
-            width: 100%;
-            display: grid !important;
-            grid-template-columns: 1fr;
-            gap: 8px;
-          }
-          .documents-page-actions button {
-            width: 100%;
-          }
-        }
-      `}</style>
+  function handleEditDocument(doc: DocumentItem) {
+    setSelected(doc);
+    setOpenDetail(true);
+  }
 
-      <header className="documents-page-header flex items-center justify-between">
+  function askDeleteDocument(doc: DocumentItem) {
+    setDeleteTarget(doc);
+    setDeleteOpen(true);
+  }
+
+  async function handleDeleteDocument(id: string) {
+    await apiFetch(`/api/documents/${id}`, { method: "DELETE" });
+    setRows((prev) => prev.filter((r) => r.id !== id));
+    setSelectedIds((prev) => prev.filter((x) => x !== id));
+    toast.push("Dokumen berhasil dihapus", "success");
+  }
+
+  return (
+    <div className="page-shell">
+      <div className="page-header">
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">
-            Dokumen Pegawai
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Kelola dokumen pegawai dengan mudah.
-          </p>
+          <h2 className="page-title">Data Dokumen</h2>
+          <p className="page-subtitle">Kelola dokumen pegawai</p>
         </div>
 
-        <div className="documents-page-actions flex items-center gap-3">
+        <div className="page-actions flex items-center gap-3">
           <button
             onClick={() => setOpenUpload(true)}
-            className="bg-cyan-600 text-white px-3 py-2 rounded-md text-sm"
+            className="bg-cyan-500 text-white px-3 py-2 rounded-md text-sm hover:bg-cyan-700"
           >
             Upload Dokumen
           </button>
@@ -467,64 +487,152 @@ export default function DocumentsPage() {
             <>
               <button
                 onClick={() => batchUpdateStatus(selectedIds, "verified")}
-                className="bg-green-600 text-white px-3 py-2 rounded-md text-sm"
+                className="bg-green-600 text-white px-3 py-2 rounded-md text-sm hover:bg-green-700"
               >
-                Verify Selected ({selectedIds.length})
+                Verifikasi ({selectedIds.length})
               </button>
               <button
                 onClick={() => batchUpdateStatus(selectedIds, "rejected")}
-                className="bg-red-600 text-white px-3 py-2 rounded-md text-sm"
+                className="bg-red-600 text-white px-3 py-2 rounded-md text-sm hover:bg-red-700"
               >
-                Reject Selected ({selectedIds.length})
+                Tolak ({selectedIds.length})
               </button>
             </>
           )}
         </div>
-      </header>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        <div className="lg:col-span-1">
-          <div className="bg-white shadow-sm rounded-lg p-4">
-            <DocumentsStats {...stats} />
+      <DocumentsToolbar
+        search={search}
+        status={status}
+        docType={docType}
+        sort={sort}
+        docTypeOptions={docTypeOptions}
+        onSearchChange={setSearch}
+        onStatusChange={setStatus}
+        onDocTypeChange={setDocType}
+        onSortChange={setSort}
+      />
+
+      {/* Stats dipindah: tepat di atas tabel */}
+      <div className="docs-stats-wrap" style={{ marginTop: -20 }}>
+        <DocumentsStats
+          total={rows.length}
+          pending={rows.filter((d) => d.status === "pending").length}
+          verified={rows.filter((d) => d.status === "verified").length}
+          rejected={rows.filter((d) => d.status === "rejected").length}
+        />
+      </div>
+
+      {/* Table */}
+      <div className="docs-table-wrap" style={{ marginTop: -5 }}>
+        {loading ? (
+          <div className="flex items-center justify-center p-12 text-slate-500">
+            Memuat...
           </div>
-        </div>
-
-        <div className="lg:col-span-3 space-y-4">
-          <div className="bg-white shadow-sm rounded-lg p-4">
-            <DocumentsToolbar
-              search={search}
-              status={status}
-              docType={docType}
-              sort={sort}
-              docTypeOptions={docTypeOptions}
-              onSearchChange={setSearch}
-              onStatusChange={setStatus}
-              onDocTypeChange={setDocType}
-              onSortChange={setSort}
+        ) : (
+          <>
+            <DocumentsTable
+              rows={paginatedRows}
+              canManage={canManage}
+              selectedIds={selectedIds}
+              onSelectionChange={(ids) => setSelectedIds(ids)}
+              onView={(d) => {
+                setSelected(d);
+                setOpenDetail(true);
+              }}
+              onVerify={(d) => updateStatus(d, "verified")}
+              onReject={(d) => updateStatus(d, "rejected")}
+              onEdit={handleEditDocument}
+              onDelete={askDeleteDocument}
             />
-          </div>
 
-          <div className="bg-white shadow-sm rounded-lg p-4">
-            {loading ? (
-              <div className="flex items-center justify-center p-12 text-slate-500">
-                Memuat...
+            <div className="documents-pagination flex items-center justify-between px-1 pt-4 border-t border-slate-200 gap-4 mt-4">
+              <p className="documents-pagination-info text-xs text-slate-500">
+                Menampilkan{" "}
+                <span className="font-medium text-slate-700">
+                  {(page - 1) * PAGE_SIZE + 1}–
+                  {Math.min(page * PAGE_SIZE, filtered.length)}
+                </span>{" "}
+                dari{" "}
+                <span className="font-medium text-slate-700">
+                  {filtered.length}
+                </span>{" "}
+                dokumen
+              </p>
+
+              <div className="documents-pagination-buttons flex items-center gap-1">
+                <button
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  title="Halaman Pertama"
+                >
+                  «
+                </button>
+                <button
+                  onClick={() => setPage((p) => p - 1)}
+                  disabled={page === 1}
+                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  title="Halaman Sebelumnya"
+                >
+                  ‹
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(
+                    (p) =>
+                      p === 1 || p === totalPages || Math.abs(p - page) <= 1,
+                  )
+                  .reduce<(number | "...")[]>((acc, p, i, arr) => {
+                    if (i > 0 && p - (arr[i - 1] as number) > 1)
+                      acc.push("...");
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, i) =>
+                    p === "..." ? (
+                      <span
+                        key={`ellipsis-${i}`}
+                        className="px-2 text-slate-400 text-xs"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p as number)}
+                        className={`px-2.5 py-1 text-xs rounded border ${
+                          page === p
+                            ? "bg-slate-800 text-white border-slate-800"
+                            : "border-slate-300 text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ),
+                  )}
+
+                <button
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page === totalPages}
+                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  title="Halaman Berikutnya"
+                >
+                  ›
+                </button>
+                <button
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  title="Halaman Terakhir"
+                >
+                  »
+                </button>
               </div>
-            ) : (
-              <DocumentsTable
-                rows={filtered}
-                canManage={canManage}
-                selectedIds={selectedIds}
-                onSelectionChange={(ids) => setSelectedIds(ids)}
-                onView={(d) => {
-                  setSelected(d);
-                  setOpenDetail(true);
-                }}
-                onVerify={(d) => updateStatus(d, "verified")}
-                onReject={(d) => updateStatus(d, "rejected")}
-              />
-            )}
-          </div>
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       <DocumentDetailModal
@@ -603,6 +711,28 @@ export default function DocumentsPage() {
               setLoading(false);
             }
           }, 500);
+        }}
+      />
+
+      <DocumentDeleteModal
+        open={deleteOpen}
+        doc={deleteTarget}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteDocument}
+      />
+
+      <DeleteConfirmModal
+        open={deleteOpen}
+        title="Hapus Dokumen"
+        description={
+          deleteTarget
+            ? `Anda akan menghapus "${deleteTarget.fileName}". Tindakan ini tidak dapat dibatalkan.`
+            : ""
+        }
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await handleDeleteDocument(deleteTarget.id);
         }}
       />
     </div>

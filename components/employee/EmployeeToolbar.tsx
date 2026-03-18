@@ -3,8 +3,8 @@ interface Props {
   onSearch: (v: string) => void;
   filterUnit: string;
   onFilterUnit: (v: string) => void;
-  sortOrder: "asc" | "desc";
-  onSortOrder: (v: "asc" | "desc") => void;
+  sortOrder: "newest" | "oldest" | "asc" | "desc";
+  onSortOrder: (v: "newest" | "oldest" | "asc" | "desc") => void;
   unitOptions: string[];
   canManage: boolean;
   onAdd: () => void;
@@ -44,48 +44,57 @@ export default function EmployeeToolbar({
           flex-shrink: 0;
         }
         .emp-search {
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
+          border: 1.5px solid #c7d2fe;
+          border-radius: 9px;
           padding: 8px 12px;
-          font-size: 14px;
+          font-size: 13.5px;
           outline: none;
           min-width: 200px;
           flex: 1;
-          transition: border-color .2s;
+          transition: border-color .2s, box-shadow .2s;
+          background: #fafaff;
         }
-        .emp-search:focus { border-color: #94a3b8; }
+        .emp-search::placeholder { color: #a5b4fc; }
+        .emp-search:focus {
+          border-color: #818cf8;
+          box-shadow: 0 0 0 3px rgba(129,140,248,.15);
+        }
         .emp-select {
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
+          border: 1.5px solid #c7d2fe;
+          border-radius: 9px;
           padding: 8px 10px;
           font-size: 13px;
           outline: none;
-          background: white;
+          background: #fafaff;
           cursor: pointer;
-        }
-        .emp-select:focus { border-color: #94a3b8; }
-        .emp-btn {
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          padding: 8px 14px;
-          font-size: 13px;
+          color: #4338ca;
           font-weight: 600;
+          transition: border-color .2s;
+        }
+        .emp-select:focus { border-color: #818cf8; }
+        .emp-btn-add {
+          border: none;
+          border-radius: 9px;
+          padding: 8px 16px;
+          font-size: 13px;
+          font-weight: 700;
           cursor: pointer;
-          background: white;
           white-space: nowrap;
-          transition: background .15s;
-        }
-        .emp-btn:hover { background: #f1f5f9; }
-        .emp-btn-primary {
-          background: #0f172a;
+          background: linear-gradient(135deg,#6366f1 0%,#7c3aed 100%);
           color: white;
-          border-color: #0f172a;
+          box-shadow: 0 2px 8px rgba(99,102,241,.3);
+          transition: opacity .15s, transform .1s;
         }
-        .emp-btn-primary:hover { background: #1e293b; }
+        .emp-btn-add:hover {
+          opacity: .92;
+          transform: translateY(-1px);
+        }
 
         @media (max-width: 640px) {
           .emp-search { min-width: unset; width: 100%; }
           .emp-toolbar-left { width: 100%; }
+          .emp-toolbar-right { width: 100%; }
+          .emp-btn-add { width: 100%; text-align: center; }
         }
       `}</style>
 
@@ -114,15 +123,23 @@ export default function EmployeeToolbar({
         </div>
 
         <div className="emp-toolbar-right">
-          <button
-            className="emp-btn"
-            onClick={() => onSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          <select
+            className="emp-select"
+            value={sortOrder}
+            onChange={(e) =>
+              onSortOrder(
+                e.target.value as "newest" | "oldest" | "asc" | "desc",
+              )
+            }
           >
-            {sortOrder === "asc" ? "A → Z" : "Z → A"}
-          </button>
+            <option value="newest">Terbaru</option>
+            <option value="oldest">Terlama</option>
+            <option value="asc">Nama A → Z</option>
+            <option value="desc">Nama Z → A</option>
+          </select>
 
           {canManage && (
-            <button className="emp-btn emp-btn-primary" onClick={onAdd}>
+            <button className="emp-btn-add" onClick={onAdd}>
               + Tambah Pegawai
             </button>
           )}

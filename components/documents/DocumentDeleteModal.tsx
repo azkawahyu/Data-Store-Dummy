@@ -1,30 +1,30 @@
 "use client";
 
-import type { Employee } from "@/types/employee";
 import DeleteConfirmModal from "@/components/common/DeleteConfirmModal";
+import type { DocumentItem } from "./types";
 
 interface Props {
   open: boolean;
-  employee: Employee | null;
+  doc: DocumentItem | null;
   onClose: () => void;
   onConfirm: (id: string) => Promise<void>;
 }
 
-export default function EmployeeDeleteModal({
+export default function DocumentDeleteModal({
   open,
-  employee,
+  doc,
   onClose,
   onConfirm,
 }: Props) {
   return (
     <DeleteConfirmModal
-      open={open && !!employee}
-      title="Hapus Pegawai"
+      open={open && !!doc}
+      title="Hapus Dokumen"
       description={
-        employee ? (
+        doc ? (
           <>
-            Anda akan menghapus <b>{employee.nama}</b> ({employee.nip}).
-            Tindakan ini tidak dapat dibatalkan.
+            Anda akan menghapus <b>{doc.fileName}</b>. Tindakan ini tidak dapat
+            dibatalkan.
           </>
         ) : (
           ""
@@ -32,8 +32,8 @@ export default function EmployeeDeleteModal({
       }
       onClose={onClose}
       onConfirm={async () => {
-        if (!employee) return;
-        await onConfirm(employee.id);
+        if (!doc) return;
+        await onConfirm(doc.id);
       }}
     />
   );

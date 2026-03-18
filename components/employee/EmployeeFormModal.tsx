@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Employee } from "@/types/employee";
 
 type EmployeeForm = Omit<Employee, "id" | "created_at" | "updated_at">;
+
+type FieldErrors = Partial<Record<keyof EmployeeForm, string>>;
 
 interface Props {
   open: boolean;
@@ -34,6 +36,77 @@ const UNIT_OPTIONS = [
   "Kepala Stasiun",
 ];
 
+// ── Helpers ──────────────────────────────────────────────
+function validateForm(form: EmployeeForm): FieldErrors {
+  const errors: FieldErrors = {};
+
+  // NIP: wajib, hanya angka, min 5 karakter
+  if (!form.nip.trim()) {
+    errors.nip = "NIP wajib diisi.";
+  } else if (!/^\d+$/.test(form.nip.trim())) {
+    errors.nip = "NIP hanya boleh berisi angka.";
+  } else if (form.nip.trim().length < 5) {
+    errors.nip = "NIP minimal 5 digit.";
+  } else if (form.nip.trim().length > 20) {
+    errors.nip = "NIP maksimal 20 digit.";
+  }
+
+  // Nama: wajib, min 2 karakter, hanya huruf/spasi/tanda baca nama
+  if (!form.nama.trim()) {
+    errors.nama = "Nama lengkap wajib diisi.";
+  } else if (form.nama.trim().length < 2) {
+    errors.nama = "Nama minimal 2 karakter.";
+  } else if (!/^[A-Za-z\u00C0-\u024F\s'.,-]+$/.test(form.nama.trim())) {
+    errors.nama = "Nama hanya boleh berisi huruf dan spasi.";
+  }
+
+  // Jabatan: wajib, min 2 karakter
+  if (!form.jabatan.trim()) {
+    errors.jabatan = "Jabatan wajib diisi.";
+  } else if (form.jabatan.trim().length < 2) {
+    errors.jabatan = "Jabatan minimal 2 karakter.";
+  }
+
+  // Unit: wajib dipilih
+  if (!form.unit) {
+    errors.unit = "Unit wajib dipilih.";
+  }
+
+  // Email: wajib, harus valid
+  if (!form.email || !form.email.trim()) {
+    errors.email = "Email wajib diisi.";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    errors.email = "Format email tidak valid.";
+  }
+
+  // Alamat: wajib
+  if (!form.alamat || !form.alamat.trim()) {
+    errors.alamat = "Alamat wajib diisi.";
+  }
+
+  // No. HP: wajib
+  if (!form.no_hp || !form.no_hp.trim()) {
+    errors.no_hp = "No. HP wajib diisi.";
+  } else {
+    const val = form.no_hp.trim();
+    if (!/^(\+62|0)/.test(val)) {
+      errors.no_hp = "No. HP harus diawali dengan +62 atau 0.";
+    } else if (!/^(\+62|0)\d+$/.test(val)) {
+      errors.no_hp = "No. HP hanya boleh berisi angka setelah awalan.";
+    } else {
+      // hitung digit saja (tanpa +)
+      const digits = val.replace(/^\+/, "").replace(/\D/g, "");
+      if (digits.length < 9) {
+        errors.no_hp = "No. HP terlalu pendek (minimal 9 digit).";
+      } else if (digits.length > 14) {
+        errors.no_hp = "No. HP terlalu panjang (maksimal 14 digit).";
+      }
+    }
+  }
+
+  return errors;
+}
+
 export default function EmployeeFormModal({
   open,
   initial,
@@ -42,7 +115,16 @@ export default function EmployeeFormModal({
 }: Props) {
   const [form, setForm] = useState<EmployeeForm>(EMPTY);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [serverError, setServerError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<
+    Partial<Record<keyof EmployeeForm, boolean>>
+  >({});
+
+  const isFormValid = useMemo(
+    () => Object.keys(validateForm(form)).length === 0,
+    [form],
+  );
 
   // Isi form saat edit, kosongkan saat tambah
   useEffect(() => {
@@ -56,30 +138,70 @@ export default function EmployeeFormModal({
     } else {
       setForm(EMPTY);
     }
-    setError("");
+    setServerError("");
+    setFieldErrors({});
+    setTouched({});
   }, [open, initial]);
 
   if (!open) return null;
 
   function set(field: keyof EmployeeForm, value: string) {
-    setForm((p) => ({ ...p, [field]: value }));
+    setForm((p) => {
+      const next = { ...p, [field]: value };
+      // re-validate field if already touched
+      if (touched[field]) {
+        const errs = validateForm(next);
+        setFieldErrors((prev) => ({ ...prev, [field]: errs[field] }));
+      }
+      return next;
+    });
+  }
+
+  // Filter NIP: tolak karakter non-digit saat mengetik
+  function handleNipChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digitsOnly = e.target.value.replace(/\D/g, "");
+    set("nip", digitsOnly);
+  }
+
+  // Filter No. HP: izinkan + hanya di awal, lalu digit saja
+  function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value;
+    // Izinkan + di posisi pertama, sisanya hanya angka
+    const cleaned = raw
+      .split("")
+      .filter((ch, idx) => (idx === 0 && ch === "+") || /\d/.test(ch))
+      .join("");
+    set("no_hp", cleaned);
+  }
+
+  function handleBlur(field: keyof EmployeeForm) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const errs = validateForm(form);
+    setFieldErrors((prev) => ({ ...prev, [field]: errs[field] }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setServerError("");
 
-    if (!form.nip || !form.nama || !form.jabatan || !form.unit) {
-      setError("NIP, Nama, Jabatan, dan Unit wajib diisi.");
-      return;
-    }
+    // Tandai semua field sebagai touched
+    const allTouched: Partial<Record<keyof EmployeeForm, boolean>> = {};
+    (Object.keys(EMPTY) as (keyof EmployeeForm)[]).forEach((k) => {
+      allTouched[k] = true;
+    });
+    setTouched(allTouched);
+
+    const errs = validateForm(form);
+    setFieldErrors(errs);
+
+    if (Object.keys(errs).length > 0) return;
 
     try {
       setLoading(true);
       await onSubmit(form);
       onClose();
     } catch {
-      setError("Terjadi kesalahan. Coba lagi.");
+      setServerError("Terjadi kesalahan. Coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -182,6 +304,18 @@ export default function EmployeeFormModal({
         }
         .emp-form-input:focus,
         .emp-form-select:focus { border-color: #94a3b8; }
+        .emp-form-input-error {
+          border-color: #f87171 !important;
+          background: #fff7f7;
+        }
+        .emp-form-input-error:focus {
+          border-color: #ef4444 !important;
+        }
+        .emp-field-error {
+          font-size: 11.5px;
+          color: #dc2626;
+          margin-top: 2px;
+        }
         .emp-form-error {
           font-size: 13px;
           color: #dc2626;
@@ -201,12 +335,25 @@ export default function EmployeeFormModal({
           transition: background .15s;
         }
         .emp-btn:hover { background: #f1f5f9; }
-        .emp-btn:disabled { opacity: .5; cursor: not-allowed; }
+        .emp-btn:disabled { cursor: not-allowed; }
         .emp-btn-primary {
-          background: #0f172a;
+          background: #06b6d4;
           color: white;
-          border-color: #0f172a;
+          border-color: #06b6d4;
         }
+        .emp-btn-primary:disabled {
+          background: #cbd5e1;
+          border-color: #cbd5e1;
+          color: #94a3b8;
+          opacity: 1;
+        }
+        .emp-btn-batal {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+        .emp-btn-batal:disabled { opacity: .5; }
+          .emp-btn-batal:hover:not(:disabled) { background: #dc2626; }
         .emp-btn-primary:hover:not(:disabled) { background: #1e293b; }
 
         @media (max-width: 480px) {
@@ -233,7 +380,9 @@ export default function EmployeeFormModal({
           {/* Body */}
           <form onSubmit={handleSubmit}>
             <div className="emp-modal-body">
-              {error && <div className="emp-form-error">{error}</div>}
+              {serverError && (
+                <div className="emp-form-error">{serverError}</div>
+              )}
 
               <div className="emp-form-row">
                 <div className="emp-form-group">
@@ -241,11 +390,17 @@ export default function EmployeeFormModal({
                     NIP <span>*</span>
                   </label>
                   <input
-                    className="emp-form-input"
+                    className={`emp-form-input${fieldErrors.nip ? " emp-form-input-error" : ""}`}
                     value={form.nip}
-                    onChange={(e) => set("nip", e.target.value)}
-                    placeholder="EMP001"
+                    onChange={handleNipChange}
+                    onBlur={() => handleBlur("nip")}
+                    placeholder="1234567890"
+                    inputMode="numeric"
+                    maxLength={20}
                   />
+                  {fieldErrors.nip && (
+                    <span className="emp-field-error">{fieldErrors.nip}</span>
+                  )}
                 </div>
 
                 <div className="emp-form-group">
@@ -268,11 +423,15 @@ export default function EmployeeFormModal({
                   Nama Lengkap <span>*</span>
                 </label>
                 <input
-                  className="emp-form-input"
+                  className={`emp-form-input${fieldErrors.nama ? " emp-form-input-error" : ""}`}
                   value={form.nama}
                   onChange={(e) => set("nama", e.target.value)}
+                  onBlur={() => handleBlur("nama")}
                   placeholder="John Doe"
                 />
+                {fieldErrors.nama && (
+                  <span className="emp-field-error">{fieldErrors.nama}</span>
+                )}
               </div>
 
               <div className="emp-form-row">
@@ -281,11 +440,17 @@ export default function EmployeeFormModal({
                     Jabatan <span>*</span>
                   </label>
                   <input
-                    className="emp-form-input"
+                    className={`emp-form-input${fieldErrors.jabatan ? " emp-form-input-error" : ""}`}
                     value={form.jabatan}
                     onChange={(e) => set("jabatan", e.target.value)}
+                    onBlur={() => handleBlur("jabatan")}
                     placeholder="Staff IT"
                   />
+                  {fieldErrors.jabatan && (
+                    <span className="emp-field-error">
+                      {fieldErrors.jabatan}
+                    </span>
+                  )}
                 </div>
 
                 <div className="emp-form-group">
@@ -293,9 +458,10 @@ export default function EmployeeFormModal({
                     Unit <span>*</span>
                   </label>
                   <select
-                    className="emp-form-select"
+                    className={`emp-form-select${fieldErrors.unit ? " emp-form-input-error" : ""}`}
                     value={form.unit}
                     onChange={(e) => set("unit", e.target.value)}
+                    onBlur={() => handleBlur("unit")}
                   >
                     <option value="">-- Pilih Unit --</option>
                     {UNIT_OPTIONS.map((u) => (
@@ -304,40 +470,63 @@ export default function EmployeeFormModal({
                       </option>
                     ))}
                   </select>
+                  {fieldErrors.unit && (
+                    <span className="emp-field-error">{fieldErrors.unit}</span>
+                  )}
                 </div>
               </div>
 
               <div className="emp-form-row">
                 <div className="emp-form-group">
-                  <label className="emp-form-label">Email</label>
+                  <label className="emp-form-label">
+                    Email <span>*</span>
+                  </label>
                   <input
-                    type="email"
-                    className="emp-form-input"
+                    type="text"
+                    className={`emp-form-input${fieldErrors.email ? " emp-form-input-error" : ""}`}
                     value={form.email}
                     onChange={(e) => set("email", e.target.value)}
+                    onBlur={() => handleBlur("email")}
                     placeholder="john@company.local"
                   />
+                  {fieldErrors.email && (
+                    <span className="emp-field-error">{fieldErrors.email}</span>
+                  )}
                 </div>
 
                 <div className="emp-form-group">
-                  <label className="emp-form-label">No. HP</label>
+                  <label className="emp-form-label">
+                    No. HP <span>*</span>
+                  </label>
                   <input
-                    className="emp-form-input"
+                    className={`emp-form-input${fieldErrors.no_hp ? " emp-form-input-error" : ""}`}
                     value={form.no_hp}
-                    onChange={(e) => set("no_hp", e.target.value)}
-                    placeholder="08123456789"
+                    onChange={handlePhoneChange}
+                    onBlur={() => handleBlur("no_hp")}
+                    placeholder="+628123456789 atau 08123456789"
+                    inputMode="tel"
+                    maxLength={16}
                   />
+                  {fieldErrors.no_hp && (
+                    <span className="emp-field-error">{fieldErrors.no_hp}</span>
+                  )}
                 </div>
               </div>
 
               <div className="emp-form-group">
-                <label className="emp-form-label">Alamat</label>
+                <label className="emp-form-label">
+                  Alamat <span>*</span>
+                </label>
                 <input
-                  className="emp-form-input"
+                  className={`emp-form-input${fieldErrors.alamat ? " emp-form-input-error" : ""}`}
                   value={form.alamat}
                   onChange={(e) => set("alamat", e.target.value)}
+                  onBlur={() => handleBlur("alamat")}
                   placeholder="Jl. Merdeka No.1 Jakarta"
                 />
+                {fieldErrors.alamat && (
+                  <span className="emp-field-error">{fieldErrors.alamat}</span>
+                )}
               </div>
             </div>
 
@@ -345,7 +534,7 @@ export default function EmployeeFormModal({
             <div className="emp-modal-footer">
               <button
                 type="button"
-                className="emp-btn"
+                className="emp-btn emp-btn-batal"
                 onClick={onClose}
                 disabled={loading}
               >
@@ -354,7 +543,7 @@ export default function EmployeeFormModal({
               <button
                 type="submit"
                 className="emp-btn emp-btn-primary"
-                disabled={loading}
+                disabled={loading || !isFormValid}
               >
                 {loading
                   ? "Menyimpan..."
