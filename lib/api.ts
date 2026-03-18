@@ -13,21 +13,24 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
   }
 
   const payload = parseJwt(token ?? undefined) || {};
+  const hasToken = typeof token === "string" && token.length > 0;
 
   const isFormData =
     typeof FormData !== "undefined" && options.body instanceof FormData;
 
   const rawHeaders = {
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
-    Authorization: `Bearer ${token}`,
-    "x-user-id": (payload?.userId ?? payload?.sub) || undefined,
-    "x-user-role": payload?.role || undefined,
+    Authorization: hasToken ? `Bearer ${token}` : undefined,
+    "x-user-id": hasToken
+      ? ((payload?.userId ?? payload?.sub) as string | undefined)
+      : undefined,
+    "x-user-role": hasToken ? (payload?.role as string | undefined) : undefined,
     ...(options.headers || {}),
   };
 
   // Filter out undefined values to ensure HeadersInit is valid
   const headers: Record<string, string> = Object.fromEntries(
-    Object.entries(rawHeaders).filter(([_, v]) => typeof v === "string"),
+    Object.entries(rawHeaders).filter(([, v]) => typeof v === "string"),
   );
 
   const normalizedUrl = url.startsWith("/") ? url : `/${url}`;

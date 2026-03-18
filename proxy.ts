@@ -5,7 +5,7 @@ import { verifyToken } from "@/lib/jwt";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ["/api/login"];
+  const publicRoutes = ["/api/login", "/api/register"];
 
   if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
