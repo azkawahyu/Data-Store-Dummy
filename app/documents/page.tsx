@@ -13,6 +13,7 @@ import { DocumentItem, DocumentStatus } from "@/components/documents/types";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useToast } from "@/components/ToastProvider";
+import DocumentsTableFilters from "@/components/documents/DocumentsTableFilters";
 
 type SortValue = "newest" | "oldest" | "az" | "za";
 
@@ -468,40 +469,12 @@ export default function DocumentsPage() {
     toast.push("Dokumen berhasil dihapus", "success");
   }
 
+  function loadData() {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <div className="page-shell">
-      <div className="page-header">
-        <div>
-          <h2 className="page-title">Data Dokumen</h2>
-          <p className="page-subtitle">Kelola dokumen pegawai</p>
-        </div>
-
-        <div className="page-actions flex items-center gap-3">
-          <button
-            onClick={() => setOpenUpload(true)}
-            className="bg-cyan-500 text-white px-3 py-2 rounded-md text-sm hover:bg-cyan-700"
-          >
-            Upload Dokumen
-          </button>
-          {canManage && selectedIds.length > 0 && (
-            <>
-              <button
-                onClick={() => batchUpdateStatus(selectedIds, "verified")}
-                className="bg-green-600 text-white px-3 py-2 rounded-md text-sm hover:bg-green-700"
-              >
-                Verifikasi ({selectedIds.length})
-              </button>
-              <button
-                onClick={() => batchUpdateStatus(selectedIds, "rejected")}
-                className="bg-red-600 text-white px-3 py-2 rounded-md text-sm hover:bg-red-700"
-              >
-                Tolak ({selectedIds.length})
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
       <DocumentsToolbar
         search={search}
         status={status}
@@ -512,127 +485,131 @@ export default function DocumentsPage() {
         onStatusChange={setStatus}
         onDocTypeChange={setDocType}
         onSortChange={setSort}
+        onUpload={() => setOpenUpload(true)}
       />
 
-      {/* Stats dipindah: tepat di atas tabel */}
-      <div className="docs-stats-wrap" style={{ marginTop: -20 }}>
-        <DocumentsStats
-          total={rows.length}
-          pending={rows.filter((d) => d.status === "pending").length}
-          verified={rows.filter((d) => d.status === "verified").length}
-          rejected={rows.filter((d) => d.status === "rejected").length}
+      <DocumentsStats
+        total={stats.total}
+        pending={stats.pending}
+        verified={stats.verified}
+        rejected={stats.rejected}
+      />
+
+      <div className="card">
+        <DocumentsTableFilters
+          search={search}
+          status={status}
+          docType={docType}
+          sort={sort}
+          docTypeOptions={docTypeOptions}
+          loading={loading}
+          onSearchChange={setSearch}
+          onStatusChange={setStatus}
+          onDocTypeChange={setDocType}
+          onSortChange={setSort}
+          onRefresh={() => {
+            setLoading(true);
+            void loadData(); // ganti jika nama fungsi fetch Anda berbeda
+          }}
         />
-      </div>
 
-      {/* Table */}
-      <div className="docs-table-wrap" style={{ marginTop: -5 }}>
-        {loading ? (
-          <div className="flex items-center justify-center p-12 text-slate-500">
-            Memuat...
+        <DocumentsTable
+          rows={paginatedRows}
+          canManage={canManage}
+          selectedIds={selectedIds}
+          onSelectionChange={(ids) => setSelectedIds(ids)}
+          onView={(d) => {
+            setSelected(d);
+            setOpenDetail(true);
+          }}
+          onVerify={(d) => updateStatus(d, "verified")}
+          onReject={(d) => updateStatus(d, "rejected")}
+          onEdit={handleEditDocument}
+          onDelete={askDeleteDocument}
+        />
+
+        <div className="documents-pagination mt-4 flex items-center justify-between gap-4 border-t border-slate-200 px-1 pt-4">
+          <p className="documents-pagination-info text-xs text-slate-500">
+            Menampilkan{" "}
+            <span className="font-medium text-slate-700">
+              {(page - 1) * PAGE_SIZE + 1}–
+              {Math.min(page * PAGE_SIZE, filtered.length)}
+            </span>{" "}
+            dari{" "}
+            <span className="font-medium text-slate-700">
+              {filtered.length}
+            </span>{" "}
+            dokumen
+          </p>
+
+          <div className="documents-pagination-buttons flex items-center gap-1">
+            <button
+              onClick={() => setPage(1)}
+              disabled={page === 1}
+              className="rounded border border-cyan-200 bg-cyan-50 px-2 py-1 text-xs text-cyan-700 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
+              title="Halaman Pertama"
+            >
+              «
+            </button>
+            <button
+              onClick={() => setPage((p) => p - 1)}
+              disabled={page === 1}
+              className="rounded border border-cyan-200 bg-cyan-50 px-2 py-1 text-xs text-cyan-700 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
+              title="Halaman Sebelumnya"
+            >
+              ‹
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(
+                (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1,
+              )
+              .reduce<(number | "...")[]>((acc, p, i, arr) => {
+                if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) =>
+                p === "..." ? (
+                  <span
+                    key={`ellipsis-${i}`}
+                    className="px-2 text-xs text-slate-400"
+                  >
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p as number)}
+                    className={`rounded border px-2.5 py-1 text-xs ${
+                      page === p
+                        ? "border-indigo-600 bg-indigo-600 text-white"
+                        : "border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ),
+              )}
+
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page === totalPages}
+              className="rounded border border-cyan-200 bg-cyan-50 px-2 py-1 text-xs text-cyan-700 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
+              title="Halaman Berikutnya"
+            >
+              ›
+            </button>
+            <button
+              onClick={() => setPage(totalPages)}
+              disabled={page === totalPages}
+              className="rounded border border-cyan-200 bg-cyan-50 px-2 py-1 text-xs text-cyan-700 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
+              title="Halaman Terakhir"
+            >
+              »
+            </button>
           </div>
-        ) : (
-          <>
-            <DocumentsTable
-              rows={paginatedRows}
-              canManage={canManage}
-              selectedIds={selectedIds}
-              onSelectionChange={(ids) => setSelectedIds(ids)}
-              onView={(d) => {
-                setSelected(d);
-                setOpenDetail(true);
-              }}
-              onVerify={(d) => updateStatus(d, "verified")}
-              onReject={(d) => updateStatus(d, "rejected")}
-              onEdit={handleEditDocument}
-              onDelete={askDeleteDocument}
-            />
-
-            <div className="documents-pagination flex items-center justify-between px-1 pt-4 border-t border-slate-200 gap-4 mt-4">
-              <p className="documents-pagination-info text-xs text-slate-500">
-                Menampilkan{" "}
-                <span className="font-medium text-slate-700">
-                  {(page - 1) * PAGE_SIZE + 1}–
-                  {Math.min(page * PAGE_SIZE, filtered.length)}
-                </span>{" "}
-                dari{" "}
-                <span className="font-medium text-slate-700">
-                  {filtered.length}
-                </span>{" "}
-                dokumen
-              </p>
-
-              <div className="documents-pagination-buttons flex items-center gap-1">
-                <button
-                  onClick={() => setPage(1)}
-                  disabled={page === 1}
-                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
-                  title="Halaman Pertama"
-                >
-                  «
-                </button>
-                <button
-                  onClick={() => setPage((p) => p - 1)}
-                  disabled={page === 1}
-                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
-                  title="Halaman Sebelumnya"
-                >
-                  ‹
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(
-                    (p) =>
-                      p === 1 || p === totalPages || Math.abs(p - page) <= 1,
-                  )
-                  .reduce<(number | "...")[]>((acc, p, i, arr) => {
-                    if (i > 0 && p - (arr[i - 1] as number) > 1)
-                      acc.push("...");
-                    acc.push(p);
-                    return acc;
-                  }, [])
-                  .map((p, i) =>
-                    p === "..." ? (
-                      <span
-                        key={`ellipsis-${i}`}
-                        className="px-2 text-slate-400 text-xs"
-                      >
-                        ...
-                      </span>
-                    ) : (
-                      <button
-                        key={p}
-                        onClick={() => setPage(p as number)}
-                        className={`px-2.5 py-1 text-xs rounded border ${
-                          page === p
-                            ? "bg-slate-800 text-white border-slate-800"
-                            : "border-slate-300 text-slate-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ),
-                  )}
-
-                <button
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={page === totalPages}
-                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
-                  title="Halaman Berikutnya"
-                >
-                  ›
-                </button>
-                <button
-                  onClick={() => setPage(totalPages)}
-                  disabled={page === totalPages}
-                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
-                  title="Halaman Terakhir"
-                >
-                  »
-                </button>
-              </div>
-            </div>
-          </>
-        )}
+        </div>
       </div>
 
       <DocumentDetailModal

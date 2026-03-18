@@ -63,9 +63,10 @@ export default function DashboardRecentActivity({ activities }: Props) {
       className="dash-activity-card"
       style={{
         border: "1px solid #e2e8f0",
-        borderRadius: 12,
+        borderRadius: 16,
         padding: 16,
-        background: "white",
+        background: "rgba(255,255,255,.92)",
+        boxShadow: "0 8px 22px rgba(15,23,42,.05)",
       }}
     >
       <style>{`
@@ -113,7 +114,7 @@ export default function DashboardRecentActivity({ activities }: Props) {
           href="/activity"
           style={{
             fontSize: 13,
-            color: "#6366F1",
+            color: "#4f46e5",
             fontWeight: 600,
             textDecoration: "none",
           }}
@@ -137,8 +138,8 @@ export default function DashboardRecentActivity({ activities }: Props) {
                 flexDirection: "column",
                 gap: 4,
                 padding: "10px 12px",
-                background: "#f8fafc",
-                borderRadius: 8,
+                background: "#f8fbff",
+                borderRadius: 12,
                 borderLeft: "3px solid",
                 borderLeftColor:
                   ACTION_STYLE[a.action ?? ""]?.color ?? "#cbd5e1",

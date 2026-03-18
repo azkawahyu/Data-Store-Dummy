@@ -21,6 +21,20 @@ type ActivityRowProps = {
   isMobile?: boolean;
 };
 
+function getActionColor(action?: string | null): string {
+  const a = (action ?? "").toLowerCase();
+
+  if (/(create|add|insert|upload|tambah|unggah|buat)/.test(a)) return "#16a34a"; // hijau
+  if (/(update|edit|modify|ubah|perbarui)/.test(a)) return "#2563eb"; // biru
+  if (/(delete|remove|hapus)/.test(a)) return "#dc2626"; // merah
+  if (/(verify|approve|accept|setuju|verifikasi)/.test(a)) return "#15803d"; // hijau tua
+  if (/(reject|tolak|decline)/.test(a)) return "#b45309"; // amber
+  if (/(login|signin|masuk)/.test(a)) return "#7c3aed"; // ungu
+  if (/(logout|signout|keluar)/.test(a)) return "#64748b"; // slate
+
+  return "#0f766e"; // default
+}
+
 export default function ActivityRow({
   a,
   username,
@@ -34,119 +48,47 @@ export default function ActivityRow({
     username: displayUsername,
   });
 
-  // Desktop View - Table Row
+  const actionColor = getActionColor(a.action);
+
   if (!isMobile) {
     return (
-      <tr className="hover:bg-slate-50/70 align-top">
-        <td className="py-3 px-4 whitespace-nowrap text-slate-600">
-          {readableTime}
-        </td>
-        <td className="py-3 px-4 whitespace-nowrap font-medium text-slate-800">
-          {displayUsername}
-        </td>
-        <td className="py-3 px-4 whitespace-nowrap text-slate-700">
+      <tr className="act-row">
+        <td className="act-td act-time">{readableTime}</td>
+        <td className="act-td act-user">{displayUsername}</td>
+        <td
+          className="act-td act-action"
+          style={{ color: actionColor, fontWeight: 700 }}
+        >
           {a.action ?? "-"}
         </td>
-        <td className="py-3 px-4 text-slate-700 leading-relaxed break-words whitespace-pre-wrap">
-          {readableDescription}
-        </td>
+        <td className="act-td act-desc">{readableDescription}</td>
       </tr>
     );
   }
 
-  // Mobile View - Card Style
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "80px 1fr",
-        gap: "8px",
-        padding: "12px",
-        borderBottom: "1px solid #e2e8f0",
-      }}
-    >
-      <div>
-        <div
-          style={{
-            fontWeight: 600,
-            fontSize: "11px",
-            color: "#64748b",
-            textTransform: "uppercase",
-          }}
-        >
-          Waktu
+    <div className="act-card">
+      <div className="act-card-grid">
+        <div className="act-card-item">
+          <div className="act-card-label">Waktu</div>
+          <div className="act-card-value">{readableTime}</div>
         </div>
-        <div
-          style={{
-            color: "#334155",
-            fontSize: "13px",
-            wordBreak: "break-word",
-          }}
-        >
-          {readableTime}
+        <div className="act-card-item">
+          <div className="act-card-label">User</div>
+          <div className="act-card-value">{displayUsername}</div>
         </div>
-      </div>
-      <div>
-        <div
-          style={{
-            fontWeight: 600,
-            fontSize: "11px",
-            color: "#64748b",
-            textTransform: "uppercase",
-          }}
-        >
-          User
+        <div className="act-card-item">
+          <div className="act-card-label">Aksi</div>
+          <div
+            className="act-card-value"
+            style={{ color: actionColor, fontWeight: 700 }}
+          >
+            {a.action ?? "-"}
+          </div>
         </div>
-        <div
-          style={{
-            color: "#334155",
-            fontSize: "13px",
-            wordBreak: "break-word",
-          }}
-        >
-          {displayUsername}
-        </div>
-      </div>
-      <div>
-        <div
-          style={{
-            fontWeight: 600,
-            fontSize: "11px",
-            color: "#64748b",
-            textTransform: "uppercase",
-          }}
-        >
-          Aksi
-        </div>
-        <div
-          style={{
-            color: "#334155",
-            fontSize: "13px",
-            wordBreak: "break-word",
-          }}
-        >
-          {a.action ?? "-"}
-        </div>
-      </div>
-      <div style={{ gridColumn: "1 / -1" }}>
-        <div
-          style={{
-            fontWeight: 600,
-            fontSize: "11px",
-            color: "#64748b",
-            textTransform: "uppercase",
-          }}
-        >
-          Deskripsi
-        </div>
-        <div
-          style={{
-            color: "#334155",
-            fontSize: "13px",
-            wordBreak: "break-word",
-          }}
-        >
-          {readableDescription}
+        <div className="act-card-item act-card-item-full">
+          <div className="act-card-label">Deskripsi</div>
+          <div className="act-card-value">{readableDescription}</div>
         </div>
       </div>
     </div>

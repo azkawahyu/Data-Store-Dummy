@@ -31,9 +31,10 @@ export default function DashboardPendingTable({ documents }: Props) {
       className="dash-pending-card"
       style={{
         border: "1px solid #e2e8f0",
-        borderRadius: 12,
+        borderRadius: 16,
         padding: 16,
-        background: "white",
+        background: "rgba(255,255,255,.92)",
+        boxShadow: "0 8px 22px rgba(15,23,42,.05)",
       }}
     >
       <style>{`
@@ -90,7 +91,7 @@ export default function DashboardPendingTable({ documents }: Props) {
           href="/documents"
           style={{
             fontSize: 13,
-            color: "#6366F1",
+            color: "#4f46e5",
             fontWeight: 600,
             textDecoration: "none",
           }}
@@ -114,7 +115,12 @@ export default function DashboardPendingTable({ documents }: Props) {
               }}
             >
               <thead>
-                <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
+                <tr
+                  style={{
+                    borderBottom: "1px solid #dbeafe",
+                    background: "#f8fbff",
+                  }}
+                >
                   <th
                     style={{
                       padding: "8px 10px",
@@ -189,8 +195,8 @@ export default function DashboardPendingTable({ documents }: Props) {
                     >
                       <span
                         style={{
-                          background: "#eff6ff",
-                          color: "#3b82f6",
+                          background: "#eef2ff",
+                          color: "#4f46e5",
                           borderRadius: 6,
                           padding: "2px 8px",
                           fontSize: 12,
@@ -235,7 +241,7 @@ export default function DashboardPendingTable({ documents }: Props) {
                   border: "1px solid #e2e8f0",
                   borderRadius: 10,
                   padding: 10,
-                  background: "#f8fafc",
+                  background: "#f8fbff",
                   display: "grid",
                   gap: 6,
                 }}

@@ -30,7 +30,9 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
     Object.entries(rawHeaders).filter(([_, v]) => typeof v === "string"),
   );
 
-  const res = await fetch(`http://localhost:3002${url}`, {
+  const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+
+  const res = await fetch(normalizedUrl, {
     ...options,
     headers,
   });

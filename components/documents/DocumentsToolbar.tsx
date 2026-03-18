@@ -14,97 +14,21 @@ interface Props {
   onStatusChange: (v: "all" | DocumentStatus) => void;
   onDocTypeChange: (v: string) => void;
   onSortChange: (v: SortValue) => void;
+  onUpload: () => void;
 }
 
 export default function DocumentsToolbar(props: Props) {
   return (
-    <>
-      <style>{`
-        @media (max-width: 768px) {
-          .documents-toolbar {
-            grid-template-columns: 1fr !important;
-          }
-        }
-        @media (min-width: 769px) and (max-width: 1024px) {
-          .documents-toolbar {
-            grid-template-columns: 1fr 1fr !important;
-          }
-        }
-      `}</style>
-
-      <div
-        className="documents-toolbar"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.5fr 1fr 1fr 1fr",
-          gap: 8,
-          marginBottom: 12,
-        }}
-      >
-        <input
-          placeholder="Cari nama pegawai / dokumen..."
-          value={props.search}
-          onChange={(e) => props.onSearchChange(e.target.value)}
-          style={{
-            border: "1px solid #cbd5e1",
-            borderRadius: 8,
-            padding: "9px 10px",
-            width: "100%",
-          }}
-        />
-
-        <select
-          value={props.status}
-          onChange={(e) =>
-            props.onStatusChange(e.target.value as "all" | DocumentStatus)
-          }
-          style={{
-            border: "1px solid #cbd5e1",
-            borderRadius: 8,
-            padding: "9px 10px",
-            width: "100%",
-          }}
-        >
-          <option value="all">Semua Status</option>
-          <option value="pending">Pending</option>
-          <option value="verified">Disetujui</option>
-          <option value="rejected">Ditolak</option>
-        </select>
-
-        <select
-          value={props.docType}
-          onChange={(e) => props.onDocTypeChange(e.target.value)}
-          style={{
-            border: "1px solid #cbd5e1",
-            borderRadius: 8,
-            padding: "9px 10px",
-            width: "100%",
-          }}
-        >
-          <option value="">Semua Tipe</option>
-          {props.docTypeOptions.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={props.sort}
-          onChange={(e) => props.onSortChange(e.target.value as SortValue)}
-          style={{
-            border: "1px solid #cbd5e1",
-            borderRadius: 8,
-            padding: "9px 10px",
-            width: "100%",
-          }}
-        >
-          <option value="newest">Terbaru</option>
-          <option value="oldest">Terlama</option>
-          <option value="az">Nama A-Z</option>
-          <option value="za">Nama Z-A</option>
-        </select>
+    <div className="header-card" style={{ marginBottom: 16 }}>
+      <div className="page-header" style={{ marginBottom: 0 }}>
+        <div>
+          <h2 className="page-title">Data Dokumen</h2>
+          <p className="page-subtitle">Kelola dokumen pegawai</p>
+        </div>
+        <button onClick={props.onUpload} className="btn btn-accent">
+          + Upload Dokumen
+        </button>
       </div>
-    </>
+    </div>
   );
 }

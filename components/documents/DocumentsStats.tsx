@@ -7,29 +7,36 @@ interface Props {
   rejected: number;
 }
 
-function StatCard({
-  title,
-  value,
-  tone,
-  icon,
-}: {
-  title: string;
-  value: number;
-  tone: "slate" | "amber" | "green" | "red";
-  icon: string;
-}) {
-  return (
-    <div className={`doc-stat-card ${tone}`}>
-      <div className="doc-stat-top">
-        <span className="doc-stat-title">{title}</span>
-        <span className="doc-stat-icon" aria-hidden>
-          {icon}
-        </span>
-      </div>
-      <div className="doc-stat-value">{value}</div>
-    </div>
-  );
-}
+const DOC_STATS = [
+  {
+    key: "total",
+    label: "Total Dokumen",
+    bg: "linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%)",
+    textColor: "#fff",
+    labelColor: "#e0e7ff",
+  },
+  {
+    key: "pending",
+    label: "Pending",
+    bg: "linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)",
+    textColor: "#92400e",
+    labelColor: "#b45309",
+  },
+  {
+    key: "verified",
+    label: "Disetujui",
+    bg: "linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%)",
+    textColor: "#166534",
+    labelColor: "#15803d",
+  },
+  {
+    key: "rejected",
+    label: "Ditolak",
+    bg: "linear-gradient(135deg,#fee2e2 0%,#fecaca 100%)",
+    textColor: "#991b1b",
+    labelColor: "#b91c1c",
+  },
+] as const;
 
 export default function DocumentsStats({
   total,
@@ -37,85 +44,65 @@ export default function DocumentsStats({
   verified,
   rejected,
 }: Props) {
+  const stats: Record<string, number> = { total, pending, verified, rejected };
+
   return (
     <>
       <style>{`
-        .doc-stats-grid {
+        .doc-stats {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
           gap: 10px;
         }
-
         .doc-stat-card {
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          padding: 10px 12px;
-          background: #fff;
-          min-height: 78px;
-          box-shadow: 0 1px 4px rgba(15,23,42,.06);
-          transition: transform .15s ease, box-shadow .15s ease;
+          border-radius: 14px;
+          padding: 14px 16px;
+          min-width: 0;
+          box-shadow: 0 2px 8px rgba(15,23,42,.07);
+          transition: transform .15s, box-shadow .15s;
         }
         .doc-stat-card:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 14px rgba(15,23,42,.10);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(15,23,42,.12);
         }
-
-        .doc-stat-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 8px;
-        }
-
-        .doc-stat-title {
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: .03em;
+        .doc-stat-label {
+          font-size: 10.5px;
+          font-weight: 700;
           text-transform: uppercase;
-          color: #64748b;
-          line-height: 1.2;
+          letter-spacing: .06em;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
-
-        .doc-stat-icon {
-          font-size: 14px;
-          width: 24px;
-          height: 24px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 999px;
-          background: #f8fafc;
-        }
-
         .doc-stat-value {
           margin-top: 8px;
-          font-size: 24px;
-          font-weight: 700;
+          font-size: 28px;
+          font-weight: 800;
           line-height: 1;
-          color: #0f172a;
         }
 
-        .doc-stat-card.slate  { border-color: #cbd5e1; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); }
-        .doc-stat-card.amber  { border-color: #fcd34d; background: linear-gradient(180deg, #fffdf5 0%, #fffbeb 100%); }
-        .doc-stat-card.green  { border-color: #86efac; background: linear-gradient(180deg, #f7fff9 0%, #f0fdf4 100%); }
-        .doc-stat-card.red    { border-color: #fca5a5; background: linear-gradient(180deg, #fff7f7 0%, #fef2f2 100%); }
-
-        .doc-stat-card.amber .doc-stat-value { color: #92400e; }
-        .doc-stat-card.green .doc-stat-value { color: #166534; }
-        .doc-stat-card.red   .doc-stat-value { color: #991b1b; }
-
-        @media (max-width: 480px) {
-          .doc-stat-card { min-height: 72px; padding: 9px 10px; }
-          .doc-stat-value { font-size: 20px; }
-          .doc-stat-title { font-size: 10px; }
+        @media (max-width: 640px) {
+          .doc-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .doc-stat-card { padding: 10px 12px; }
+          .doc-stat-value { font-size: 22px; }
         }
       `}</style>
 
-      <div className="doc-stats-grid">
-        <StatCard title="Total" value={total} tone="slate" icon="📄" />
-        <StatCard title="Pending" value={pending} tone="amber" icon="⏳" />
-        <StatCard title="Disetujui" value={verified} tone="green" icon="✅" />
-        <StatCard title="Ditolak" value={rejected} tone="red" icon="❌" />
+      <div className="doc-stats">
+        {DOC_STATS.map(({ key, label, bg, textColor, labelColor }) => (
+          <div
+            key={key}
+            className="doc-stat-card"
+            style={{ background: bg, border: "1px solid transparent" }}
+          >
+            <div className="doc-stat-label" style={{ color: labelColor }}>
+              {label}
+            </div>
+            <div className="doc-stat-value" style={{ color: textColor }}>
+              {stats[key] ?? 0}
+            </div>
+          </div>
+        ))}
       </div>
     </>
   );

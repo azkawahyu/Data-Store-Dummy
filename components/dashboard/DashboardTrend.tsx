@@ -56,9 +56,10 @@ export default function DashboardTrend({ documents }: Props) {
       className="dash-trend-card"
       style={{
         border: "1px solid #e2e8f0",
-        borderRadius: 12,
+        borderRadius: 16,
         padding: 16,
-        background: "white",
+        background: "rgba(255,255,255,.92)",
+        boxShadow: "0 8px 22px rgba(15,23,42,.05)",
       }}
     >
       <style>{`
@@ -119,7 +120,7 @@ export default function DashboardTrend({ documents }: Props) {
               }}
               formatter={(value) => [Number(value), "Dokumen"]}
             />
-            <Bar dataKey="dokumen" fill="#6366F1" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="dokumen" fill="#06b6d4" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

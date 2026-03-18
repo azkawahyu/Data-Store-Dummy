@@ -106,13 +106,15 @@ export default function DashboardPage() {
     loadData();
   }, [router]);
 
-  if (loading) return <div>Loading dashboard...</div>;
+  if (loading) {
+    return <div className="p-6 text-slate-500">Loading dashboard...</div>;
+  }
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-2 sm:p-4 md:p-5 space-y-4 sm:space-y-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 p-2 sm:gap-6 sm:p-4 md:p-5">
       {profileStatus && !profileStatus.employee_id && (
         <div
-          className={`rounded-xl border px-4 py-3 text-sm ${
+          className={`rounded-2xl border px-4 py-3 text-sm shadow-sm ${
             profileStatus.link_status === "conflict"
               ? "border-amber-300 bg-amber-50 text-amber-800"
               : "border-cyan-200 bg-cyan-50 text-cyan-800"

@@ -204,32 +204,40 @@ export default function EmployeePage() {
   return (
     <>
       <div className="page-shell">
-        <div className="rounded-2xl border border-cyan-100 bg-linear-to-r from-cyan-50 via-sky-50 to-indigo-50 px-4 py-4 sm:px-6 sm:py-5">
+        {/* Header dengan tombol Tambah Pegawai */}
+        <div className="header-card" style={{ marginTop: -35 }}>
           <div className="page-header" style={{ marginBottom: 0 }}>
-            <div>
-              <h2 className="page-title text-slate-800">Data Pegawai</h2>
-              <p className="page-subtitle text-slate-600">
+            <div style={{ flex: 1 }}>
+              <h2 className="page-title">Data Pegawai</h2>
+              <p className="page-subtitle">
                 Kelola seluruh data pegawai perusahaan
               </p>
             </div>
+            {canManage && (
+              <button className="btn btn-accent" onClick={handleAdd}>
+                + Tambah Pegawai
+              </button>
+            )}
           </div>
         </div>
 
-        <EmployeeStats employees={employees} />
+        <div style={{ marginTop: -10 }}>
+          <EmployeeStats employees={employees} />
+        </div>
 
-        <EmployeeToolbar
-          search={search}
-          onSearch={setSearch}
-          filterUnit={filterUnit}
-          onFilterUnit={setFilterUnit}
-          sortOrder={sortOrder}
-          onSortOrder={setSortOrder}
-          unitOptions={unitOptions}
-          canManage={canManage}
-          onAdd={handleAdd}
-        />
+        <div className="card" style={{ marginTop: 16 }}>
+          <div style={{ marginBottom: 12 }}>
+            <EmployeeToolbar
+              search={search}
+              onSearch={setSearch}
+              filterUnit={filterUnit}
+              onFilterUnit={setFilterUnit}
+              sortOrder={sortOrder}
+              onSortOrder={setSortOrder}
+              unitOptions={unitOptions}
+            />
+          </div>
 
-        <div className="docs-table-wrap rounded-2xl border border-slate-200 bg-white/90 p-3 sm:p-4 shadow-sm">
           <EmployeeTable
             employees={paginatedEmployees}
             canManage={canManage}

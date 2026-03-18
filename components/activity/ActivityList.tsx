@@ -20,7 +20,7 @@ type User = {
   username?: string | null;
 };
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 export default function ActivityList({
   activities,
@@ -34,20 +34,7 @@ export default function ActivityList({
   const [usernameMap, setUsernameMap] = useState<Record<string, string>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [searchInput, setSearch] = useState(search);
-  const [isMobile, setIsMobile] = useState(false);
 
-  // Initialize isMobile state
-  useEffect(() => {
-    const updateIsMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    updateIsMobile();
-    window.addEventListener("resize", updateIsMobile);
-    return () => window.removeEventListener("resize", updateIsMobile);
-  }, []);
-
-  // Reset currentPage when search prop changes
   React.useEffect(() => {
     setSearch(search);
     setCurrentPage(1);
@@ -126,80 +113,184 @@ export default function ActivityList({
     });
   }, [activities, searchInput, usernameMap]);
 
-  const totalPages = Math.ceil(filteredActivities.length / PAGE_SIZE);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredActivities.length / PAGE_SIZE),
+  );
+
+  const adjustedCurrentPage = Math.min(currentPage, totalPages);
 
   const paginatedActivities = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
+    const start = (adjustedCurrentPage - 1) * PAGE_SIZE;
     return filteredActivities.slice(start, start + PAGE_SIZE);
-  }, [filteredActivities, currentPage]);
+  }, [filteredActivities, adjustedCurrentPage]);
 
   return (
     <ToastProvider>
       <style>{`
+        .act-shell {
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+          background: #fff;
+          overflow: hidden;
+          box-shadow: 0 2px 10px rgba(99,102,241,.06);
+        }
+
+        .activity-table-wrapper {
+          overflow-x: auto;
+        }
+
+        .activity-table {
+          width: 100%;
+          border-collapse: collapse;
+          min-width: 860px;
+          font-size: 13.5px;
+        }
+
+        .activity-table thead {
+          background: linear-gradient(90deg,#eef2ff 0%,#e0e7ff 100%);
+          border-bottom: 2px solid #c7d2fe;
+        }
+
+        .activity-table th {
+          padding: 11px 14px;
+          text-align: left;
+          font-weight: 700;
+          font-size: 11px;
+          color: #4338ca;
+          text-transform: uppercase;
+          letter-spacing: .06em;
+          white-space: nowrap;
+        }
+
+        .act-row:hover { background: #f5f7ff; }
+        .act-td {
+          padding: 11px 14px;
+          border-bottom: 1px solid #f1f5f9;
+          vertical-align: top;
+          color: #1e293b;
+        }
+        .act-time { color: #64748b; white-space: nowrap; }
+        .act-user { color: #312e81; font-weight: 600; white-space: nowrap; }
+        .act-action { color: #0f766e; white-space: nowrap; }
+        .act-desc {
+          color: #334155;
+          line-height: 1.55;
+          white-space: pre-wrap;
+          word-break: break-word;
+        }
+
+        .activity-card-wrapper { display: none; }
+        .act-card {
+          border-radius: 14px;
+          padding: 14px 16px;
+          background: #fff;
+          border: 1px solid #e0e7ff;
+          box-shadow: 0 2px 10px rgba(99,102,241,.08);
+        }
+        .act-card + .act-card { margin-top: 10px; }
+        .act-card-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px 12px;
+        }
+        .act-card-item-full { grid-column: 1 / -1; }
+        .act-card-label {
+          font-size: 10.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: .06em;
+          color: #6366f1;
+          margin-bottom: 2px;
+        }
+        .act-card-value {
+          font-size: 13px;
+          color: #334155;
+          word-break: break-word;
+          line-height: 1.45;
+        }
+
+        .activity-pagination {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          border-top: 1px solid #e2e8f0;
+          padding: 10px 12px;
+        }
+        .activity-pagination-info {
+          font-size: 12px;
+          color: #64748b;
+        }
+        .activity-pagination-info b { color: #312e81; }
+        .activity-pagination-buttons {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          flex-wrap: wrap;
+        }
+        .act-pg-btn {
+          border: 1px solid #c7d2fe;
+          background: #eef2ff;
+          color: #4338ca;
+          border-radius: 8px;
+          padding: 4px 9px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .act-pg-btn:hover { background: #e0e7ff; }
+        .act-pg-btn:disabled {
+          opacity: .45;
+          cursor: not-allowed;
+        }
+        .act-pg-btn.active {
+          border-color: #4f46e5;
+          background: #4f46e5;
+          color: #fff;
+        }
+
         @media (max-width: 768px) {
-          .activity-table-wrapper {
-            display: none !important;
-          }
-          .activity-card-wrapper {
-            display: block !important;
-          }
+          .activity-table-wrapper { display: none; }
+          .activity-card-wrapper { display: block; padding: 10px; }
           .activity-pagination {
             flex-direction: column;
-            gap: 12px;
+            align-items: stretch;
           }
-          .activity-pagination-info {
-            font-size: 12px;
-            text-align: center;
-          }
-          .activity-pagination-buttons {
-            justify-content: center;
-            flex-wrap: wrap;
-          }
+          .activity-pagination-info { text-align: center; }
+          .activity-pagination-buttons { justify-content: center; }
         }
+
         @media (min-width: 769px) {
-          .activity-table-wrapper {
-            display: block !important;
-          }
-          .activity-card-wrapper {
-            display: none !important;
-          }
-          .activity-pagination {
-            flex-direction: row;
-          }
-          .activity-pagination-info {
-            text-align: left;
-          }
-          .activity-pagination-buttons {
-            justify-content: flex-end;
-          }
+          .activity-table-wrapper { display: block; }
+          .activity-card-wrapper { display: none; }
         }
       `}</style>
 
-      <div className="bg-white shadow-sm rounded-xl border border-slate-200">
+      <div className="act-shell">
         {loading ? (
-          <div className="flex items-center justify-center p-12 text-slate-500">
+          <div style={{ padding: 28, textAlign: "center", color: "#64748b" }}>
             Memuat...
           </div>
         ) : filteredActivities.length === 0 ? (
-          <div className="p-6 text-slate-500 text-sm sm:text-base">
+          <div style={{ padding: 18, color: "#64748b" }}>
             {searchInput
               ? `Tidak ada hasil untuk "${searchInput}".`
               : "Tidak ada aktivitas."}
           </div>
         ) : (
           <>
-            {/* Desktop Table View */}
-            <div className="activity-table-wrapper overflow-x-auto">
-              <table className="w-full table-auto text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200">
-                  <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-                    <th className="py-3 px-4 w-44">Waktu</th>
-                    <th className="py-3 px-4 w-52">User</th>
-                    <th className="py-3 px-4 w-40">Aksi</th>
-                    <th className="py-3 px-4 min-w-[320px]">Deskripsi</th>
+            <div className="activity-table-wrapper">
+              <table className="activity-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: 180 }}>Waktu</th>
+                    <th style={{ width: 220 }}>User</th>
+                    <th style={{ width: 150 }}>Aksi</th>
+                    <th>Deskripsi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {paginatedActivities.map((a) => (
                     <ActivityRow
                       key={a.id}
@@ -212,7 +303,6 @@ export default function ActivityList({
               </table>
             </div>
 
-            {/* Mobile Card View */}
             <div className="activity-card-wrapper">
               {paginatedActivities.map((a) => (
                 <ActivityRow
@@ -224,34 +314,31 @@ export default function ActivityList({
               ))}
             </div>
 
-            {/* Pagination */}
-            <div className="activity-pagination flex items-center justify-between px-4 py-3 border-t border-slate-200 gap-4">
-              <p className="activity-pagination-info text-xs text-slate-500">
-                Menampilkan{" "}
-                <span className="font-medium text-slate-700">
-                  {(currentPage - 1) * PAGE_SIZE + 1}–
-                  {Math.min(currentPage * PAGE_SIZE, filteredActivities.length)}
-                </span>{" "}
-                dari{" "}
-                <span className="font-medium text-slate-700">
-                  {filteredActivities.length}
-                </span>{" "}
-                aktivitas
+            <div className="activity-pagination">
+              <p className="activity-pagination-info">
+                Menampilkan <b>{(adjustedCurrentPage - 1) * PAGE_SIZE + 1}</b>–
+                <b>
+                  {Math.min(
+                    adjustedCurrentPage * PAGE_SIZE,
+                    filteredActivities.length,
+                  )}
+                </b>{" "}
+                dari <b>{filteredActivities.length}</b> aktivitas
               </p>
 
-              <div className="activity-pagination-buttons flex items-center gap-1">
+              <div className="activity-pagination-buttons">
                 <button
                   onClick={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
-                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  disabled={adjustedCurrentPage === 1}
+                  className="act-pg-btn"
                   title="Halaman Pertama"
                 >
                   «
                 </button>
                 <button
                   onClick={() => setCurrentPage((p) => p - 1)}
-                  disabled={currentPage === 1}
-                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  disabled={adjustedCurrentPage === 1}
+                  className="act-pg-btn"
                   title="Halaman Sebelumnya"
                 >
                   ‹
@@ -262,12 +349,11 @@ export default function ActivityList({
                     (p) =>
                       p === 1 ||
                       p === totalPages ||
-                      Math.abs(p - currentPage) <= 1,
+                      Math.abs(p - adjustedCurrentPage) <= 1,
                   )
                   .reduce<(number | "...")[]>((acc, p, i, arr) => {
-                    if (i > 0 && p - (arr[i - 1] as number) > 1) {
+                    if (i > 0 && p - (arr[i - 1] as number) > 1)
                       acc.push("...");
-                    }
                     acc.push(p);
                     return acc;
                   }, [])
@@ -275,7 +361,11 @@ export default function ActivityList({
                     p === "..." ? (
                       <span
                         key={`ellipsis-${i}`}
-                        className="px-2 text-slate-400 text-xs"
+                        style={{
+                          padding: "0 6px",
+                          color: "#94a3b8",
+                          fontSize: 12,
+                        }}
                       >
                         ...
                       </span>
@@ -283,11 +373,7 @@ export default function ActivityList({
                       <button
                         key={p}
                         onClick={() => setCurrentPage(p as number)}
-                        className={`px-2.5 py-1 text-xs rounded border ${
-                          currentPage === p
-                            ? "bg-slate-800 text-white border-slate-800"
-                            : "border-slate-300 text-slate-600 hover:bg-slate-50"
-                        }`}
+                        className={`act-pg-btn ${adjustedCurrentPage === p ? "active" : ""}`}
                       >
                         {p}
                       </button>
@@ -296,16 +382,16 @@ export default function ActivityList({
 
                 <button
                   onClick={() => setCurrentPage((p) => p + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  disabled={adjustedCurrentPage === totalPages}
+                  className="act-pg-btn"
                   title="Halaman Berikutnya"
                 >
                   ›
                 </button>
                 <button
                   onClick={() => setCurrentPage(totalPages)}
-                  disabled={currentPage === totalPages}
-                  className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  disabled={adjustedCurrentPage === totalPages}
+                  className="act-pg-btn"
                   title="Halaman Terakhir"
                 >
                   »

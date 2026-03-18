@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
@@ -87,12 +88,57 @@ export default function Sidebar() {
         @media (min-width: 769px) {
           .sidebar-hamburger-fixed { display: none !important; }
           .sidebar {
-            position: relative;
+            position: sticky;
             top: 0;
-            height: auto;
+            height: 100vh;
             transform: none;
             z-index: auto;
+            flex-shrink: 0;
           }
+        }
+
+        .sidebar-brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 28px;
+          padding-bottom: 18px;
+          border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+        }
+
+        .sidebar-brand-mark {
+          width: 42px;
+          height: 42px;
+          border-radius: 14px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255,255,255,.98);
+          box-shadow: 0 10px 25px rgba(14, 165, 233, .18);
+          flex-shrink: 0;
+          overflow: hidden;
+        }
+
+        .sidebar-brand-label {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+
+        .sidebar-brand-eyebrow {
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: .18em;
+          color: #94a3b8;
+        }
+
+        .sidebar-brand-title {
+          font-size: 15px;
+          font-weight: 700;
+          color: #f8fafc;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .sidebar-link {
@@ -119,16 +165,33 @@ export default function Sidebar() {
         ref={sidebarRef}
         className={`sidebar ${isOpen ? "open" : ""}`}
         style={{
-          width: 220,
+          width: 240,
           background: "#1e293b",
           color: "#fff",
           padding: 20,
           overflowY: "auto",
         }}
       >
-        <h2
-          style={{ marginBottom: "30px", fontSize: "clamp(16px, 4vw, 24px)" }}
-        ></h2>
+        <Link
+          href="/dashboard"
+          onClick={() => setIsOpen(false)}
+          className="sidebar-brand"
+        >
+          <span className="sidebar-brand-mark">
+            <Image
+              src="/logo/TVRI_JAKARTA_2023.svg"
+              alt="TVRI DKI Jakarta"
+              width={34}
+              height={34}
+              className="h-8.5 w-8.5 object-contain"
+              priority
+            />
+          </span>
+          <span className="sidebar-brand-label">
+            <span className="sidebar-brand-eyebrow">TVRI DKI JAKARTA</span>
+            <span className="sidebar-brand-title">SmartStaff</span>
+          </span>
+        </Link>
 
         <nav style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <Link

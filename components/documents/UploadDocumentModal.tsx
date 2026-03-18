@@ -138,7 +138,7 @@ export default function UploadDocumentModal({
           ? localStorage.getItem("token")
           : null;
 
-      const res = await fetch(`http://localhost:3002/api/documents/upload`, {
+      const res = await fetch(`/api/documents/upload`, {
         method: "POST",
         body: formData,
         headers: {
