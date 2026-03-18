@@ -1,18 +1,20 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import { resolveEmployeeLinkForUser } from "./employeeLinking";
+import { userCreateSchema } from "@/lib/validations/userValidations";
 
 interface CreateUserInput {
   username: string;
   password: string;
-  nip?: string;
-  email?: string;
-  role_id?: string;
-  employee_id?: string;
+  nip: string;
+  email: string;
+  role_id: string;
+  employee_id?: string | null;
 }
 
 export async function createUser(data: CreateUserInput) {
-  const { username, password, nip, email, role_id, employee_id } = data;
+  const parsed = userCreateSchema.parse(data);
+  const { username, password, nip, email, role_id, employee_id } = parsed;
 
   // cek username sudah ada
   const existingUser = await prisma.users.findUnique({
@@ -36,7 +38,7 @@ export async function createUser(data: CreateUserInput) {
     data: {
       username,
       password_hash: hashedPassword,
-      nip: nip || null,
+      nip,
       email,
       role_id,
       employee_id: linkResolution.employeeId,

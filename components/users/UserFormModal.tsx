@@ -76,7 +76,7 @@ export default function UserFormModal({
 
           <div className="grid gap-1">
             <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              NIP <span className="font-normal text-slate-400">(opsional)</span>
+              NIP <span className="text-red-500">*</span>
             </label>
             <input
               value={form.nip}

@@ -4,6 +4,7 @@ import { updateUser } from "@/lib/services/users/updateUser";
 import { deleteUser } from "@/lib/services/users/deleteUser";
 import { getUser } from "@/lib/getUser";
 import { createActivity } from "@/lib/logActivity";
+import { userUpdateSchema } from "@/lib/validations/userValidations";
 
 export async function GET(
   _request: Request,
@@ -32,7 +33,13 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    const user = await updateUser(id, body);
+    const process = userUpdateSchema.safeParse(body);
+    if (!process.success) {
+      const firstError = process.error.issues[0]?.message ?? "Data tidak valid";
+      return Response.json({ message: firstError }, { status: 400 });
+    }
+
+    const user = await updateUser(id, process.data);
 
     const { userId } = getUser(req);
     await createActivity({
@@ -45,6 +52,10 @@ export async function PUT(
   } catch (error) {
     if (error instanceof Error && error.message === "User not found") {
       return Response.json({ message: "User not found" }, { status: 404 });
+    }
+
+    if (error instanceof Error && error.message === "NIP wajib diisi") {
+      return Response.json({ message: error.message }, { status: 400 });
     }
 
     if (

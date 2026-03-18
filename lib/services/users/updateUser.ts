@@ -21,6 +21,12 @@ export async function updateUser(
       : data.nip === null
         ? null
         : (currentUser.nip ?? null);
+  const normalizedNip = nextNip?.trim() ?? "";
+
+  if (!normalizedNip) {
+    throw new Error("NIP wajib diisi");
+  }
+
   const nextEmail =
     typeof data.email === "string"
       ? data.email
@@ -36,7 +42,7 @@ export async function updateUser(
   }
 
   const linkResolution = await resolveEmployeeLinkForUser({
-    nip: nextNip,
+    nip: normalizedNip,
     email: nextEmail,
     manualEmployeeId: nextEmployeeId,
   });
@@ -47,6 +53,7 @@ export async function updateUser(
     },
     data: {
       ...data,
+      nip: normalizedNip,
       employee_id: linkResolution.employeeId,
     },
   });

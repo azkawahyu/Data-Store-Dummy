@@ -18,6 +18,19 @@ import type {
   UserItem,
 } from "@/components/users/types";
 import { JwtPayload } from "@/lib/jwt";
+import {
+  EMAIL_MAX_LENGTH,
+  EMAIL_REGEX,
+  NIP_MAX_LENGTH,
+  NIP_MIN_LENGTH,
+  NIP_REGEX,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_REGEX,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_REGEX,
+  isValidUuid,
+} from "@/lib/validations/userRules";
 
 const PAGE_SIZE = 8;
 
@@ -133,29 +146,52 @@ function validateUserForm(
 
   if (!form.username.trim()) {
     errors.username = "Username wajib diisi.";
-  } else if (!/^[a-zA-Z0-9_.-]+$/.test(form.username.trim())) {
+  } else if (!USERNAME_REGEX.test(form.username.trim())) {
     errors.username =
       "Username hanya boleh huruf, angka, titik, garis bawah, atau strip.";
-  } else if (form.username.trim().length < 3) {
-    errors.username = "Username minimal 3 karakter.";
+  } else if (form.username.trim().length < USERNAME_MIN_LENGTH) {
+    errors.username = "Username minimal 3 karakter";
+  } else if (form.username.trim().length > USERNAME_MAX_LENGTH) {
+    errors.username = "Username maksimal 100 karakter";
+  }
+
+  if (!form.nip.trim()) {
+    errors.nip = "NIP wajib diisi.";
+  } else if (!NIP_REGEX.test(form.nip.trim())) {
+    errors.nip = "NIP hanya boleh berisi angka.";
+  } else if (form.nip.trim().length < NIP_MIN_LENGTH) {
+    errors.nip = "NIP minimal 8 digit.";
+  } else if (form.nip.trim().length > NIP_MAX_LENGTH) {
+    errors.nip = "NIP maksimal 50 digit.";
   }
 
   if (!isEditing) {
     if (!form.password.trim()) {
       errors.password = "Password wajib diisi.";
-    } else if (form.password.length < 6) {
-      errors.password = "Password minimal 6 karakter.";
+    } else if (form.password.length < PASSWORD_MIN_LENGTH) {
+      errors.password = "Password minimal 8 karakter.";
+    } else if (!PASSWORD_REGEX.test(form.password)) {
+      errors.password =
+        "Password harus mengandung huruf dan angka tanpa spasi.";
     }
   }
 
   if (!form.email.trim()) {
     errors.email = "Email wajib diisi.";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+  } else if (form.email.trim().length > EMAIL_MAX_LENGTH) {
+    errors.email = "Email maksimal 150 karakter.";
+  } else if (!EMAIL_REGEX.test(form.email.trim())) {
     errors.email = "Format email tidak valid.";
   }
 
   if (!form.role_id) {
     errors.role_id = "Role wajib dipilih.";
+  } else if (!isValidUuid(form.role_id)) {
+    errors.role_id = "Format role tidak valid.";
+  }
+
+  if (form.employee_id && !isValidUuid(form.employee_id)) {
+    errors.employee_id = "Format pegawai tidak valid.";
   }
 
   return errors;
@@ -406,9 +442,9 @@ export default function UsersPage() {
         await apiFetch(`/api/user/${editing.id}`, {
           method: "PUT",
           body: JSON.stringify({
-            nip: form.nip.trim() || null,
-            email: form.email || null,
-            role_id: form.role_id || null,
+            nip: form.nip.trim(),
+            email: form.email.trim(),
+            role_id: form.role_id.trim(),
             employee_id: form.employee_id || null,
           }),
         });
@@ -420,9 +456,9 @@ export default function UsersPage() {
           body: JSON.stringify({
             username: form.username.trim(),
             password: form.password,
-            nip: form.nip.trim() || null,
-            email: form.email || null,
-            role_id: form.role_id || null,
+            nip: form.nip.trim(),
+            email: form.email.trim(),
+            role_id: form.role_id.trim(),
             employee_id: form.employee_id || null,
           }),
         });

@@ -3,6 +3,7 @@ import { createUser } from "@/lib/services/users/createUser";
 import { requireRole } from "@/lib/require-role";
 import { requireJWT } from "@/lib/auth-jwt";
 import { createActivity } from "@/lib/logActivity";
+import { userCreateSchema } from "@/lib/validations/userValidations";
 
 export async function GET() {
   try {
@@ -31,14 +32,14 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    const { username, password, nip, email, role_id, employee_id } = body;
-
-    if (!username || !password) {
-      return Response.json(
-        { message: "Username dan password wajib diisi" },
-        { status: 400 },
-      );
+    const process = userCreateSchema.safeParse(body);
+    if (!process.success) {
+      const firstError = process.error.issues[0]?.message ?? "Data tidak valid";
+      return Response.json({ message: firstError }, { status: 400 });
     }
+
+    const { username, password, nip, email, role_id, employee_id } =
+      process.data;
 
     const userCreate = await createUser({
       username,
