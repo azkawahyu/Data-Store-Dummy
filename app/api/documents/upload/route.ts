@@ -18,6 +18,7 @@ export async function POST(req: Request) {
 
     const employee_id = formData.get("employee_id");
     const document_type = formData.get("document_type");
+    const other_document_type = formData.get("other_document_type");
 
     const files = formData.getAll("files") as File[];
 
@@ -41,16 +42,56 @@ export async function POST(req: Request) {
       );
     }
 
+    const isOtherType = parsed.data.document_type === "LAINNYA";
+    const otherTypeLabel =
+      typeof other_document_type === "string" ? other_document_type.trim() : "";
+
+    if (isOtherType && !otherTypeLabel) {
+      return Response.json(
+        {
+          message: "Nama tipe dokumen wajib diisi saat memilih opsi LAINNYA",
+        },
+        { status: 400 },
+      );
+    }
+
+    const employee = await prisma.employees.findUnique({
+      where: { id: String(parsed.data.employee_id) },
+      select: { nama: true },
+    });
+
+    const sanitizeSegment = (value: string) =>
+      value
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .replace(/_{2,}/g, "_");
+
+    const employeeSegment = sanitizeSegment(
+      employee?.nama || String(parsed.data.employee_id),
+    );
+
+    const docTypeSegment = sanitizeSegment(parsed.data.document_type);
+    const otherTypeSegment = sanitizeSegment(otherTypeLabel);
+
+    const baseDisplayName = isOtherType
+      ? `${employeeSegment}_${docTypeSegment}_${otherTypeSegment}`
+      : `${employeeSegment}_${docTypeSegment}`;
+
     const uploadPath = path.join(process.cwd(), "public/uploads/documents");
 
     const documentsData = [];
 
-    for (const file of files) {
+    for (let index = 0; index < files.length; index++) {
+      const file = files[index];
       validateFile(file);
 
       const ext = path.extname(file.name);
 
       const fileName = `${uuidv4()}${ext}`;
+      const sequenceSuffix = files.length > 1 ? `_${index + 1}` : "";
+      const displayFileName = `${baseDisplayName}${sequenceSuffix}${ext}`;
 
       const filePath = path.join(uploadPath, fileName);
 
@@ -64,7 +105,7 @@ export async function POST(req: Request) {
         document_type: parsed.data.document_type,
         file_path: `/uploads/documents/${fileName}`,
         uploaded_at: new Date(),
-        file_name: file.name,
+        file_name: displayFileName,
         file_size: file.size,
         mime_type: file.type,
       });

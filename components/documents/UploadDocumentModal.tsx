@@ -17,7 +17,6 @@ export default function UploadDocumentModal({
   onUploaded,
 }: Props) {
   const [employeeId, setEmployeeId] = useState("");
-  const [employeeName, setEmployeeName] = useState("");
   const [employees, setEmployees] = useState<
     Array<{ id: string; name: string; nip?: string }>
   >([]);
@@ -25,7 +24,7 @@ export default function UploadDocumentModal({
   const [showDropdown, setShowDropdown] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [docType, setDocType] = useState("");
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [otherDocType, setOtherDocType] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,10 +33,9 @@ export default function UploadDocumentModal({
 
   const resetForm = useCallback(() => {
     setEmployeeId("");
-    setEmployeeName("");
     setEmployeeSearch("");
     setDocType("");
-    setFiles(null);
+    setOtherDocType("");
     setSelectedFiles([]);
     setShowDropdown(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -119,6 +117,11 @@ export default function UploadDocumentModal({
       return;
     }
 
+    if (docType === "LAINNYA" && !otherDocType.trim()) {
+      toast.push("Isi nama tipe dokumen untuk opsi LAINNYA", "error");
+      return;
+    }
+
     if (!selectedFiles || selectedFiles.length === 0) {
       toast.push("Pilih file terlebih dahulu", "error");
       return;
@@ -127,6 +130,9 @@ export default function UploadDocumentModal({
     const formData = new FormData();
     formData.append("employee_id", employeeId);
     formData.append("document_type", docType);
+    if (docType === "LAINNYA") {
+      formData.append("other_document_type", otherDocType.trim());
+    }
     for (let i = 0; i < selectedFiles.length; i++)
       formData.append("files", selectedFiles[i]);
 
@@ -160,7 +166,7 @@ export default function UploadDocumentModal({
         normalizeMessage(data?.message) || "Upload berhasil",
         "success",
       );
-      onUploaded && onUploaded();
+      if (onUploaded) onUploaded();
       handleClose(); // pakai close yang sudah reset
     } catch (err) {
       console.error(err);
@@ -224,7 +230,6 @@ export default function UploadDocumentModal({
                         onClick={() => {
                           setEmployeeId(emp.id);
                           setEmployeeSearch(emp.name || "");
-                          setEmployeeName(emp.name || "");
                           setShowDropdown(false);
                         }}
                         className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm"
@@ -243,15 +248,35 @@ export default function UploadDocumentModal({
             <select
               className="block w-full border rounded-md px-3 py-2 text-sm mt-1"
               value={docType}
-              onChange={(e) => setDocType(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setDocType(value);
+                if (value !== "LAINNYA") setOtherDocType("");
+              }}
             >
               <option value="">Pilih tipe dokumen...</option>
               <option value="KTP">KTP</option>
               <option value="NPWP">NPWP</option>
-              <option value="Ijazah">Ijazah</option>
-              <option value="Lainnya">Lainnya</option>
+              <option value="IJAZAH">IJAZAH</option>
+              <option value="KK">KK</option>
+              <option value="BUKU NIKAH">BUKU NIKAH</option>
+              <option value="LAINNYA">LAINNYA</option>
             </select>
           </div>
+
+          {docType === "LAINNYA" && (
+            <div>
+              <label className="block text-sm text-slate-700">
+                Nama Tipe Dokumen Lainnya
+              </label>
+              <input
+                value={otherDocType}
+                onChange={(e) => setOtherDocType(e.target.value)}
+                className="block w-full border rounded-md px-3 py-2 text-sm mt-1"
+                placeholder="Contoh: SKCK"
+              />
+            </div>
+          )}
 
           <div
             onDrop={(e) => {
