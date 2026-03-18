@@ -5,21 +5,19 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import UserMenu from "./UserMenu";
+import { useSidebar } from "./SidebarContext";
 
 function capitalize(s: string) {
   if (!s) return s;
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function HeaderLogo({ mobile = false }: { mobile?: boolean }) {
+function HeaderLogo() {
   return (
     <Link
       href="/dashboard"
       aria-label="Logo aplikasi"
-      className={[
-        "group inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:border-sky-200 hover:shadow-md",
-        mobile ? "min-w-42 justify-center" : "",
-      ].join(" ")}
+      className="group inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:border-sky-200 hover:shadow-md"
     >
       <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
         <Image
@@ -28,11 +26,9 @@ function HeaderLogo({ mobile = false }: { mobile?: boolean }) {
           width={32}
           height={32}
           className="h-8 w-8 object-contain"
-          priority={mobile}
         />
       </span>
-
-      <span className="hidden text-left sm:flex sm:flex-col">
+      <span className="flex flex-col text-left">
         <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
           TVRI DKI JAKARTA
         </span>
@@ -46,6 +42,7 @@ function HeaderLogo({ mobile = false }: { mobile?: boolean }) {
 
 export default function Header() {
   const pathname = usePathname();
+  const { toggle } = useSidebar();
 
   const title = useMemo(() => {
     if (!pathname) return "Dashboard";
@@ -67,27 +64,48 @@ export default function Header() {
 
   return (
     <header className="z-20 border-b border-slate-200/90 bg-white px-4 py-3 md:px-6">
-      <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-3 md:px-4">
-        <div className="mb-3 flex justify-center md:hidden">
-          <HeaderLogo mobile />
-        </div>
+      {/* Mobile header */}
+      <div className="flex items-center justify-between md:hidden">
+        <button
+          onClick={toggle}
+          aria-label="Toggle menu"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+        >
+          ☰
+        </button>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 md:grid md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-4">
-          <div className="min-w-0 pl-11 md:pl-0">
+        <Link href="/dashboard" aria-label="Logo aplikasi">
+          <Image
+            src="/logo/TVRI_JAKARTA_2023.svg"
+            alt="TVRI DKI Jakarta"
+            width={36}
+            height={36}
+            className="h-9 w-9 object-contain"
+            priority
+          />
+        </Link>
+
+        <UserMenu />
+      </div>
+
+      {/* Desktop header */}
+      <div className="hidden md:block">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4">
             <div className="flex items-center gap-3">
-              <span className="hidden h-7 w-1 rounded-full bg-sky-500 sm:inline-block" />
+              <span className="h-7 w-1 rounded-full bg-sky-500" />
               <h1 className="truncate text-[clamp(20px,3vw,26px)] font-semibold leading-tight text-slate-900">
                 {title}
               </h1>
             </div>
-          </div>
 
-          <div className="hidden md:flex md:items-center md:justify-center">
-            <HeaderLogo />
-          </div>
+            <div className="flex items-center justify-center">
+              <HeaderLogo />
+            </div>
 
-          <div className="ml-auto md:col-start-3 md:ml-0 md:flex md:justify-end">
-            <UserMenu />
+            <div className="flex justify-end">
+              <UserMenu />
+            </div>
           </div>
         </div>
       </div>

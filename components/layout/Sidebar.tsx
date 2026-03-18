@@ -1,23 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { createPortal } from "react-dom";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSidebar } from "./SidebarContext";
 
 export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, close } = useSidebar();
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const burgerRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
-
-  // SSR-safe client detection (no hydration mismatch, no setState in effect)
-  const isClient = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -26,26 +18,12 @@ export default function Sidebar() {
       // klik di dalam sidebar -> abaikan
       if (sidebarRef.current?.contains(target)) return;
 
-      // klik di burger -> abaikan (biar toggle di onClick yang handle)
-      if (burgerRef.current?.contains(target)) return;
-
-      setIsOpen(false);
+      close();
     }
 
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
-
-  const burgerButton = (
-    <button
-      ref={burgerRef}
-      className="sidebar-hamburger-fixed"
-      onClick={() => setIsOpen((v) => !v)}
-      aria-label="Toggle menu"
-    >
-      ☰
-    </button>
-  );
+  }, [isOpen, close]);
 
   const isActive = (href: string) => {
     if (!pathname) return false;
@@ -55,28 +33,12 @@ export default function Sidebar() {
   return (
     <>
       <style>{`
-        .sidebar-hamburger-fixed {
-          position: fixed !important;
-          top: 10px !important;
-          left: 10px !important;
-          z-index: 9999 !important;
-          width: 40px;
-          height: 40px;
-          border: none;
-          background: #fff;
-          border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(0,0,0,.15);
-          cursor: pointer;
-          display: none;
-        }
-
         @media (max-width: 768px) {
-          .sidebar-hamburger-fixed { display: block !important; }
           .sidebar {
             position: fixed;
             left: 0;
-            top: 60px;
-            height: calc(100vh - 60px);
+            top: 0;
+            height: 100vh;
             width: 220px;
             transform: translateX(-100%);
             transition: transform .25s ease;
@@ -86,7 +48,6 @@ export default function Sidebar() {
         }
 
         @media (min-width: 769px) {
-          .sidebar-hamburger-fixed { display: none !important; }
           .sidebar {
             position: sticky;
             top: 0;
@@ -172,11 +133,7 @@ export default function Sidebar() {
           overflowY: "auto",
         }}
       >
-        <Link
-          href="/dashboard"
-          onClick={() => setIsOpen(false)}
-          className="sidebar-brand"
-        >
+        <Link href="/dashboard" onClick={close} className="sidebar-brand">
           <span className="sidebar-brand-mark">
             <Image
               src="/logo/TVRI_JAKARTA_2023.svg"
@@ -196,7 +153,7 @@ export default function Sidebar() {
         <nav style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <Link
             href="/dashboard"
-            onClick={() => setIsOpen(false)}
+            onClick={close}
             className={`sidebar-link ${isActive("/dashboard") ? "active" : ""}`}
             aria-current={isActive("/dashboard") ? "page" : undefined}
           >
@@ -205,7 +162,7 @@ export default function Sidebar() {
 
           <Link
             href="/employee"
-            onClick={() => setIsOpen(false)}
+            onClick={close}
             className={`sidebar-link ${isActive("/employee") ? "active" : ""}`}
             aria-current={isActive("/employee") ? "page" : undefined}
           >
@@ -214,7 +171,7 @@ export default function Sidebar() {
 
           <Link
             href="/documents"
-            onClick={() => setIsOpen(false)}
+            onClick={close}
             className={`sidebar-link ${isActive("/documents") ? "active" : ""}`}
             aria-current={isActive("/documents") ? "page" : undefined}
           >
@@ -223,7 +180,7 @@ export default function Sidebar() {
 
           <Link
             href="/activity"
-            onClick={() => setIsOpen(false)}
+            onClick={close}
             className={`sidebar-link ${isActive("/activity") ? "active" : ""}`}
             aria-current={isActive("/activity") ? "page" : undefined}
           >
@@ -232,7 +189,7 @@ export default function Sidebar() {
 
           <Link
             href="/users"
-            onClick={() => setIsOpen(false)}
+            onClick={close}
             className={`sidebar-link ${isActive("/users") ? "active" : ""}`}
             aria-current={isActive("/users") ? "page" : undefined}
           >
@@ -243,7 +200,7 @@ export default function Sidebar() {
 
       {isOpen && (
         <div
-          onClick={() => setIsOpen(false)}
+          onClick={close}
           style={{
             position: "fixed",
             inset: 0,
@@ -252,8 +209,6 @@ export default function Sidebar() {
           }}
         />
       )}
-
-      {isClient ? createPortal(burgerButton, document.body) : null}
     </>
   );
 }

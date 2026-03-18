@@ -205,7 +205,7 @@ export default function EmployeePage() {
     <>
       <div className="page-shell">
         {/* Header dengan tombol Tambah Pegawai */}
-        <div className="header-card" style={{ marginTop: -35 }}>
+        <div className="header-card">
           <div className="page-header" style={{ marginBottom: 0 }}>
             <div style={{ flex: 1 }}>
               <h2 className="page-title">Data Pegawai</h2>
@@ -221,7 +221,7 @@ export default function EmployeePage() {
           </div>
         </div>
 
-        <div style={{ marginTop: -10 }}>
+        <div>
           <EmployeeStats employees={employees} />
         </div>
 

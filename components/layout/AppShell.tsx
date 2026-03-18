@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
+import { SidebarProvider } from "@/components/layout/SidebarContext";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -7,14 +8,15 @@ type AppShellProps = {
 
 export default function AppShell({ children }: AppShellProps) {
   return (
-    <div
-      className="app-shell-root"
-      style={{
-        display: "flex",
-        height: "100vh",
-      }}
-    >
-      <style>{`
+    <SidebarProvider>
+      <div
+        className="app-shell-root"
+        style={{
+          display: "flex",
+          height: "100vh",
+        }}
+      >
+        <style>{`
         .app-shell-root {
           width: 100%;
           height: 100vh;
@@ -76,14 +78,15 @@ export default function AppShell({ children }: AppShellProps) {
         }
       `}</style>
 
-      <div className="app-shell-layout-wrapper" style={{ flex: 1 }}>
-        <Sidebar />
+        <div className="app-shell-layout-wrapper" style={{ flex: 1 }}>
+          <Sidebar />
 
-        <div className="app-shell-content">
-          <Header />
-          <main className="app-shell-main">{children}</main>
+          <div className="app-shell-content">
+            <Header />
+            <main className="app-shell-main">{children}</main>
+          </div>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
