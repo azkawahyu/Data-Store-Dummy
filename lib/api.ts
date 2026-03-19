@@ -31,7 +31,7 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
   // Filter out undefined values to ensure HeadersInit is valid
   const headers: Record<string, string> = Object.fromEntries(
     Object.entries(rawHeaders).filter(([, v]) => typeof v === "string"),
-  );
+  ) as Record<string, string>;
 
   const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
 
@@ -43,6 +43,15 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
   if (res.status === 401) {
     localStorage.removeItem("token");
     window.location.href = "/login";
+  }
+
+  const contentType = res.headers.get("content-type") ?? "";
+
+  if (!contentType.includes("application/json")) {
+    const raw = await res.text();
+    throw new Error(
+      `Non-JSON response from ${normalizedUrl}: ${res.status} ${raw.slice(0, 120)}`,
+    );
   }
 
   return res.json();

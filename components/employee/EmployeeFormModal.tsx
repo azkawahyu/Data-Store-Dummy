@@ -12,6 +12,13 @@ interface Props {
   initial: Employee | null; // null = tambah, ada isi = edit
   onClose: () => void;
   onSubmit: (form: EmployeeForm) => Promise<void>;
+  title?: string;
+  submitLabel?: string;
+  hideCloseButton?: boolean;
+  hideCancelButton?: boolean;
+  disableBackdropClose?: boolean;
+  prefillEmail?: string | null;
+  lockEmail?: boolean;
 }
 
 const EMPTY: EmployeeForm = {
@@ -112,6 +119,13 @@ export default function EmployeeFormModal({
   initial,
   onClose,
   onSubmit,
+  title,
+  submitLabel,
+  hideCloseButton = false,
+  hideCancelButton = false,
+  disableBackdropClose = false,
+  prefillEmail,
+  lockEmail = false,
 }: Props) {
   const [form, setForm] = useState<EmployeeForm>(EMPTY);
   const [loading, setLoading] = useState(false);
@@ -134,14 +148,20 @@ export default function EmployeeFormModal({
       void id;
       void created_at;
       void updated_at;
-      setForm(rest);
+      setForm({
+        ...rest,
+        email: rest.email?.trim() ? rest.email : (prefillEmail?.trim() ?? ""),
+      });
     } else {
-      setForm(EMPTY);
+      setForm({
+        ...EMPTY,
+        email: prefillEmail?.trim() ?? "",
+      });
     }
     setServerError("");
     setFieldErrors({});
     setTouched({});
-  }, [open, initial]);
+  }, [open, initial, prefillEmail]);
 
   if (!open) return null;
 
@@ -304,6 +324,12 @@ export default function EmployeeFormModal({
         }
         .emp-form-input:focus,
         .emp-form-select:focus { border-color: #94a3b8; }
+        .emp-form-input:disabled,
+        .emp-form-select:disabled {
+          background: #f8fafc;
+          color: #64748b;
+          cursor: not-allowed;
+        }
         .emp-form-input-error {
           border-color: #f87171 !important;
           background: #fff7f7;
@@ -314,6 +340,11 @@ export default function EmployeeFormModal({
         .emp-field-error {
           font-size: 11.5px;
           color: #dc2626;
+          margin-top: 2px;
+        }
+        .emp-field-hint {
+          font-size: 11.5px;
+          color: #64748b;
           margin-top: 2px;
         }
         .emp-form-error {
@@ -361,20 +392,27 @@ export default function EmployeeFormModal({
         }
       `}</style>
 
-      <div className="emp-modal-overlay" onClick={onClose}>
+      <div
+        className="emp-modal-overlay"
+        onClick={() => {
+          if (!disableBackdropClose) onClose();
+        }}
+      >
         <div className="emp-modal" onClick={(e) => e.stopPropagation()}>
           {/* Header */}
           <div className="emp-modal-header">
             <h3 className="emp-modal-title">
-              {initial ? "Edit Pegawai" : "Tambah Pegawai"}
+              {title ?? (initial ? "Edit Pegawai" : "Tambah Pegawai")}
             </h3>
-            <button
-              className="emp-modal-close"
-              onClick={onClose}
-              aria-label="Tutup"
-            >
-              ×
-            </button>
+            {!hideCloseButton && (
+              <button
+                className="emp-modal-close"
+                onClick={onClose}
+                aria-label="Tutup"
+              >
+                ×
+              </button>
+            )}
           </div>
 
           {/* Body */}
@@ -488,7 +526,13 @@ export default function EmployeeFormModal({
                     onChange={(e) => set("email", e.target.value)}
                     onBlur={() => handleBlur("email")}
                     placeholder="john@company.local"
+                    disabled={lockEmail}
                   />
+                  {lockEmail && form.email && (
+                    <span className="emp-field-hint">
+                      Mengikuti email akun.
+                    </span>
+                  )}
                   {fieldErrors.email && (
                     <span className="emp-field-error">{fieldErrors.email}</span>
                   )}
@@ -532,14 +576,16 @@ export default function EmployeeFormModal({
 
             {/* Footer */}
             <div className="emp-modal-footer">
-              <button
-                type="button"
-                className="emp-btn emp-btn-batal"
-                onClick={onClose}
-                disabled={loading}
-              >
-                Batal
-              </button>
+              {!hideCancelButton && (
+                <button
+                  type="button"
+                  className="emp-btn emp-btn-batal"
+                  onClick={onClose}
+                  disabled={loading}
+                >
+                  Batal
+                </button>
+              )}
               <button
                 type="submit"
                 className="emp-btn emp-btn-primary"
@@ -547,9 +593,8 @@ export default function EmployeeFormModal({
               >
                 {loading
                   ? "Menyimpan..."
-                  : initial
-                    ? "Simpan Perubahan"
-                    : "Tambah Pegawai"}
+                  : (submitLabel ??
+                    (initial ? "Simpan Perubahan" : "Tambah Pegawai"))}
               </button>
             </div>
           </form>

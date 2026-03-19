@@ -40,7 +40,11 @@ function HeaderLogo() {
   );
 }
 
-export default function Header() {
+export default function Header({
+  showSidebarToggle = true,
+}: {
+  showSidebarToggle?: boolean;
+}) {
   const pathname = usePathname();
   const { toggle } = useSidebar();
 
@@ -51,6 +55,7 @@ export default function Header() {
 
     const map: Record<string, string> = {
       dashboard: "Dashboard",
+      profile: "Profil Akun",
       documents: "Dokumen",
       employees: "Pegawai",
       employee: "Pegawai",
@@ -66,13 +71,17 @@ export default function Header() {
     <header className="z-20 border-b border-slate-200/90 bg-white px-4 py-3 md:px-6">
       {/* Mobile header */}
       <div className="flex items-center justify-between md:hidden">
-        <button
-          onClick={toggle}
-          aria-label="Toggle menu"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
-        >
-          ☰
-        </button>
+        {showSidebarToggle ? (
+          <button
+            onClick={toggle}
+            aria-label="Toggle menu"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+          >
+            ☰
+          </button>
+        ) : (
+          <div className="h-10 w-10" aria-hidden />
+        )}
 
         <Link href="/dashboard" aria-label="Logo aplikasi">
           <Image

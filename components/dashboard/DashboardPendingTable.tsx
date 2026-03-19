@@ -12,6 +12,7 @@ interface PendingDocument {
 
 interface Props {
   documents: PendingDocument[];
+  showViewAll?: boolean;
 }
 
 function formatDate(dateStr?: string | null) {
@@ -23,7 +24,10 @@ function formatDate(dateStr?: string | null) {
   });
 }
 
-export default function DashboardPendingTable({ documents }: Props) {
+export default function DashboardPendingTable({
+  documents,
+  showViewAll = true,
+}: Props) {
   const pending = documents.filter((d) => d.file_name).slice(0, 6);
 
   return (
@@ -87,17 +91,19 @@ export default function DashboardPendingTable({ documents }: Props) {
             {documents.length} dokumen perlu ditindaklanjuti
           </p>
         </div>
-        <Link
-          href="/documents"
-          style={{
-            fontSize: 13,
-            color: "#4f46e5",
-            fontWeight: 600,
-            textDecoration: "none",
-          }}
-        >
-          Lihat semua →
-        </Link>
+        {showViewAll && (
+          <Link
+            href="/documents"
+            style={{
+              fontSize: 13,
+              color: "#4f46e5",
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            Lihat semua →
+          </Link>
+        )}
       </div>
 
       {pending.length === 0 ? (

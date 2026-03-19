@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import { useState } from "react";
 import DocumentStatusBadge from "./DocumentStatusBadge";
 import { DocumentItem } from "./types";
 
@@ -10,6 +12,122 @@ interface Props {
   canManage?: boolean;
   onVerify?: (doc: DocumentItem) => void;
   onReject?: (doc: DocumentItem) => void;
+}
+
+function getPreviewKind(filePath: string, fileName: string) {
+  const source = `${filePath} ${fileName}`.toLowerCase();
+
+  if (/(\.png|\.jpg|\.jpeg|\.webp|\.gif|\.bmp|\.svg)(\?|$)/.test(source)) {
+    return "image" as const;
+  }
+
+  if (/(\.pdf)(\?|$)/.test(source)) {
+    return "pdf" as const;
+  }
+
+  return "unsupported" as const;
+}
+
+function FilePreview({
+  filePath,
+  fileName,
+  previewKind,
+}: {
+  filePath: string;
+  fileName: string;
+  previewKind: "image" | "pdf" | "unsupported";
+}) {
+  const [isPreviewLoading, setIsPreviewLoading] = useState(
+    previewKind !== "unsupported",
+  );
+  const [hasPreviewError, setHasPreviewError] = useState(false);
+
+  return (
+    <div
+      style={{
+        border: "1px solid #e2e8f0",
+        borderRadius: 10,
+        background: "#f8fafc",
+        minHeight: 360,
+        maxHeight: 460,
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
+      {previewKind === "image" && !hasPreviewError && (
+        <div
+          style={{
+            width: "100%",
+            height: 460,
+            position: "relative",
+            background: "#fff",
+          }}
+        >
+          <Image
+            src={filePath}
+            alt={fileName}
+            fill
+            unoptimized
+            onLoad={() => setIsPreviewLoading(false)}
+            onError={() => {
+              setHasPreviewError(true);
+              setIsPreviewLoading(false);
+            }}
+            style={{ objectFit: "contain" }}
+          />
+        </div>
+      )}
+
+      {previewKind === "pdf" && !hasPreviewError && (
+        <iframe
+          src={filePath}
+          title={`Preview ${fileName}`}
+          onLoad={() => setIsPreviewLoading(false)}
+          onError={() => {
+            setHasPreviewError(true);
+            setIsPreviewLoading(false);
+          }}
+          style={{ width: "100%", height: 460, border: "none" }}
+        />
+      )}
+
+      {(previewKind === "unsupported" || hasPreviewError) && (
+        <div
+          style={{
+            height: "100%",
+            minHeight: 360,
+            display: "grid",
+            placeItems: "center",
+            padding: 16,
+            textAlign: "center",
+            color: "#475569",
+            fontSize: 14,
+          }}
+        >
+          {hasPreviewError
+            ? "Gagal memuat preview file. Silakan gunakan tombol Buka File."
+            : "Preview belum tersedia untuk tipe file ini."}
+        </div>
+      )}
+
+      {isPreviewLoading && previewKind !== "unsupported" && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "grid",
+            placeItems: "center",
+            background: "rgba(248, 250, 252, 0.8)",
+            color: "#334155",
+            fontSize: 14,
+            pointerEvents: "none",
+          }}
+        >
+          Memuat preview...
+        </div>
+      )}
+    </div>
+  );
 }
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -38,6 +156,10 @@ export default function DocumentDetailModal({
   onVerify,
   onReject,
 }: Props) {
+  const previewKind = data
+    ? getPreviewKind(data.filePath, data.fileName)
+    : "unsupported";
+
   if (!open || !data) return null;
 
   return (
@@ -94,24 +216,44 @@ export default function DocumentDetailModal({
           </button>
         </div>
 
-        <div style={{ padding: 16, display: "grid", gap: 12 }}>
-          <InfoRow label="Pegawai" value={data.employeeName} />
-          <InfoRow label="Tipe Dokumen" value={data.documentType} />
-          <InfoRow label="Nama File" value={data.fileName} />
-          <InfoRow
-            label="Status"
-            value={<DocumentStatusBadge status={data.status} />}
-          />
-          <InfoRow
-            label="Tanggal Upload"
-            value={new Date(data.uploadedAt).toLocaleString("id-ID", {
-              timeZone: "Asia/Jakarta",
-            })}
-          />
-          <InfoRow
-            label="Diverifikasi Oleh"
-            value={data.verifiedByName ?? "-"}
-          />
+        <div
+          style={{
+            padding: 16,
+            display: "grid",
+            gap: 16,
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            alignItems: "start",
+          }}
+        >
+          <div style={{ display: "grid", gap: 12 }}>
+            <InfoRow label="Pegawai" value={data.employeeName} />
+            <InfoRow label="Tipe Dokumen" value={data.documentType} />
+            <InfoRow label="Nama File" value={data.fileName} />
+            <InfoRow
+              label="Status"
+              value={<DocumentStatusBadge status={data.status} />}
+            />
+            <InfoRow
+              label="Tanggal Upload"
+              value={new Date(data.uploadedAt).toLocaleString("id-ID", {
+                timeZone: "Asia/Jakarta",
+              })}
+            />
+            <InfoRow
+              label="Diverifikasi Oleh"
+              value={data.verifiedByName ?? "-"}
+            />
+          </div>
+
+          <div style={{ display: "grid", gap: 8 }}>
+            <div style={{ color: "#64748b", fontSize: 13 }}>Preview File</div>
+            <FilePreview
+              key={`${data.filePath}|${data.fileName}`}
+              filePath={data.filePath}
+              fileName={data.fileName}
+              previewKind={previewKind}
+            />
+          </div>
         </div>
 
         <div
@@ -138,6 +280,21 @@ export default function DocumentDetailModal({
             }}
           >
             Buka File
+          </a>
+
+          <a
+            href={data.filePath}
+            download={data.fileName}
+            style={{
+              border: "1px solid #cbd5e1",
+              background: "#fff",
+              color: "#0f172a",
+              textDecoration: "none",
+              borderRadius: 8,
+              padding: "8px 12px",
+            }}
+          >
+            Download File
           </a>
 
           <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>

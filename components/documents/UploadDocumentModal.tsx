@@ -9,12 +9,18 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onUploaded?: () => void;
+  defaultEmployeeId?: string | null;
+  defaultEmployeeName?: string | null;
+  lockEmployeeSelection?: boolean;
 }
 
 export default function UploadDocumentModal({
   open,
   onClose,
   onUploaded,
+  defaultEmployeeId,
+  defaultEmployeeName,
+  lockEmployeeSelection = false,
 }: Props) {
   const [employeeId, setEmployeeId] = useState("");
   const [employees, setEmployees] = useState<
@@ -49,6 +55,13 @@ export default function UploadDocumentModal({
   useEffect(() => {
     if (!open) {
       resetForm();
+      return;
+    }
+
+    if (lockEmployeeSelection) {
+      setEmployeeId(defaultEmployeeId ?? "");
+      setEmployeeSearch(defaultEmployeeName ?? "");
+      setEmployees([]);
       return;
     }
 
@@ -91,7 +104,13 @@ export default function UploadDocumentModal({
     return () => {
       mounted = false;
     };
-  }, [open, resetForm]);
+  }, [
+    defaultEmployeeId,
+    defaultEmployeeName,
+    lockEmployeeSelection,
+    open,
+    resetForm,
+  ]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -204,19 +223,31 @@ export default function UploadDocumentModal({
               <input
                 value={employeeSearch}
                 onChange={(e) => {
+                  if (lockEmployeeSelection) return;
                   setEmployeeSearch(e.target.value);
                   setShowDropdown(true);
                 }}
-                onClick={() => setShowDropdown((s) => !s)}
+                onClick={() => {
+                  if (!lockEmployeeSelection) {
+                    setShowDropdown((s) => !s);
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Escape") setShowDropdown(false);
                 }}
-                onFocus={() => setShowDropdown(true)}
+                onFocus={() => {
+                  if (!lockEmployeeSelection) setShowDropdown(true);
+                }}
                 className="block w-full border rounded-md px-3 py-2 text-sm"
-                placeholder="Cari nama pegawai..."
+                placeholder={
+                  lockEmployeeSelection
+                    ? "Pegawai login"
+                    : "Cari nama pegawai..."
+                }
+                readOnly={lockEmployeeSelection}
               />
 
-              {showDropdown && (
+              {showDropdown && !lockEmployeeSelection && (
                 <ul className="absolute z-40 left-0 right-0 bg-white border rounded-md mt-1 max-h-44 overflow-auto">
                   {employees
                     .filter((emp) =>

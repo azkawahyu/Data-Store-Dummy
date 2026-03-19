@@ -4,18 +4,45 @@ import { getEmployeeById } from "@/lib/services/employee/getEmployeeById";
 import { updateEmployee } from "@/lib/services/employee/updateEmployee";
 import { getUser } from "@/lib/getUser";
 import { createActivity } from "@/lib/logActivity";
+import { requireJWT } from "@/lib/auth-jwt";
 
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { role } = getUser(request);
+    const { role, userId } = getUser(request);
+    const { id } = await context.params;
+
+    const user = requireJWT(request);
+
+    if (!user.role || typeof user.role !== "string") {
+      return Response.json(
+        { message: "User role is required" },
+        { status: 400 },
+      );
+    }
 
     if (role !== "admin") {
-      return Response.json({ message: "Forbidden" }, { status: 403 });
+      if (role !== "employee" && !userId) {
+        return Response.json({ message: "Forbidden" }, { status: 403 });
+      }
+
+      if (!userId) {
+        return Response.json({ message: "Forbidden" }, { status: 403 });
+      }
+
+      const me = await prisma.users.findUnique({
+        where: { id: userId },
+        select: { employee_id: true },
+      });
+
+      console.log(`User's Employee ID: ${me?.employee_id}`);
+
+      if (!me?.employee_id || me.employee_id !== id) {
+        return Response.json({ message: "Not Found" }, { status: 404 });
+      }
     }
-    const { id } = await context.params;
 
     const employee = await getEmployeeById(id);
 
@@ -97,10 +124,17 @@ export async function DELETE(
       return Response.json({ message: "Employee not found" }, { status: 404 });
     }
 
-    await prisma.employees.delete({
-      where: {
-        id: employeeId,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.users.updateMany({
+        where: { employee_id: employeeId },
+        data: { employee_id: null },
+      });
+
+      await tx.employees.delete({
+        where: {
+          id: employeeId,
+        },
+      });
     });
 
     await createActivity({
@@ -122,6 +156,19 @@ export async function DELETE(
       error.code === "P2025"
     ) {
       return Response.json({ message: "Employee not found" }, { status: 404 });
+    }
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return Response.json(
+        {
+          message:
+            "Employee tidak bisa dihapus karena masih terhubung ke data lain",
+        },
+        { status: 409 },
+      );
     }
 
     console.error("DELETE employee error:", error);

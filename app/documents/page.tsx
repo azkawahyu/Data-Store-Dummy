@@ -209,6 +209,11 @@ export default function DocumentsPage() {
     return filtered.slice(start, start + PAGE_SIZE);
   }, [filtered, page]);
 
+  const selectedDocuments = useMemo(
+    () => rows.filter((r) => selectedIds.includes(r.id)),
+    [rows, selectedIds],
+  );
+
   const stats = useMemo(() => {
     const total = rows.length;
     const pending = rows.filter((r) => r.status === "pending").length;
@@ -469,6 +474,42 @@ export default function DocumentsPage() {
     toast.push("Dokumen berhasil dihapus", "success");
   }
 
+  function handleBulkDownload() {
+    if (selectedDocuments.length === 0) {
+      toast.push("Pilih dokumen terlebih dahulu", "error");
+      return;
+    }
+
+    const readyToDownload = selectedDocuments.filter((d) =>
+      Boolean(d.filePath),
+    );
+
+    if (readyToDownload.length === 0) {
+      toast.push(
+        "Dokumen terpilih tidak memiliki file yang bisa diunduh",
+        "error",
+      );
+      return;
+    }
+
+    for (const [index, doc] of readyToDownload.entries()) {
+      window.setTimeout(() => {
+        const link = document.createElement("a");
+        link.href = doc.filePath;
+        link.download = doc.fileName || `dokumen-${doc.id}`;
+        link.rel = "noopener noreferrer";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, index * 180);
+    }
+
+    toast.push(
+      `Memulai download ${readyToDownload.length} dokumen. Jika browser meminta izin, pilih Allow.`,
+      "success",
+    );
+  }
+
   function loadData() {
     throw new Error("Function not implemented.");
   }
@@ -512,6 +553,30 @@ export default function DocumentsPage() {
             void loadData(); // ganti jika nama fungsi fetch Anda berbeda
           }}
         />
+
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-slate-600">
+            {selectedIds.length > 0
+              ? `${selectedIds.length} dokumen dipilih`
+              : "Pilih dokumen untuk download massal"}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedIds([])}
+              disabled={selectedIds.length === 0}
+              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Reset Pilihan
+            </button>
+            <button
+              onClick={handleBulkDownload}
+              disabled={selectedIds.length === 0}
+              className="rounded border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-700 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Download Terpilih
+            </button>
+          </div>
+        </div>
 
         <DocumentsTable
           rows={paginatedRows}

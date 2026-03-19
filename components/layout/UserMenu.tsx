@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import LogoutButton from "../dashboard/LogoutButton";
 
 type JwtPayload = {
@@ -20,6 +21,14 @@ type EmployeeResponse = {
   fullName?: string;
 };
 
+function getRoleLabel(role?: string | null) {
+  const normalized = (role ?? "").toLowerCase();
+  if (normalized === "admin") return "admin";
+  if (normalized === "employee") return "pegawai";
+  if (normalized === "hr") return "umum";
+  return "user";
+}
+
 function parseJwt(token: string): JwtPayload | null {
   try {
     const base64Payload = token.split(".")[1];
@@ -32,6 +41,7 @@ function parseJwt(token: string): JwtPayload | null {
 }
 
 export default function UserMenu() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("Employee");
   const [role, setRole] = useState("user");
@@ -161,10 +171,9 @@ export default function UserMenu() {
             style={{
               fontSize: "clamp(10px, 1.5vw, 11px)",
               color: "#64748b",
-              textTransform: "capitalize",
             }}
           >
-            {role}
+            {getRoleLabel(role)}
           </span>
         </span>
       </button>
@@ -193,10 +202,9 @@ export default function UserMenu() {
               style={{
                 color: "#475569",
                 marginTop: 2,
-                textTransform: "capitalize",
               }}
             >
-              Role: {role}
+              Role: {getRoleLabel(role)}
             </div>
           </div>
 
@@ -204,6 +212,10 @@ export default function UserMenu() {
           <div>
             <button
               type="button"
+              onClick={() => {
+                setOpen(false);
+                router.push("/profile");
+              }}
               style={{
                 width: "100%",
                 textAlign: "left",
@@ -214,7 +226,7 @@ export default function UserMenu() {
                 cursor: "pointer",
               }}
             >
-              Profile (soon)
+              Profile Akun
             </button>
           </div>
 

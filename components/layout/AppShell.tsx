@@ -4,9 +4,13 @@ import { SidebarProvider } from "@/components/layout/SidebarContext";
 
 type AppShellProps = {
   children: React.ReactNode;
+  showSidebar?: boolean;
 };
 
-export default function AppShell({ children }: AppShellProps) {
+export default function AppShell({
+  children,
+  showSidebar = true,
+}: AppShellProps) {
   return (
     <SidebarProvider>
       <div
@@ -79,10 +83,10 @@ export default function AppShell({ children }: AppShellProps) {
       `}</style>
 
         <div className="app-shell-layout-wrapper" style={{ flex: 1 }}>
-          <Sidebar />
+          {showSidebar && <Sidebar />}
 
           <div className="app-shell-content">
-            <Header />
+            <Header showSidebarToggle={showSidebar} />
             <main className="app-shell-main">{children}</main>
           </div>
         </div>

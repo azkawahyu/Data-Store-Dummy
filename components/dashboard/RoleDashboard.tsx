@@ -6,6 +6,7 @@ import DashboardTopEmployees from "@/components/dashboard/DashboardTopEmployees"
 import DashboardPendingTable from "@/components/dashboard/DashboardPendingTable";
 import DashboardRecentActivity from "@/components/dashboard/DashboardRecentActivity";
 import DashboardStats from "@/components/dashboard/DashboardStats";
+import EmployeeProfileDashboard from "@/components/dashboard/EmployeeProfileDashboard";
 
 type Employee = {
   id: string;
@@ -29,6 +30,27 @@ type Activity = {
   username?: string | null;
 };
 
+type EmployeeProfile = {
+  id: string;
+  nip?: string | null;
+  nama?: string | null;
+  jabatan?: string | null;
+  unit?: string | null;
+  status?: string | null;
+  email?: string | null;
+  no_hp?: string | null;
+};
+
+type UserProfile = {
+  id: string;
+  username?: string | null;
+  nip?: string | null;
+  email?: string | null;
+  employee_id: string | null;
+  link_status?: "linked_manual" | "linked_auto" | "unlinked" | "conflict";
+  link_message?: string;
+};
+
 type Role = "admin" | "employee" | "hr";
 
 interface Props {
@@ -36,6 +58,10 @@ interface Props {
   employees: Employee[];
   documents: Document[];
   activities: Activity[];
+  employeeProfile?: EmployeeProfile | null;
+  userProfile?: UserProfile | null;
+  onUploadDocument?: () => void;
+  onEditEmployeeProfile?: () => void;
 }
 
 export default function RoleDashboard({
@@ -43,9 +69,25 @@ export default function RoleDashboard({
   employees,
   documents,
   activities,
+  employeeProfile,
+  userProfile,
+  onUploadDocument,
+  onEditEmployeeProfile,
 }: Props) {
   const pendingDocs = documents.filter((d) => d.status === "pending");
   const verifiedDocs = documents.filter((d) => d.status === "verified").length;
+
+  if (role === "employee") {
+    return (
+      <EmployeeProfileDashboard
+        accountProfile={userProfile ?? null}
+        profile={employeeProfile ?? null}
+        documents={documents}
+        onUpload={onUploadDocument ?? (() => {})}
+        onEditProfile={onEditEmployeeProfile ?? (() => {})}
+      />
+    );
+  }
 
   return (
     <div className="dash-root" style={{ display: "grid", gap: 16 }}>

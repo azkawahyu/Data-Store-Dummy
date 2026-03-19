@@ -4,12 +4,20 @@ import { employeeSchema } from "@/lib/validations/employeeValidations";
 import { z } from "zod";
 import { getUser } from "@/lib/getUser";
 import { createActivity } from "@/lib/logActivity";
+import { requireJWT } from "@/lib/auth-jwt";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
-  const { role } = getUser(request);
+  // const { role } = getUser(request);
 
-  if (role !== "admin") {
-    return Response.json({ message: "Forbidden" }, { status: 403 });
+  // if (role !== "admin") {
+  //   return Response.json({ message: "Forbidden" }, { status: 403 });
+  // }
+
+  const user = requireJWT(request);
+
+  if (!user.role || typeof user.role !== "string") {
+    return Response.json({ message: "User role is required" }, { status: 400 });
   }
 
   const employees = await getEmployees();
@@ -19,9 +27,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { role } = getUser(request);
+    const { role, userId } = getUser(request);
 
-    if (role !== "admin") {
+    if (role !== "admin" && role !== "employee") {
       return Response.json({ message: "Forbidden" }, { status: 403 });
     }
 
@@ -35,7 +43,14 @@ export async function POST(request: Request) {
 
     const employee = await createEmployee(process.data);
 
-    const { userId } = getUser(request);
+    // Jika employee role yang mendaftar sendiri, otomatis link ke user
+    if (role === "employee" && userId) {
+      await prisma.users.update({
+        where: { id: userId },
+        data: { employee_id: employee.id },
+      });
+    }
+
     await createActivity({
       userId: userId ?? null,
       action: "create_employee",
