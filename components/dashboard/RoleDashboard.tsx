@@ -253,8 +253,8 @@ export default function RoleDashboard({
         }
 
         .dash-highlight-icon.pending {
-          background: #fff7ed;
-          color: #ea580c;
+          background: #eff6ff;
+          color: #2563eb;
         }
 
         .dash-highlight-icon.verified {

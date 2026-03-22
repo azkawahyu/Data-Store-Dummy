@@ -64,7 +64,7 @@ export default function Sidebar() {
           gap: 12px;
           margin-bottom: 28px;
           padding-bottom: 18px;
-          border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .sidebar-brand-mark {
@@ -74,10 +74,11 @@ export default function Sidebar() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255,255,255,.98);
-          box-shadow: 0 10px 25px rgba(14, 165, 233, .18);
+          background: linear-gradient(to bottom right, #bfdbfe, #dbeafe);
+          box-shadow: 0 0 0 1px #bfdbfe;
           flex-shrink: 0;
           overflow: hidden;
+          border: none;
         }
 
         .sidebar-brand-label {
@@ -90,13 +91,13 @@ export default function Sidebar() {
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: .18em;
-          color: #94a3b8;
+          color: #ffffff;
         }
 
         .sidebar-brand-title {
           font-size: 15px;
           font-weight: 700;
-          color: #f8fafc;
+          color: #ffffff;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -111,14 +112,16 @@ export default function Sidebar() {
         }
 
         .sidebar-link:hover {
-          background: rgba(255,255,255,.08);
+          background: rgba(255, 255, 255, 0.12);
           color: #fff;
         }
 
         .sidebar-link.active {
-          background: #0ea5e9;
+          background: rgba(59, 130, 246, 0.25);
           color: #fff;
           font-weight: 600;
+          border-left: 3px solid #60a5fa;
+          padding-left: 7px;
         }
       `}</style>
 
@@ -127,7 +130,7 @@ export default function Sidebar() {
         className={`sidebar ${isOpen ? "open" : ""}`}
         style={{
           width: 240,
-          background: "#1e293b",
+          background: "linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%)",
           color: "#fff",
           padding: 20,
           overflowY: "auto",

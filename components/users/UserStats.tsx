@@ -26,7 +26,7 @@ const CARDS = [
   {
     key: "unlinked",
     label: "Belum Terkait",
-    tone: "border-amber-200 bg-linear-to-r from-amber-50 via-orange-50 to-amber-100 text-amber-700",
+    tone: "border-blue-200 bg-linear-to-r from-blue-50 via-sky-50 to-blue-100 text-blue-700",
   },
   {
     key: "conflict",

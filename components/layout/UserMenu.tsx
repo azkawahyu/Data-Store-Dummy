@@ -136,12 +136,21 @@ export default function UserMenu() {
           display: "flex",
           alignItems: "center",
           gap: 8,
-          border: "1px solid #cbd5e1",
+          border: "1px solid rgba(96, 165, 250, 0.5)",
           borderRadius: 8,
           padding: "8px 10px",
           cursor: "pointer",
-          background: "white",
+          background: "rgba(255, 255, 255, 0.9)",
           minWidth: "fit-content",
+          transition: "all 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = "rgba(96, 165, 250, 0.7)";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(37, 99, 235, 0.12)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = "rgba(96, 165, 250, 0.5)";
+          e.currentTarget.style.boxShadow = "none";
         }}
       >
         <span
@@ -150,12 +159,13 @@ export default function UserMenu() {
             width: 28,
             height: 28,
             borderRadius: "50%",
-            background: "#e2e8f0",
+            background: "linear-gradient(135deg, #bfdbfe 0%, #dbeafe 100%)",
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: 14,
             flexShrink: 0,
+            boxShadow: "0 2px 8px rgba(37, 99, 235, 0.15)",
           }}
         >
           👤
@@ -164,13 +174,20 @@ export default function UserMenu() {
         <span
           style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}
         >
-          <span style={{ fontWeight: 600, fontSize: "clamp(12px, 2vw, 13px)" }}>
+          <span
+            style={{
+              fontWeight: 600,
+              fontSize: "clamp(12px, 2vw, 13px)",
+              color: "#1e293b",
+            }}
+          >
             {name}
           </span>
           <span
             style={{
               fontSize: "clamp(10px, 1.5vw, 11px)",
-              color: "#64748b",
+              color: "#2563eb",
+              fontWeight: 500,
             }}
           >
             {getRoleLabel(role)}
@@ -187,9 +204,9 @@ export default function UserMenu() {
             top: "calc(100% + 8px)",
             minWidth: 220,
             background: "white",
-            border: "1px solid #e2e8f0",
+            border: "1px solid rgba(96, 165, 250, 0.3)",
             borderRadius: 8,
-            boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            boxShadow: "0 8px 24px rgba(37, 99, 235, 0.12)",
             padding: 8,
             zIndex: 20,
             maxWidth: "90vw",
@@ -200,15 +217,16 @@ export default function UserMenu() {
             <div style={{ color: "#0f172a", fontWeight: 600 }}>{name}</div>
             <div
               style={{
-                color: "#475569",
+                color: "#2563eb",
                 marginTop: 2,
+                fontWeight: 500,
               }}
             >
               Role: {getRoleLabel(role)}
             </div>
           </div>
 
-          <div style={{ borderTop: "1px solid #e2e8f0" }} />
+          <div style={{ borderTop: "1px solid rgba(96, 165, 250, 0.2)" }} />
           <div>
             <button
               type="button"
@@ -224,6 +242,15 @@ export default function UserMenu() {
                 padding: "8px 10px",
                 borderRadius: 6,
                 cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(37, 99, 235, 0.08)";
+                e.currentTarget.style.color = "#1d4ed8";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "inherit";
               }}
             >
               Profile Akun

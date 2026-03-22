@@ -145,9 +145,6 @@ export default function EmployeeProfileDashboard({
       <section className="header-card page-panel p-4 sm:p-6">
         <div className="page-header">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">
-              Dashboard Pegawai
-            </p>
             <h2 className="page-title text-gradient-primary mt-1">
               Halo,{" "}
               {accountProfile?.username?.trim() ||
