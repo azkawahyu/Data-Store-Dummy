@@ -66,6 +66,8 @@ export default function RegisterForm({
         </label>
         <input
           id="nip"
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={form.nip}
           onChange={(event) => onChangeField("nip", event.target.value)}
           onBlur={() => onBlurField("nip")}

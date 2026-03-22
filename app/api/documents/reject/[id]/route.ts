@@ -22,23 +22,11 @@ export async function PATCH(
     const { id } = await params;
     const documentId = id;
 
-    interface RejectBody {
-      verified_by?: string;
-      [key: string]: unknown;
-    }
-
-    let body: RejectBody = {};
-    try {
-      body = (await req.json()) as RejectBody;
-    } catch {
-      body = {};
-    }
-
     const verifiedByStr = String(userId);
 
-    const getUser = await getUserById(verifiedByStr);
+    const verifiedUser = await getUserById(verifiedByStr);
 
-    if (!getUser) {
+    if (!verifiedUser) {
       return Response.json(
         { message: "User yang memverifikasi tidak ditemukan" },
         { status: 404 },

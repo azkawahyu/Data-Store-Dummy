@@ -16,6 +16,18 @@ interface Props {
   onSelectionChange?: (ids: string[]) => void;
 }
 
+function formatFileSize(bytes?: number | null) {
+  if (typeof bytes !== "number" || Number.isNaN(bytes) || bytes < 0) {
+    return "-";
+  }
+
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+}
+
 export default function DocumentsTable({
   rows,
   canManage,
@@ -207,6 +219,7 @@ export default function DocumentsTable({
               <th>Pegawai</th>
               <th>Jenis Dokumen</th>
               <th>File</th>
+              <th>Ukuran</th>
               <th>Diunggah</th>
               <th>Status</th>
               <th style={{ textAlign: "right" }}>Aksi</th>
@@ -217,7 +230,7 @@ export default function DocumentsTable({
             {rows.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   style={{ textAlign: "center", color: "#94a3b8", padding: 36 }}
                 >
                   Belum ada data dokumen.
@@ -250,6 +263,10 @@ export default function DocumentsTable({
 
                   <td title={d.fileName} className="doc-file-cell">
                     {d.fileName}
+                  </td>
+
+                  <td className="doc-date-cell">
+                    {formatFileSize(d.fileSize)}
                   </td>
 
                   <td className="doc-date-cell">
@@ -329,6 +346,9 @@ export default function DocumentsTable({
                 <span className="doc-type-chip">{d.documentType}</span>
               </div>
               <div className="doc-card-file">File: {d.fileName}</div>
+              <div className="doc-card-date">
+                Ukuran: {formatFileSize(d.fileSize)}
+              </div>
               <div className="doc-card-date">
                 Diunggah:{" "}
                 {new Date(d.uploadedAt).toLocaleDateString("id-ID", {

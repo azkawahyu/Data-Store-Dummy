@@ -8,7 +8,13 @@ export async function updateUser(
 ) {
   const currentUser = await prisma.users.findUnique({
     where: { id },
-    select: { id: true, username: true, nip: true, email: true },
+    select: {
+      id: true,
+      username: true,
+      nip: true,
+      email: true,
+      employee_id: true,
+    },
   });
 
   if (!currentUser) {
@@ -57,6 +63,36 @@ export async function updateUser(
       employee_id: linkResolution.employeeId,
     },
   });
+
+  // Sinkronkan ke data pegawai jika:
+  // (a) employee baru dikaitkan — sync email + nip sekaligus, atau
+  // (b) masih employee yang sama tapi email berubah — sync email saja
+  const resolvedEmployeeId = linkResolution.employeeId ?? updated.employee_id;
+  const isNewLink =
+    resolvedEmployeeId && resolvedEmployeeId !== currentUser.employee_id;
+  const isEmailChanged =
+    resolvedEmployeeId && nextEmail && nextEmail !== currentUser.email;
+
+  if (isNewLink) {
+    await prisma.employees
+      .update({
+        where: { id: resolvedEmployeeId },
+        data: {
+          ...(nextEmail ? { email: nextEmail } : {}),
+          ...(normalizedNip ? { nip: normalizedNip } : {}),
+        },
+      })
+      .catch(() => {});
+  } else if (isEmailChanged) {
+    await prisma.employees
+      .update({
+        where: { id: resolvedEmployeeId },
+        data: { email: nextEmail as string },
+      })
+      .catch(() => {
+        // Abaikan jika employee tidak ditemukan (edge case)
+      });
+  }
 
   return {
     ...updated,

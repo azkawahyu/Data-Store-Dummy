@@ -17,6 +17,8 @@ interface Props {
   hideCloseButton?: boolean;
   hideCancelButton?: boolean;
   disableBackdropClose?: boolean;
+  prefillNip?: string | null;
+  lockNip?: boolean;
   prefillEmail?: string | null;
   lockEmail?: boolean;
 }
@@ -124,6 +126,8 @@ export default function EmployeeFormModal({
   hideCloseButton = false,
   hideCancelButton = false,
   disableBackdropClose = false,
+  prefillNip,
+  lockNip = false,
   prefillEmail,
   lockEmail = false,
 }: Props) {
@@ -150,18 +154,20 @@ export default function EmployeeFormModal({
       void updated_at;
       setForm({
         ...rest,
+        nip: rest.nip?.trim() ? rest.nip : (prefillNip?.trim() ?? ""),
         email: rest.email?.trim() ? rest.email : (prefillEmail?.trim() ?? ""),
       });
     } else {
       setForm({
         ...EMPTY,
+        nip: prefillNip?.trim() ?? "",
         email: prefillEmail?.trim() ?? "",
       });
     }
     setServerError("");
     setFieldErrors({});
     setTouched({});
-  }, [open, initial, prefillEmail]);
+  }, [open, initial, prefillNip, prefillEmail]);
 
   if (!open) return null;
 
@@ -435,7 +441,11 @@ export default function EmployeeFormModal({
                     placeholder="1234567890"
                     inputMode="numeric"
                     maxLength={20}
+                    disabled={lockNip}
                   />
+                  {lockNip && form.nip && (
+                    <span className="emp-field-hint">Mengikuti NIP akun.</span>
+                  )}
                   {fieldErrors.nip && (
                     <span className="emp-field-error">{fieldErrors.nip}</span>
                   )}

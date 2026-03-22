@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { broadcastAuthEvent } from "@/lib/auth-sync";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +13,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -35,6 +43,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", data.token);
+      broadcastAuthEvent("login");
 
       router.push("/dashboard");
     } catch {
@@ -100,7 +109,7 @@ export default function LoginPage() {
                 placeholder="Masukkan username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 required
               />
             </div>
@@ -118,7 +127,7 @@ export default function LoginPage() {
                 placeholder="Masukkan password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 required
               />
             </div>
@@ -126,7 +135,7 @@ export default function LoginPage() {
             <div className="flex justify-end">
               <Link
                 href="/forgot-password"
-                className="text-xs font-medium text-indigo-700 hover:text-indigo-800"
+                className="text-xs font-medium text-blue-700 hover:text-blue-900"
               >
                 Lupa Password?
               </Link>
@@ -141,7 +150,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="h-11 w-full rounded-lg bg-linear-to-r from-indigo-600 to-violet-600 text-sm font-semibold text-white shadow-md transition hover:from-indigo-700 hover:to-violet-700 disabled:cursor-not-allowed disabled:opacity-70"
+              className="h-11 w-full rounded-lg bg-linear-to-r from-sky-400 to-blue-900 text-sm font-semibold text-white shadow-md transition hover:from-sky-500 hover:to-blue-950 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isLoading ? "Memproses..." : "Masuk"}
             </button>

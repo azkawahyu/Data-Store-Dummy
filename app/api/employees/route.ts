@@ -29,11 +29,12 @@ export async function POST(request: Request) {
   try {
     const { role, userId } = getUser(request);
 
-    if (role !== "admin" && role !== "hr" && role !== "employee") {
+    if (role !== "admin" && role !== "employee" && role !== "hr") {
       return Response.json({ message: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
+    const shouldLinkToCurrentUser = body?.linkToCurrentUser === true;
 
     const process = employeeSchema.safeParse(body);
 
@@ -43,8 +44,8 @@ export async function POST(request: Request) {
 
     const employee = await createEmployee(process.data);
 
-    // Jika employee role yang mendaftar sendiri, otomatis link ke user
-    if (role === "employee" && userId) {
+    // Employee selalu auto-link; admin/hr hanya saat eksplisit membuat profil dirinya sendiri
+    if ((role === "employee" || shouldLinkToCurrentUser) && userId) {
       await prisma.users.update({
         where: { id: userId },
         data: { employee_id: employee.id },

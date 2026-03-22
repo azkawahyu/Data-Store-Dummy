@@ -75,6 +75,7 @@ export default function DashboardPage() {
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
+  const [accountNip, setAccountNip] = useState<string | null>(null);
   const [requireProfileSetup, setRequireProfileSetup] = useState(false);
   const [openEditProfile, setOpenEditProfile] = useState(false);
   const [openUpload, setOpenUpload] = useState(false);
@@ -99,8 +100,13 @@ export default function DashboardPage() {
           const parsedRole = (payload.role ?? "").toString().toLowerCase();
           const payloadEmail =
             typeof payload.email === "string" ? payload.email : null;
+          const payloadNip =
+            typeof payload.nip === "string" ? payload.nip : null;
           if (payloadEmail) {
             setAccountEmail(payloadEmail);
+          }
+          if (payloadNip) {
+            setAccountNip(payloadNip);
           }
           if (validRoles.includes(parsedRole as Role)) {
             detectedRole = parsedRole as Role;
@@ -124,6 +130,9 @@ export default function DashboardPage() {
             setProfileStatus(userProfile);
             if (typeof userProfile.email === "string" && userProfile.email) {
               setAccountEmail(userProfile.email);
+            }
+            if (typeof userProfile.nip === "string" && userProfile.nip) {
+              setAccountNip(userProfile.nip);
             }
           } else {
             setProfileStatus(null);
@@ -359,6 +368,8 @@ export default function DashboardPage() {
         onSubmit={handleSubmitProfileSetup}
         title="Edit Data Pegawai"
         submitLabel="Simpan Perubahan"
+        prefillNip={role === "employee" ? accountNip : null}
+        lockNip={role === "employee" && Boolean(accountNip)}
         prefillEmail={role === "employee" ? accountEmail : null}
         lockEmail={role === "employee" && Boolean(accountEmail)}
       />
@@ -373,6 +384,8 @@ export default function DashboardPage() {
         hideCloseButton
         hideCancelButton
         disableBackdropClose
+        prefillNip={role === "employee" ? accountNip : null}
+        lockNip={role === "employee" && Boolean(accountNip)}
         prefillEmail={role === "employee" ? accountEmail : null}
         lockEmail={role === "employee" && Boolean(accountEmail)}
       />

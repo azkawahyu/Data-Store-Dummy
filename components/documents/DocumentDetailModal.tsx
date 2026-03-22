@@ -148,6 +148,24 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
+function getLastStatusAction(status: DocumentItem["status"]) {
+  if (status === "verified") return "Diverifikasi";
+  if (status === "rejected") return "Ditolak";
+  return "Belum ada tindakan";
+}
+
+function formatFileSize(bytes?: number | null) {
+  if (typeof bytes !== "number" || Number.isNaN(bytes) || bytes < 0) {
+    return "-";
+  }
+
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+}
+
 export default function DocumentDetailModal({
   open,
   data,
@@ -159,6 +177,14 @@ export default function DocumentDetailModal({
   const previewKind = data
     ? getPreviewKind(data.filePath, data.fileName)
     : "unsupported";
+
+  const lastActionLabel = getLastStatusAction(data?.status ?? "pending");
+  const lastActionBy = data?.verifiedByName ?? "-";
+  const lastActionAt = data?.verifiedAt
+    ? new Date(data.verifiedAt).toLocaleString("id-ID", {
+        timeZone: "Asia/Jakarta",
+      })
+    : "-";
 
   if (!open || !data) return null;
 
@@ -230,6 +256,10 @@ export default function DocumentDetailModal({
             <InfoRow label="Tipe Dokumen" value={data.documentType} />
             <InfoRow label="Nama File" value={data.fileName} />
             <InfoRow
+              label="Ukuran File"
+              value={formatFileSize(data.fileSize)}
+            />
+            <InfoRow
               label="Status"
               value={<DocumentStatusBadge status={data.status} />}
             />
@@ -239,10 +269,37 @@ export default function DocumentDetailModal({
                 timeZone: "Asia/Jakarta",
               })}
             />
-            <InfoRow
-              label="Diverifikasi Oleh"
-              value={data.verifiedByName ?? "-"}
-            />
+
+            <div
+              style={{
+                marginTop: 2,
+                border: "1px solid #e2e8f0",
+                background: "#f8fafc",
+                borderRadius: 10,
+                padding: "10px 12px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#64748b",
+                  textTransform: "uppercase",
+                  letterSpacing: ".04em",
+                }}
+              >
+                Status Terakhir
+              </div>
+              <div style={{ marginTop: 6, fontSize: 13.5, color: "#0f172a" }}>
+                {lastActionLabel}
+                {data.status !== "pending" ? ` oleh ${lastActionBy}` : ""}
+              </div>
+              <div style={{ marginTop: 2, fontSize: 12, color: "#64748b" }}>
+                {data.status !== "pending"
+                  ? `Pada ${lastActionAt}`
+                  : "Belum ada tindakan verifikasi"}
+              </div>
+            </div>
           </div>
 
           <div style={{ display: "grid", gap: 8 }}>
@@ -270,14 +327,8 @@ export default function DocumentDetailModal({
             href={data.filePath}
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              border: "1px solid #cbd5e1",
-              background: "#fff",
-              color: "#0f172a",
-              textDecoration: "none",
-              borderRadius: 8,
-              padding: "8px 12px",
-            }}
+            className="btn btn-secondary"
+            style={{ textDecoration: "none" }}
           >
             Buka File
           </a>
@@ -285,20 +336,14 @@ export default function DocumentDetailModal({
           <a
             href={data.filePath}
             download={data.fileName}
-            style={{
-              border: "1px solid #cbd5e1",
-              background: "#fff",
-              color: "#0f172a",
-              textDecoration: "none",
-              borderRadius: 8,
-              padding: "8px 12px",
-            }}
+            className="btn btn-primary"
+            style={{ textDecoration: "none" }}
           >
             Download File
           </a>
 
           <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-            {canManage && onReject && data.status === "pending" && (
+            {canManage && onReject && data.status !== "rejected" && (
               <button
                 onClick={async () => {
                   try {
@@ -317,11 +362,11 @@ export default function DocumentDetailModal({
                   cursor: "pointer",
                 }}
               >
-                Reject
+                {data.status === "verified" ? "Tolak Ulang" : "Tolak"}
               </button>
             )}
 
-            {canManage && onVerify && data.status === "pending" && (
+            {canManage && onVerify && data.status !== "verified" && (
               <button
                 onClick={async () => {
                   try {
@@ -340,7 +385,7 @@ export default function DocumentDetailModal({
                   cursor: "pointer",
                 }}
               >
-                Verify
+                {data.status === "rejected" ? "Verifikasi Ulang" : "Verifikasi"}
               </button>
             )}
           </div>

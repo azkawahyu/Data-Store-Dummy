@@ -118,8 +118,10 @@ export default function RegisterPage() {
   );
 
   function onChangeField(field: keyof UserFormState, value: string) {
+    const normalizedValue = field === "nip" ? value.replace(/\D/g, "") : value;
+
     setForm((previous) => {
-      const next = { ...previous, [field]: value };
+      const next = { ...previous, [field]: normalizedValue };
 
       if (touched[field]) {
         const currentErrors = validateForm(next);

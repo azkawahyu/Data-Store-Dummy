@@ -1,10 +1,32 @@
 import { prisma } from "@/lib/prisma";
 import { signToken } from "@/lib/jwt";
+import { verifyToken } from "@/lib/jwt";
 import bcrypt from "bcrypt";
 import { createActivity } from "@/lib/logActivity";
+import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const activeToken = request.cookies.get("token")?.value;
+    const activeSessionId = request.cookies.get("session_id")?.value;
+
+    if (activeToken && activeSessionId) {
+      try {
+        const payload = verifyToken(activeToken);
+
+        if (payload.sessionId === activeSessionId) {
+          return NextResponse.json({
+            message: "Sesi aktif ditemukan",
+            token: activeToken,
+            alreadyLoggedIn: true,
+          });
+        }
+      } catch {
+        // ignore invalid active session and continue normal login flow
+      }
+    }
+
     const body = await request.json();
     const { username, password } = body;
 
@@ -36,10 +58,13 @@ export async function POST(request: Request) {
       );
     }
 
+    const sessionId = randomUUID();
+
     const token = signToken({
       userId: user.id,
       username: user.username,
       role: user.roles?.name,
+      sessionId,
     });
 
     await createActivity({
@@ -48,10 +73,32 @@ export async function POST(request: Request) {
       description: { username: user.username, message: "login" },
     });
 
-    return Response.json({
+    const response = NextResponse.json({
       message: "Login berhasil",
       token,
     });
+
+    response.cookies.set({
+      name: "token",
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24,
+    });
+
+    response.cookies.set({
+      name: "session_id",
+      value: sessionId,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24,
+    });
+
+    return response;
   } catch (error) {
     console.error("Login error:", error);
 

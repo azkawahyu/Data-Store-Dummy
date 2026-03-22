@@ -5,36 +5,113 @@ import { verifyToken } from "@/lib/jwt";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ["/api/login", "/api/register"];
+  const publicApiRoutes = ["/api/login", "/api/register", "/api/logout"];
+  const protectedPages = [
+    "/dashboard",
+    "/employee",
+    "/documents",
+    "/profile",
+    "/users",
+    "/activity",
+    "/hr",
+  ];
 
-  if (publicRoutes.includes(pathname)) {
-    return NextResponse.next();
-  }
+  const isProtectedPage = protectedPages.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
 
   if (!pathname.startsWith("/api")) {
+    if (!isProtectedPage) {
+      return NextResponse.next();
+    }
+
+    const pageToken = request.cookies.get("token")?.value;
+    const pageSessionId = request.cookies.get("session_id")?.value;
+
+    if (!pageToken || !pageSessionId) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    try {
+      const payload = verifyToken(pageToken);
+      if (payload.sessionId !== pageSessionId) {
+        throw new Error("SESSION_MISMATCH");
+      }
+      const role = String(payload.role ?? "").toLowerCase();
+
+      const isUsersPage =
+        pathname === "/users" || pathname.startsWith("/users/");
+      const isActivityPage =
+        pathname === "/activity" || pathname.startsWith("/activity/");
+      const isHrPage = pathname === "/hr" || pathname.startsWith("/hr/");
+
+      if (role === "hr" && (isUsersPage || isActivityPage)) {
+        return NextResponse.redirect(new URL("/hr", request.url));
+      }
+
+      if (role !== "hr" && isHrPage) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+
+      return NextResponse.next();
+    } catch {
+      const response = NextResponse.redirect(new URL("/login", request.url));
+      response.cookies.set({
+        name: "token",
+        value: "",
+        path: "/",
+        expires: new Date(0),
+      });
+      response.cookies.set({
+        name: "session_id",
+        value: "",
+        path: "/",
+        expires: new Date(0),
+      });
+      return response;
+    }
+  }
+
+  if (publicApiRoutes.includes(pathname)) {
     return NextResponse.next();
   }
 
   const authHeader = request.headers.get("authorization");
+  const tokenFromHeader = authHeader?.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : null;
+  const tokenFromCookie = request.cookies.get("token")?.value;
+  const sessionIdFromCookie = request.cookies.get("session_id")?.value;
+  const token = tokenFromCookie;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!token || !sessionIdFromCookie) {
     return NextResponse.json(
       { message: "Token tidak ditemukan" },
       { status: 401 },
     );
   }
 
-  const token = authHeader.split(" ")[1];
+  if (tokenFromHeader && tokenFromHeader !== tokenFromCookie) {
+    return NextResponse.json(
+      { message: "Token tab tidak sinkron, silakan refresh/login ulang" },
+      { status: 401 },
+    );
+  }
 
   try {
     const payload = verifyToken(token);
+    if (payload.sessionId !== sessionIdFromCookie) {
+      return NextResponse.json(
+        { message: "Sesi tidak valid, silakan login kembali" },
+        { status: 401 },
+      );
+    }
 
     const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("authorization", `Bearer ${token}`);
 
     requestHeaders.set("x-user-id", String(payload.userId));
     requestHeaders.set("x-user-role", String(payload.role));
-
-    // console.log("Payload token:", payload);
 
     return NextResponse.next({
       request: {
@@ -50,5 +127,14 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*"],
+  matcher: [
+    "/api/:path*",
+    "/dashboard/:path*",
+    "/employee/:path*",
+    "/documents/:path*",
+    "/profile/:path*",
+    "/users/:path*",
+    "/activity/:path*",
+    "/hr/:path*",
+  ],
 };

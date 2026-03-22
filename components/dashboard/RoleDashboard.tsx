@@ -77,6 +77,14 @@ export default function RoleDashboard({
   const pendingDocs = documents.filter((d) => d.status === "pending");
   const verifiedDocs = documents.filter((d) => d.status === "verified").length;
   const roleLabel = role === "hr" ? "ADMIN UMUM" : role.toUpperCase();
+  const recentDocuments = documents.slice(0, 5);
+
+  const getStatusLabel = (status: string) => {
+    if (status === "verified") return "Disetujui";
+    if (status === "rejected") return "Ditolak";
+    if (status === "pending") return "Pending";
+    return status;
+  };
 
   if (role === "employee") {
     return (
@@ -330,7 +338,9 @@ export default function RoleDashboard({
               </span>
               <span className="dash-meta-chip">
                 <span className="dash-meta-dot emerald" aria-hidden />
-                Aktivitas terbaru sistem
+                {role === "hr"
+                  ? "Dokumen terbaru untuk diproses"
+                  : "Aktivitas terbaru sistem"}
               </span>
             </div>
           </div>
@@ -375,7 +385,120 @@ export default function RoleDashboard({
 
       <div className="dash-two-col">
         <DashboardPendingTable documents={pendingDocs} />
-        <DashboardRecentActivity activities={activities} />
+        {role === "hr" ? (
+          <section
+            style={{
+              border: "1px solid #e2e8f0",
+              borderRadius: 16,
+              padding: 16,
+              background: "rgba(255,255,255,.92)",
+              boxShadow: "0 8px 22px rgba(15,23,42,.05)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: 12,
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <h3
+                  style={{
+                    margin: "0 0 4px",
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: "#0f172a",
+                  }}
+                >
+                  Dokumen Terbaru
+                </h3>
+                <p style={{ margin: 0, fontSize: 13, color: "#64748b" }}>
+                  5 dokumen terakhir untuk pemantauan verifikasi
+                </p>
+              </div>
+            </div>
+
+            {recentDocuments.length === 0 ? (
+              <p style={{ color: "#64748b", fontSize: 14, margin: 0 }}>
+                Belum ada dokumen.
+              </p>
+            ) : (
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+              >
+                {recentDocuments.map((doc) => (
+                  <div
+                    key={doc.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "10px 12px",
+                      background: "#f8fbff",
+                      borderRadius: 12,
+                      borderLeft: "3px solid #60a5fa",
+                    }}
+                  >
+                    <div style={{ minWidth: 0 }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 13,
+                          color: "#334155",
+                          fontWeight: 600,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {doc.file_name || doc.document_type}
+                      </p>
+                      <p
+                        style={{
+                          margin: "2px 0 0",
+                          fontSize: 12,
+                          color: "#64748b",
+                        }}
+                      >
+                        {doc.employee_name || "-"}
+                      </p>
+                    </div>
+                    <span
+                      style={{
+                        borderRadius: 999,
+                        padding: "4px 10px",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        background:
+                          doc.status === "verified"
+                            ? "#dcfce7"
+                            : doc.status === "rejected"
+                              ? "#fee2e2"
+                              : "#fef3c7",
+                        color:
+                          doc.status === "verified"
+                            ? "#166534"
+                            : doc.status === "rejected"
+                              ? "#991b1b"
+                              : "#92400e",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {getStatusLabel(doc.status)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        ) : (
+          <DashboardRecentActivity activities={activities} />
+        )}
       </div>
     </div>
   );

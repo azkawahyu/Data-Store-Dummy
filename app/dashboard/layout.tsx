@@ -28,7 +28,8 @@ function subscribe(onStoreChange: () => void) {
 }
 
 function getSnapshot() {
-  return getRoleFromToken() !== "employee";
+  const role = getRoleFromToken();
+  return role === "admin" || role === "hr";
 }
 
 function getServerSnapshot() {

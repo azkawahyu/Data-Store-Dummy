@@ -108,6 +108,8 @@ export default function DocumentsPage() {
           documentType?: string;
           file_name?: string;
           fileName?: string;
+          file_size?: number | string | null;
+          fileSize?: number | string | null;
           file_path?: string;
           filePath?: string;
           mime_type?: string;
@@ -135,6 +137,16 @@ export default function DocumentsPage() {
             String(d.employee_id ?? ""),
           documentType: d.document_type ?? d.documentType ?? "",
           fileName: d.file_name ?? d.fileName ?? "",
+          fileSize:
+            typeof d.file_size === "number"
+              ? d.file_size
+              : typeof d.fileSize === "number"
+                ? d.fileSize
+                : typeof d.file_size === "string"
+                  ? Number(d.file_size)
+                  : typeof d.fileSize === "string"
+                    ? Number(d.fileSize)
+                    : null,
           filePath: d.file_path ?? d.filePath ?? "",
           mimeType: d.mime_type ?? d.mimeType ?? "",
           uploadedAt: d.uploaded_at ?? d.uploadedAt ?? new Date().toISOString(),
@@ -570,6 +582,28 @@ export default function DocumentsPage() {
             >
               Reset Pilihan
             </button>
+            {canManage && (
+              <>
+                <button
+                  onClick={() =>
+                    void batchUpdateStatus(selectedIds, "verified")
+                  }
+                  disabled={selectedIds.length === 0}
+                  className="rounded border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Verifikasi Terpilih
+                </button>
+                <button
+                  onClick={() =>
+                    void batchUpdateStatus(selectedIds, "rejected")
+                  }
+                  disabled={selectedIds.length === 0}
+                  className="rounded border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Tolak Terpilih
+                </button>
+              </>
+            )}
             <button
               onClick={handleBulkDownload}
               disabled={selectedIds.length === 0}

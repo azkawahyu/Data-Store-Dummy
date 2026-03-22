@@ -37,6 +37,10 @@ export default function EmployeePage() {
   const [filterUnit, setFilterUnit] = useState("");
   const [canManage, setCanManage] = useState(false);
   const [canDelete, setCanDelete] = useState(false);
+  const [role, setRole] = useState<"admin" | "hr" | "employee" | null>(null);
+  const [editableEmployeeId, setEditableEmployeeId] = useState<string | null>(
+    null,
+  );
 
   // Modal state
   const [formOpen, setFormOpen] = useState(false);
@@ -63,9 +67,35 @@ export default function EmployeePage() {
 
         const payload = parseJwt(token);
         if (payload) {
-          const role = (payload.role ?? "").toString().toLowerCase();
-          setCanManage(role === "admin" || role === "hr");
-          setCanDelete(role === "admin");
+          const parsedRole = (payload.role ?? "").toString().toLowerCase();
+          const userId = (payload.userId ?? payload.sub ?? "").toString();
+
+          if (
+            parsedRole === "admin" ||
+            parsedRole === "hr" ||
+            parsedRole === "employee"
+          ) {
+            setRole(parsedRole);
+          } else {
+            setRole(null);
+          }
+
+          setCanManage(parsedRole === "admin" || parsedRole === "hr");
+          setCanDelete(parsedRole === "admin");
+
+          if (parsedRole === "hr" && userId) {
+            const me = await apiFetch(`/api/user/${userId}`).catch(() => null);
+            const myEmployeeId =
+              me && typeof me === "object" && "employee_id" in me
+                ? String(
+                    (me as { employee_id?: string | null }).employee_id ?? "",
+                  )
+                : "";
+
+            setEditableEmployeeId(myEmployeeId || null);
+          } else {
+            setEditableEmployeeId(null);
+          }
         }
 
         const data = await apiFetch("/api/employees");
@@ -145,11 +175,24 @@ export default function EmployeePage() {
 
   // ── Handlers ──
   function handleAdd() {
+    if (role !== "admin") {
+      toast.push("Hanya admin yang dapat menambah data pegawai.", "error");
+      return;
+    }
+
     setEditTarget(null);
     setFormOpen(true);
   }
 
   function handleEdit(emp: Employee) {
+    if (role === "hr" && emp.id !== editableEmployeeId) {
+      toast.push(
+        "HR hanya dapat mengedit data pegawai miliknya sendiri.",
+        "error",
+      );
+      return;
+    }
+
     setEditTarget(emp);
     setFormOpen(true);
   }
@@ -215,7 +258,7 @@ export default function EmployeePage() {
                 Kelola seluruh data pegawai perusahaan
               </p>
             </div>
-            {canManage && (
+            {role === "admin" && (
               <button className="btn btn-accent" onClick={handleAdd}>
                 + Tambah Pegawai
               </button>
@@ -243,6 +286,8 @@ export default function EmployeePage() {
           <EmployeeTable
             employees={paginatedEmployees}
             canManage={canManage}
+            canEditAll={role === "admin"}
+            editableEmployeeId={role === "hr" ? editableEmployeeId : null}
             canDelete={canDelete}
             onEdit={handleEdit}
             onDelete={handleDelete}

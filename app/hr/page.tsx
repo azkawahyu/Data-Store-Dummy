@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 
 type JwtPayload = {
@@ -20,27 +20,45 @@ function parseJwt(token: string): JwtPayload | null {
   }
 }
 
+function subscribe(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  queueMicrotask(onStoreChange);
+  window.addEventListener("storage", onStoreChange);
+  return () => window.removeEventListener("storage", onStoreChange);
+}
+
+function getSnapshot() {
+  if (typeof window === "undefined") return null;
+
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  const payload = parseJwt(token);
+  return String(payload?.role ?? "").toLowerCase();
+}
+
+function getServerSnapshot() {
+  return null;
+}
+
 export default function HrPage() {
   const router = useRouter();
-
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const payload = token ? parseJwt(token) : null;
-  const role = String(payload?.role ?? "").toLowerCase();
+  const role = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
-    if (!token) {
-      router.replace("/login");
+    if (role === null) {
       return;
     }
 
     if (role !== "hr") {
       router.replace("/dashboard");
-      return;
     }
-  }, [router, role, token]);
+  }, [router, role]);
 
-  if (!token || role !== "hr") {
+  if (role !== "hr") {
     return (
       <div className="p-6 text-slate-500">Loading halaman Admin Umum...</div>
     );

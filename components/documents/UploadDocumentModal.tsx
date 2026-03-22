@@ -31,8 +31,10 @@ export default function UploadDocumentModal({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [docType, setDocType] = useState("");
   const [otherDocType, setOtherDocType] = useState("");
+  const [otherDocTypeTouched, setOtherDocTypeTouched] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const otherDocTypeInputRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false);
 
   const toast = useToast();
@@ -42,6 +44,7 @@ export default function UploadDocumentModal({
     setEmployeeSearch("");
     setDocType("");
     setOtherDocType("");
+    setOtherDocTypeTouched(false);
     setSelectedFiles([]);
     setShowDropdown(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -137,6 +140,8 @@ export default function UploadDocumentModal({
     }
 
     if (docType === "LAINNYA" && !otherDocType.trim()) {
+      setOtherDocTypeTouched(true);
+      otherDocTypeInputRef.current?.focus();
       toast.push("Isi nama tipe dokumen untuk opsi LAINNYA", "error");
       return;
     }
@@ -197,6 +202,10 @@ export default function UploadDocumentModal({
 
   if (!open) return null;
 
+  const showOtherDocTypeWarning =
+    docType === "LAINNYA" && otherDocTypeTouched && !otherDocType.trim();
+  const isOtherDocTypeMissing = docType === "LAINNYA" && !otherDocType.trim();
+
   const modal = (
     <div
       onClick={handleClose}
@@ -214,65 +223,59 @@ export default function UploadDocumentModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm text-slate-700">
-              Pilih Pegawai
-            </label>
+          {!lockEmployeeSelection && (
+            <div>
+              <label className="block text-sm text-slate-700">
+                Pilih Pegawai
+              </label>
 
-            <div ref={wrapperRef} className="relative mt-1">
-              <input
-                value={employeeSearch}
-                onChange={(e) => {
-                  if (lockEmployeeSelection) return;
-                  setEmployeeSearch(e.target.value);
-                  setShowDropdown(true);
-                }}
-                onClick={() => {
-                  if (!lockEmployeeSelection) {
+              <div ref={wrapperRef} className="relative mt-1">
+                <input
+                  value={employeeSearch}
+                  onChange={(e) => {
+                    setEmployeeSearch(e.target.value);
+                    setShowDropdown(true);
+                  }}
+                  onClick={() => {
                     setShowDropdown((s) => !s);
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") setShowDropdown(false);
-                }}
-                onFocus={() => {
-                  if (!lockEmployeeSelection) setShowDropdown(true);
-                }}
-                className="block w-full border rounded-md px-3 py-2 text-sm"
-                placeholder={
-                  lockEmployeeSelection
-                    ? "Pegawai login"
-                    : "Cari nama pegawai..."
-                }
-                readOnly={lockEmployeeSelection}
-              />
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setShowDropdown(false);
+                  }}
+                  onFocus={() => {
+                    setShowDropdown(true);
+                  }}
+                  className="block w-full border rounded-md px-3 py-2 text-sm"
+                  placeholder="Cari nama pegawai..."
+                />
 
-              {showDropdown && !lockEmployeeSelection && (
-                <ul className="absolute z-40 left-0 right-0 bg-white border rounded-md mt-1 max-h-44 overflow-auto">
-                  {employees
-                    .filter((emp) =>
-                      (emp.name || "")
-                        .toLowerCase()
-                        .includes(employeeSearch.toLowerCase()),
-                    )
-                    .map((emp) => (
-                      <li
-                        key={emp.id}
-                        onClick={() => {
-                          setEmployeeId(emp.id);
-                          setEmployeeSearch(emp.name || "");
-                          setShowDropdown(false);
-                        }}
-                        className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm"
-                      >
-                        {emp.name}
-                        {emp.nip ? ` — ${emp.nip}` : ` (${emp.id})`}
-                      </li>
-                    ))}
-                </ul>
-              )}
+                {showDropdown && (
+                  <ul className="absolute z-40 left-0 right-0 bg-white border rounded-md mt-1 max-h-44 overflow-auto">
+                    {employees
+                      .filter((emp) =>
+                        (emp.name || "")
+                          .toLowerCase()
+                          .includes(employeeSearch.toLowerCase()),
+                      )
+                      .map((emp) => (
+                        <li
+                          key={emp.id}
+                          onClick={() => {
+                            setEmployeeId(emp.id);
+                            setEmployeeSearch(emp.name || "");
+                            setShowDropdown(false);
+                          }}
+                          className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm"
+                        >
+                          {emp.name}
+                          {emp.nip ? ` — ${emp.nip}` : ` (${emp.id})`}
+                        </li>
+                      ))}
+                  </ul>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <label className="block text-sm text-slate-700">Tipe Dokumen</label>
@@ -282,6 +285,7 @@ export default function UploadDocumentModal({
               onChange={(e) => {
                 const value = e.target.value;
                 setDocType(value);
+                if (value === "LAINNYA") setOtherDocTypeTouched(true);
                 if (value !== "LAINNYA") setOtherDocType("");
               }}
             >
@@ -301,11 +305,26 @@ export default function UploadDocumentModal({
                 Nama Tipe Dokumen Lainnya
               </label>
               <input
+                ref={otherDocTypeInputRef}
                 value={otherDocType}
-                onChange={(e) => setOtherDocType(e.target.value)}
-                className="block w-full border rounded-md px-3 py-2 text-sm mt-1"
+                onChange={(e) => {
+                  setOtherDocType(e.target.value);
+                  if (!otherDocTypeTouched) setOtherDocTypeTouched(true);
+                }}
+                onBlur={() => setOtherDocTypeTouched(true)}
+                className={`block w-full border rounded-md px-3 py-2 text-sm mt-1 ${
+                  showOtherDocTypeWarning
+                    ? "border-red-500 focus:outline-red-500"
+                    : ""
+                }`}
                 placeholder="Contoh: SKCK"
+                aria-invalid={showOtherDocTypeWarning}
               />
+              {showOtherDocTypeWarning && (
+                <p className="mt-1 text-xs text-red-600">
+                  Field ini wajib diisi jika memilih tipe dokumen LAINNYA.
+                </p>
+              )}
             </div>
           )}
 
@@ -389,7 +408,7 @@ export default function UploadDocumentModal({
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || isOtherDocTypeMissing}
               className="bg-cyan-500 text-white px-4 py-2 rounded-md text-sm disabled:opacity-60 hover:bg-cyan-700"
             >
               {loading ? "Mengunggah..." : "Upload"}

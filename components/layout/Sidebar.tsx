@@ -67,7 +67,7 @@ export default function Sidebar() {
 
     if (role === "hr") {
       return [
-        { href: "/hr", label: "Admin Umum" },
+        // { href: "/hr", label: "Admin Umum" },
         { href: "/dashboard", label: "Dashboard" },
         { href: "/employee", label: "Karyawan" },
         { href: "/documents", label: "Dokumen" },

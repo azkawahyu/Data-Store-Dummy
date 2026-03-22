@@ -3,6 +3,8 @@ import type { Employee } from "@/types/employee";
 interface Props {
   employees: Employee[];
   canManage: boolean;
+  canEditAll: boolean;
+  editableEmployeeId: string | null;
   canDelete: boolean;
   onEdit: (emp: Employee) => void;
   onDelete: (emp: Employee) => void;
@@ -11,10 +13,14 @@ interface Props {
 export default function EmployeeTable({
   employees,
   canManage,
+  canEditAll,
+  editableEmployeeId,
   canDelete,
   onEdit,
   onDelete,
 }: Props) {
+  const showActions = canEditAll || Boolean(editableEmployeeId);
+
   return (
     <>
       <style>{`
@@ -177,14 +183,14 @@ export default function EmployeeTable({
               <th>Unit</th>
               <th>Email</th>
               <th>No. HP</th>
-              {canManage && <th style={{ textAlign: "right" }}>Aksi</th>}
+              {showActions && <th style={{ textAlign: "right" }}>Aksi</th>}
             </tr>
           </thead>
           <tbody>
             {employees.length === 0 ? (
               <tr>
                 <td
-                  colSpan={canManage ? 8 : 7}
+                  colSpan={showActions ? 8 : 7}
                   style={{ textAlign: "center", color: "#94a3b8", padding: 36 }}
                 >
                   Data tidak ditemukan.
@@ -212,15 +218,17 @@ export default function EmployeeTable({
                   <td style={{ color: "#64748b", fontSize: 12.5 }}>
                     {emp.no_hp}
                   </td>
-                  {canManage && (
+                  {(showActions || canManage) && (
                     <td style={{ whiteSpace: "nowrap", textAlign: "right" }}>
-                      <button
-                        className="emp-action-btn edit"
-                        onClick={() => onEdit(emp)}
-                      >
-                        ✏️ Edit
-                      </button>{" "}
-                      {canDelete && (
+                      {(canEditAll || emp.id === editableEmployeeId) && (
+                        <button
+                          className="emp-action-btn edit"
+                          onClick={() => onEdit(emp)}
+                        >
+                          ✏️ Edit
+                        </button>
+                      )}{" "}
+                      {canDelete && canEditAll && (
                         <button
                           className="emp-action-btn delete"
                           onClick={() => onDelete(emp)}
@@ -260,7 +268,7 @@ export default function EmployeeTable({
               <div className="emp-card-meta">{emp.jabatan}</div>
               <div className="emp-card-email">{emp.email}</div>
               <div className="emp-card-hp">{emp.no_hp}</div>
-              {canManage && (
+              {(canEditAll || emp.id === editableEmployeeId) && (
                 <div className="emp-card-footer">
                   <button
                     className="emp-action-btn edit"
@@ -268,7 +276,7 @@ export default function EmployeeTable({
                   >
                     ✏️ Edit
                   </button>
-                  {canDelete && (
+                  {canDelete && canEditAll && (
                     <button
                       className="emp-action-btn delete"
                       onClick={() => onDelete(emp)}
@@ -289,6 +297,8 @@ export default function EmployeeTable({
 interface Props {
   employees: Employee[];
   canManage: boolean;
+  canEditAll: boolean;
+  editableEmployeeId: string | null;
   canDelete: boolean;
   onEdit: (emp: Employee) => void;
   onDelete: (emp: Employee) => void;

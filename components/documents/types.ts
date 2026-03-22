@@ -6,6 +6,7 @@ export interface DocumentItem {
   employeeName: string;
   documentType: string;
   fileName: string;
+  fileSize?: number | null;
   filePath: string;
   mimeType: string;
   uploadedAt: string;

@@ -30,6 +30,7 @@ interface Document {
   document_type: string;
   status: string;
   file_name?: string;
+  file_size?: number | null;
   file_path?: string;
   mime_type?: string;
   uploaded_at?: string | null;
@@ -129,6 +130,7 @@ export default function EmployeeProfileDashboard({
       employeeName: profile?.nama ?? "Pegawai",
       documentType: doc.document_type ?? "-",
       fileName: doc.file_name ?? "-",
+      fileSize: doc.file_size ?? null,
       filePath: doc.file_path ?? "#",
       mimeType: doc.mime_type ?? "",
       uploadedAt: doc.uploaded_at ?? new Date().toISOString(),

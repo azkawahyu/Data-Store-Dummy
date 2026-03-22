@@ -37,8 +37,6 @@ export async function GET(
         select: { employee_id: true },
       });
 
-      console.log(`User's Employee ID: ${me?.employee_id}`);
-
       if (!me?.employee_id || me.employee_id !== id) {
         return Response.json({ message: "Not Found" }, { status: 404 });
       }
@@ -73,6 +71,17 @@ export async function PUT(
 
     if (role !== "admin" && role !== "hr") {
       return Response.json({ message: "Forbidden" }, { status: 403 });
+    }
+
+    if (role === "hr") {
+      const me = await prisma.users.findUnique({
+        where: { id: userId },
+        select: { employee_id: true },
+      });
+
+      if (!me?.employee_id || me.employee_id !== employeeId) {
+        return Response.json({ message: "Forbidden" }, { status: 403 });
+      }
     }
 
     const employeeOwner = await getEmployeeById(employeeId);
