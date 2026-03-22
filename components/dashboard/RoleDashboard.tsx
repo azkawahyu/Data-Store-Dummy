@@ -7,6 +7,13 @@ import DashboardPendingTable from "@/components/dashboard/DashboardPendingTable"
 import DashboardRecentActivity from "@/components/dashboard/DashboardRecentActivity";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import EmployeeProfileDashboard from "@/components/dashboard/EmployeeProfileDashboard";
+import {
+  DOCUMENT_STATUS,
+  formatDocumentStatusLabel,
+  getDocumentStatusTone,
+  normalizeDocumentStatus,
+} from "@/components/documents/status";
+import { getRoleLabel } from "@/components/common/labels";
 
 type Employee = {
   id: string;
@@ -61,7 +68,6 @@ interface Props {
   employeeProfile?: EmployeeProfile | null;
   userProfile?: UserProfile | null;
   onUploadDocument?: () => void;
-  onEditEmployeeProfile?: () => void;
 }
 
 export default function RoleDashboard({
@@ -72,18 +78,18 @@ export default function RoleDashboard({
   employeeProfile,
   userProfile,
   onUploadDocument,
-  onEditEmployeeProfile,
 }: Props) {
-  const pendingDocs = documents.filter((d) => d.status === "pending");
-  const verifiedDocs = documents.filter((d) => d.status === "verified").length;
-  const roleLabel = role === "hr" ? "ADMIN UMUM" : role.toUpperCase();
+  const pendingDocs = documents.filter(
+    (d) => normalizeDocumentStatus(d.status) === DOCUMENT_STATUS.PENDING,
+  );
+  const verifiedDocs = documents.filter(
+    (d) => normalizeDocumentStatus(d.status) === DOCUMENT_STATUS.VERIFIED,
+  ).length;
+  const roleLabel = getRoleLabel(role);
   const recentDocuments = documents.slice(0, 5);
 
   const getStatusLabel = (status: string) => {
-    if (status === "verified") return "Disetujui";
-    if (status === "rejected") return "Ditolak";
-    if (status === "pending") return "Pending";
-    return status;
+    return formatDocumentStatusLabel(status);
   };
 
   if (role === "employee") {
@@ -93,7 +99,6 @@ export default function RoleDashboard({
         profile={employeeProfile ?? null}
         documents={documents}
         onUpload={onUploadDocument ?? (() => {})}
-        onEditProfile={onEditEmployeeProfile ?? (() => {})}
       />
     );
   }
@@ -355,7 +360,9 @@ export default function RoleDashboard({
               ⏳
             </span>
             <div className="dash-highlight-copy">
-              <div className="dash-highlight-label">Dokumen Pending</div>
+              <div className="dash-highlight-label">
+                Dokumen Menunggu Verifikasi
+              </div>
               <div className="dash-highlight-value">{pendingDocs.length}</div>
             </div>
           </div>
@@ -474,18 +481,8 @@ export default function RoleDashboard({
                         padding: "4px 10px",
                         fontSize: 11,
                         fontWeight: 700,
-                        background:
-                          doc.status === "verified"
-                            ? "#dcfce7"
-                            : doc.status === "rejected"
-                              ? "#fee2e2"
-                              : "#fef3c7",
-                        color:
-                          doc.status === "verified"
-                            ? "#166534"
-                            : doc.status === "rejected"
-                              ? "#991b1b"
-                              : "#92400e",
+                        background: getDocumentStatusTone(doc.status).bg,
+                        color: getDocumentStatusTone(doc.status).color,
                         whiteSpace: "nowrap",
                       }}
                     >

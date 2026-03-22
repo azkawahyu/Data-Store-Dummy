@@ -7,6 +7,7 @@ import { useToast } from "@/components/ToastProvider";
 import RoleDashboard from "@/components/dashboard/RoleDashboard";
 import UploadDocumentModal from "@/components/documents/UploadDocumentModal";
 import EmployeeFormModal from "@/components/employee/EmployeeFormModal";
+import { getEmployeeConnectionNoticeTitle } from "@/components/common/labels";
 import type {
   Employee as EmployeeEntity,
   EmployeeForm as EmployeeFormPayload,
@@ -328,9 +329,7 @@ export default function EmployeeProfilePage() {
   }
 
   if (loading) {
-    return (
-      <div className="p-6 text-slate-500">Loading profil data pegawai...</div>
-    );
+    return <div className="p-6 text-slate-500">Loading data pegawai...</div>;
   }
 
   return (
@@ -343,7 +342,9 @@ export default function EmployeeProfilePage() {
               : "border-cyan-200 bg-cyan-50 text-cyan-800"
           }`}
         >
-          <p className="font-semibold">Data pegawai belum terhubung</p>
+          <p className="font-semibold">
+            {getEmployeeConnectionNoticeTitle(false)}
+          </p>
           <p className="mt-1">
             {profileStatus.link_message ??
               "Akun Anda belum terkait ke data pegawai. Jika Anda merasa data sudah dibuat admin, silakan hubungi admin untuk mengaitkan akun ini."}
@@ -371,7 +372,6 @@ export default function EmployeeProfilePage() {
           employeeProfile={employeeProfile}
           userProfile={profileStatus}
           onUploadDocument={() => setOpenUpload(true)}
-          onEditEmployeeProfile={() => setOpenEdit(true)}
         />
       )}
 

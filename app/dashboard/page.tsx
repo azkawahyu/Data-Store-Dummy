@@ -344,7 +344,6 @@ export default function DashboardPage() {
           employeeProfile={employeeProfile}
           userProfile={role === "employee" ? profileStatus : null}
           onUploadDocument={() => setOpenUpload(true)}
-          onEditEmployeeProfile={() => setOpenEditProfile(true)}
         />
       )}
 

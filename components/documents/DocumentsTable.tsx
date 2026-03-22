@@ -188,7 +188,7 @@ export default function DocumentsTable({
           .doc-card-date { font-size: 12px; color: #64748b; }
           .doc-card-footer {
             display: flex;
-            align-items: center;
+            align-items: stretch;
             justify-content: flex-end;
             gap: 6px;
             flex-wrap: wrap;
@@ -359,7 +359,7 @@ export default function DocumentsTable({
               <div className="doc-card-footer">
                 <button
                   onClick={() => onView(d)}
-                  className="doc-action-btn view"
+                  className="doc-action-btn view w-full sm:w-auto"
                 >
                   👁️ View
                 </button>
@@ -374,7 +374,7 @@ export default function DocumentsTable({
                 {canDelete && onDelete && (
                   <button
                     onClick={() => onDelete(d)}
-                    className="doc-action-btn delete"
+                    className="doc-action-btn delete w-full sm:w-auto"
                   >
                     🗑️ Hapus
                   </button>

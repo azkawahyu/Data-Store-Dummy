@@ -410,15 +410,6 @@ export default function EmployeeFormModal({
             <h3 className="emp-modal-title">
               {title ?? (initial ? "Edit Pegawai" : "Tambah Pegawai")}
             </h3>
-            {!hideCloseButton && (
-              <button
-                className="emp-modal-close"
-                onClick={onClose}
-                aria-label="Tutup"
-              >
-                ×
-              </button>
-            )}
           </div>
 
           {/* Body */}
@@ -585,11 +576,11 @@ export default function EmployeeFormModal({
             </div>
 
             {/* Footer */}
-            <div className="emp-modal-footer">
+            <div className="emp-modal-footer flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               {!hideCancelButton && (
                 <button
                   type="button"
-                  className="emp-btn emp-btn-batal"
+                  className="btn btn-secondary"
                   onClick={onClose}
                   disabled={loading}
                 >
@@ -598,7 +589,7 @@ export default function EmployeeFormModal({
               )}
               <button
                 type="submit"
-                className="emp-btn emp-btn-primary"
+                className="btn btn-primary"
                 disabled={loading || !isFormValid}
               >
                 {loading

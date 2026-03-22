@@ -19,7 +19,7 @@ export default function EmployeeTable({
   onEdit,
   onDelete,
 }: Props) {
-  const showActions = canEditAll || Boolean(editableEmployeeId);
+  const showActions = !canManage && (canEditAll || Boolean(editableEmployeeId));
 
   return (
     <>
@@ -96,6 +96,14 @@ export default function EmployeeTable({
         }
         .emp-action-btn.edit:hover {
           background: #ddd6fe;
+          transform: scale(1.04);
+        }
+        .emp-action-btn.detail {
+          background: #dbeafe;
+          color: #1d4ed8;
+        }
+        .emp-action-btn.detail:hover {
+          background: #bfdbfe;
           transform: scale(1.04);
         }
         .emp-action-btn.delete {
@@ -183,6 +191,7 @@ export default function EmployeeTable({
               <th>Unit</th>
               <th>Email</th>
               <th>No. HP</th>
+              <th>Detail</th>
               {showActions && <th style={{ textAlign: "right" }}>Aksi</th>}
             </tr>
           </thead>
@@ -190,7 +199,7 @@ export default function EmployeeTable({
             {employees.length === 0 ? (
               <tr>
                 <td
-                  colSpan={showActions ? 8 : 7}
+                  colSpan={showActions ? 9 : 8}
                   style={{ textAlign: "center", color: "#94a3b8", padding: 36 }}
                 >
                   Data tidak ditemukan.
@@ -198,7 +207,10 @@ export default function EmployeeTable({
               </tr>
             ) : (
               employees.map((emp, i) => (
-                <tr key={emp.id}>
+                <tr
+                  key={emp.id}
+                  className="hover:bg-indigo-50 transition-colors"
+                >
                   <td style={{ color: "#94a3b8", width: 36, fontWeight: 500 }}>
                     {i + 1}
                   </td>
@@ -218,8 +230,24 @@ export default function EmployeeTable({
                   <td style={{ color: "#64748b", fontSize: 12.5 }}>
                     {emp.no_hp}
                   </td>
-                  {(showActions || canManage) && (
-                    <td style={{ whiteSpace: "nowrap", textAlign: "right" }}>
+                  <td
+                    style={{ whiteSpace: "nowrap" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="emp-action-btn detail"
+                      onClick={() => {
+                        window.location.href = `/employee/${emp.id}`;
+                      }}
+                    >
+                      🔎 Detail
+                    </button>
+                  </td>
+                  {showActions && (
+                    <td
+                      style={{ whiteSpace: "nowrap", textAlign: "right" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {(canEditAll || emp.id === editableEmployeeId) && (
                         <button
                           className="emp-action-btn edit"
@@ -268,24 +296,32 @@ export default function EmployeeTable({
               <div className="emp-card-meta">{emp.jabatan}</div>
               <div className="emp-card-email">{emp.email}</div>
               <div className="emp-card-hp">{emp.no_hp}</div>
-              {(canEditAll || emp.id === editableEmployeeId) && (
-                <div className="emp-card-footer">
+              <div className="emp-card-footer">
+                <button
+                  className="emp-action-btn detail"
+                  onClick={() => {
+                    window.location.href = `/employee/${emp.id}`;
+                  }}
+                >
+                  🔎 Detail
+                </button>
+                {(canEditAll || emp.id === editableEmployeeId) && (
                   <button
                     className="emp-action-btn edit"
                     onClick={() => onEdit(emp)}
                   >
                     ✏️ Edit
                   </button>
-                  {canDelete && canEditAll && (
-                    <button
-                      className="emp-action-btn delete"
-                      onClick={() => onDelete(emp)}
-                    >
-                      🗑️ Hapus
-                    </button>
-                  )}
-                </div>
-              )}
+                )}
+                {canDelete && canEditAll && (
+                  <button
+                    className="emp-action-btn delete"
+                    onClick={() => onDelete(emp)}
+                  >
+                    🗑️ Hapus
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}

@@ -17,6 +17,9 @@ function parseJwt(token: string) {
   try {
     const p = token.split(".")[1];
     if (!p) return null;
+    const test = JSON.parse(atob(p.replace(/-/g, "+").replace(/_/g, "/")));
+    console.log("Parsed JWT payload:", test); // Debug log
+
     return JSON.parse(atob(p.replace(/-/g, "+").replace(/_/g, "/")));
   } catch {
     return null;

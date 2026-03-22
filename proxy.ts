@@ -8,7 +8,7 @@ export function proxy(request: NextRequest) {
   const publicApiRoutes = ["/api/login", "/api/register", "/api/logout"];
   const protectedPages = [
     "/dashboard",
-    "/employee",
+    "/employees",
     "/documents",
     "/profile",
     "/users",
@@ -44,6 +44,12 @@ export function proxy(request: NextRequest) {
       const isActivityPage =
         pathname === "/activity" || pathname.startsWith("/activity/");
       const isHrPage = pathname === "/hr" || pathname.startsWith("/hr/");
+      const isDashboardPage =
+        pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+
+      if (role === "employee" && isDashboardPage) {
+        return NextResponse.redirect(new URL("/profile/employee", request.url));
+      }
 
       if (role === "hr" && (isUsersPage || isActivityPage)) {
         return NextResponse.redirect(new URL("/hr", request.url));
@@ -130,7 +136,7 @@ export const config = {
   matcher: [
     "/api/:path*",
     "/dashboard/:path*",
-    "/employee/:path*",
+    "/employees/:path*",
     "/documents/:path*",
     "/profile/:path*",
     "/users/:path*",

@@ -9,6 +9,13 @@ import UploadDocumentModal from "@/components/documents/UploadDocumentModal";
 import DocumentDeleteModal from "@/components/documents/DocumentDeleteModal";
 import DeleteConfirmModal from "@/components/common/DeleteConfirmModal";
 import { DocumentItem, DocumentStatus } from "@/components/documents/types";
+import {
+  DOCUMENT_STATUS,
+  getDocumentStatusActionLabel,
+  getDocumentStatusEndpoint,
+  getDocumentStatusSuccessVerb,
+  normalizeDocumentStatus,
+} from "@/components/documents/status";
 
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
@@ -18,6 +25,23 @@ import DocumentsTableFilters from "@/components/documents/DocumentsTableFilters"
 type SortValue = "newest" | "oldest" | "az" | "za";
 
 const PAGE_SIZE = 7;
+
+interface JwtPayload {
+  userId?: string;
+  sub?: string;
+  role?: string;
+  [key: string]: unknown;
+}
+
+function parseJwt(token: string): JwtPayload | null {
+  try {
+    const p = token.split(".")[1];
+    if (!p) return null;
+    return JSON.parse(atob(p.replace(/-/g, "+").replace(/_/g, "/")));
+  } catch {
+    return null;
+  }
+}
 
 export default function DocumentsPage() {
   const [rows, setRows] = useState<DocumentItem[]>([]);
@@ -44,23 +68,6 @@ export default function DocumentsPage() {
 
   const router = useRouter();
   const toast = useToast();
-
-  interface JwtPayload {
-    userId?: string;
-    sub?: string;
-    role?: string;
-    [key: string]: unknown;
-  }
-
-  function parseJwt(token: string): JwtPayload | null {
-    try {
-      const p = token.split(".")[1];
-      if (!p) return null;
-      return JSON.parse(atob(p.replace(/-/g, "+").replace(/_/g, "/")));
-    } catch {
-      return null;
-    }
-  }
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
@@ -150,7 +157,9 @@ export default function DocumentsPage() {
           filePath: d.file_path ?? d.filePath ?? "",
           mimeType: d.mime_type ?? d.mimeType ?? "",
           uploadedAt: d.uploaded_at ?? d.uploadedAt ?? new Date().toISOString(),
-          status: (d.status ?? "pending") as DocumentStatus,
+          status: normalizeDocumentStatus(
+            typeof d.status === "string" ? d.status : "pending",
+          ),
           verifiedBy:
             d.verified_by ??
             (d as { verifiedBy?: string }).verifiedBy ??
@@ -186,9 +195,8 @@ export default function DocumentsPage() {
       const docT = (r.documentType ?? "").toLowerCase();
       const fname = (r.fileName ?? "").toLowerCase();
       const matchQ = emp.includes(q) || docT.includes(q) || fname.includes(q);
-      const rStatus = (r.status ?? "").toString().toLowerCase();
       const matchStatus =
-        status === "all" || rStatus === String(status).toLowerCase();
+        status === "all" || normalizeDocumentStatus(r.status) === status;
       const matchType =
         !docType ||
         (r.documentType ?? "").toString().trim() === docType.toString().trim();
@@ -228,17 +236,36 @@ export default function DocumentsPage() {
     [rows, selectedIds],
   );
 
+  const hasUnverifiedSelected = selectedDocuments.some(
+    (d) => normalizeDocumentStatus(d.status) !== "verified",
+  );
+
+  const selectableFilteredRows = useMemo(
+    () => filtered.filter((r) => Boolean(r.filePath)),
+    [filtered],
+  );
+
+  const areAllFilteredSelected =
+    selectableFilteredRows.length > 0 &&
+    selectableFilteredRows.every((r) => selectedIds.includes(r.id));
+
   const stats = useMemo(() => {
     const total = rows.length;
-    const pending = rows.filter((r) => r.status === "pending").length;
-    const verified = rows.filter((r) => r.status === "verified").length;
-    const rejected = rows.filter((r) => r.status === "rejected").length;
+    const pending = rows.filter(
+      (r) => normalizeDocumentStatus(r.status) === DOCUMENT_STATUS.PENDING,
+    ).length;
+    const verified = rows.filter(
+      (r) => normalizeDocumentStatus(r.status) === DOCUMENT_STATUS.VERIFIED,
+    ).length;
+    const rejected = rows.filter(
+      (r) => normalizeDocumentStatus(r.status) === DOCUMENT_STATUS.REJECTED,
+    ).length;
     return { total, pending, verified, rejected };
   }, [rows]);
 
   async function updateStatus(doc: DocumentItem, next: DocumentStatus) {
     // Confirm action
-    const actionLabel = next === "verified" ? "verifikasi" : "penolakan";
+    const actionLabel = getDocumentStatusActionLabel(next);
     if (!confirm(`Yakin ingin melakukan ${actionLabel} pada dokumen ini?`))
       return;
 
@@ -269,7 +296,7 @@ export default function DocumentsPage() {
               status: next,
               verifiedBy: verifiedBy,
               verifiedAt: new Date().toISOString(),
-              verifiedByName: next === "verified" ? "Anda" : r.verifiedByName,
+              verifiedByName: "Anda",
             }
           : r,
       ),
@@ -282,13 +309,13 @@ export default function DocumentsPage() {
             status: next,
             verifiedBy: verifiedBy,
             verifiedAt: new Date().toISOString(),
-            verifiedByName: next === "verified" ? "Anda" : prev.verifiedByName,
+            verifiedByName: "Anda",
           }
         : prev,
     );
 
     try {
-      const endpoint = next === "verified" ? "verify" : "reject";
+      const endpoint = getDocumentStatusEndpoint(next);
 
       const res = await apiFetch(`/api/documents/${endpoint}/${doc.id}`, {
         method: "PATCH",
@@ -339,7 +366,7 @@ export default function DocumentsPage() {
       );
 
       toast.push(
-        `Dokumen berhasil ${next === "verified" ? "diverifikasi" : "ditolak"}`,
+        `Dokumen berhasil ${getDocumentStatusSuccessVerb(next)}`,
         "success",
       );
     } catch (error) {
@@ -359,7 +386,7 @@ export default function DocumentsPage() {
 
   async function batchUpdateStatus(ids: string[], next: DocumentStatus) {
     if (!ids || ids.length === 0) return;
-    const actionLabel = next === "verified" ? "verifikasi" : "penolakan";
+    const actionLabel = getDocumentStatusActionLabel(next);
     if (
       !confirm(
         `Yakin ingin melakukan ${actionLabel} pada ${ids.length} dokumen?`,
@@ -394,7 +421,7 @@ export default function DocumentsPage() {
               status: next,
               verifiedBy: verifiedBy,
               verifiedAt: new Date().toISOString(),
-              verifiedByName: next === "verified" ? "Anda" : r.verifiedByName,
+              verifiedByName: "Anda",
             }
           : r,
       ),
@@ -407,7 +434,7 @@ export default function DocumentsPage() {
             status: next,
             verifiedBy: verifiedBy,
             verifiedAt: new Date().toISOString(),
-            verifiedByName: next === "verified" ? "Anda" : prev.verifiedByName,
+            verifiedByName: "Anda",
           }
         : prev,
     );
@@ -416,7 +443,7 @@ export default function DocumentsPage() {
 
     for (const id of ids) {
       try {
-        const endpoint = next === "verified" ? "verify" : "reject";
+        const endpoint = getDocumentStatusEndpoint(next);
         const res = await apiFetch(`/api/documents/${endpoint}/${id}`, {
           method: "PATCH",
           body: JSON.stringify({ verified_by: verifiedBy }),
@@ -444,7 +471,7 @@ export default function DocumentsPage() {
               : r,
           ),
         );
-      } catch (error) {
+      } catch {
         failed.push(id);
       }
     }
@@ -464,7 +491,7 @@ export default function DocumentsPage() {
       );
     } else {
       toast.push(
-        `${ids.length} dokumen berhasil ${next === "verified" ? "diverifikasi" : "ditolak"}`,
+        `${ids.length} dokumen berhasil ${getDocumentStatusSuccessVerb(next)}`,
         "success",
       );
       setSelectedIds([]);
@@ -494,8 +521,18 @@ export default function DocumentsPage() {
       return;
     }
 
-    const readyToDownload = selectedDocuments.filter((d) =>
-      Boolean(d.filePath),
+    if (hasUnverifiedSelected) {
+      toast.push(
+        "Unduhan massal hanya tersedia untuk dokumen yang sudah terverifikasi. Hapus dokumen yang belum terverifikasi dari pilihan.",
+        "error",
+      );
+      return;
+    }
+
+    const readyToDownload = selectedDocuments.filter(
+      (d) =>
+        normalizeDocumentStatus(d.status) === DOCUMENT_STATUS.VERIFIED &&
+        Boolean(d.filePath),
     );
 
     if (readyToDownload.length === 0) {
@@ -522,6 +559,21 @@ export default function DocumentsPage() {
       `Memulai download ${readyToDownload.length} dokumen. Jika browser meminta izin, pilih Allow.`,
       "success",
     );
+  }
+
+  function handleSelectAllFiltered() {
+    if (selectableFilteredRows.length === 0) return;
+
+    setSelectedIds((prev) => {
+      const filteredIds = selectableFilteredRows.map((r) => r.id);
+      const allSelected = filteredIds.every((id) => prev.includes(id));
+
+      if (allSelected) {
+        return prev.filter((id) => !filteredIds.includes(id));
+      }
+
+      return Array.from(new Set([...prev, ...filteredIds]));
+    });
   }
 
   function loadData() {
@@ -568,17 +620,24 @@ export default function DocumentsPage() {
           }}
         />
 
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="mb-3 flex flex-col gap-3 border-t border-slate-200 px-1 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-600">
             {selectedIds.length > 0
               ? `${selectedIds.length} dokumen dipilih`
               : "Pilih dokumen untuk download massal"}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+            <button
+              onClick={handleSelectAllFiltered}
+              disabled={selectableFilteredRows.length === 0}
+              className="rounded border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-auto"
+            >
+              {areAllFilteredSelected ? "Batal Pilih Semua" : "Pilih Semua"}
+            </button>
             <button
               onClick={() => setSelectedIds([])}
               disabled={selectedIds.length === 0}
-              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-auto"
             >
               Reset Pilihan
             </button>
@@ -589,7 +648,7 @@ export default function DocumentsPage() {
                     void batchUpdateStatus(selectedIds, "verified")
                   }
                   disabled={selectedIds.length === 0}
-                  className="rounded border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-auto"
                 >
                   Verifikasi Terpilih
                 </button>
@@ -598,7 +657,7 @@ export default function DocumentsPage() {
                     void batchUpdateStatus(selectedIds, "rejected")
                   }
                   disabled={selectedIds.length === 0}
-                  className="rounded border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-auto"
                 >
                   Tolak Terpilih
                 </button>
@@ -606,12 +665,23 @@ export default function DocumentsPage() {
             )}
             <button
               onClick={handleBulkDownload}
-              disabled={selectedIds.length === 0}
-              className="rounded border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-700 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={selectedIds.length === 0 || hasUnverifiedSelected}
+              title={
+                hasUnverifiedSelected
+                  ? "Hapus dokumen yang belum terverifikasi dari pilihan untuk mengaktifkan download"
+                  : undefined
+              }
+              className="rounded border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-700 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-auto"
             >
               Download Terpilih
             </button>
           </div>
+          {selectedIds.length > 0 && hasUnverifiedSelected && (
+            <p className="text-xs text-rose-600 sm:ml-auto">
+              Download massal hanya aktif jika semua dokumen terpilih sudah
+              terverifikasi.
+            </p>
+          )}
         </div>
 
         <DocumentsTable
@@ -630,7 +700,7 @@ export default function DocumentsPage() {
           onDelete={askDeleteDocument}
         />
 
-        <div className="documents-pagination mt-4 flex items-center justify-between gap-4 border-t border-slate-200 px-1 pt-4">
+        <div className="documents-pagination mt-4 flex flex-col gap-3 border-t border-slate-200 px-1 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="documents-pagination-info text-xs text-slate-500">
             Menampilkan{" "}
             <span className="font-medium text-slate-700">
@@ -644,7 +714,7 @@ export default function DocumentsPage() {
             dokumen
           </p>
 
-          <div className="documents-pagination-buttons flex items-center gap-1">
+          <div className="documents-pagination-buttons flex flex-wrap items-center gap-1">
             <button
               onClick={() => setPage(1)}
               disabled={page === 1}
@@ -777,14 +847,16 @@ export default function DocumentsPage() {
                 mimeType: d.mime_type ?? d.mimeType ?? "",
                 uploadedAt:
                   d.uploaded_at ?? d.uploadedAt ?? new Date().toISOString(),
-                status: (d.status ?? "pending") as DocumentStatus,
+                status: normalizeDocumentStatus(
+                  typeof d.status === "string" ? d.status : "pending",
+                ),
                 verifiedBy: d.verified_by ?? d.verifiedBy ?? undefined,
                 verifiedByName:
                   d.verified_by_name ?? d.verifiedByName ?? undefined,
                 verifiedAt: d.verified_at ?? d.verifiedAt ?? undefined,
               });
               setRows(list.map(normalize));
-            } catch (e) {
+            } catch {
               setRows([]);
             } finally {
               setLoading(false);

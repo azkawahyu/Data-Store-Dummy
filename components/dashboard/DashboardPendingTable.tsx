@@ -108,7 +108,7 @@ export default function DashboardPendingTable({
 
       {pending.length === 0 ? (
         <p style={{ color: "#64748b", fontSize: 14, margin: 0 }}>
-          Tidak ada dokumen pending.
+          Tidak ada dokumen menunggu verifikasi.
         </p>
       ) : (
         <>

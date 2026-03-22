@@ -17,14 +17,14 @@ const DOC_STATS = [
   },
   {
     key: "pending",
-    label: "Pending",
+    label: "Menunggu Verifikasi",
     bg: "linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)",
     textColor: "#92400e",
     labelColor: "#b45309",
   },
   {
     key: "verified",
-    label: "Disetujui",
+    label: "Terverifikasi",
     bg: "linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%)",
     textColor: "#166534",
     labelColor: "#15803d",

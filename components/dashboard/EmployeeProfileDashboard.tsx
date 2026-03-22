@@ -3,6 +3,12 @@
 import { useState } from "react";
 import DocumentDetailModal from "@/components/documents/DocumentDetailModal";
 import type { DocumentItem } from "@/components/documents/types";
+import {
+  DOCUMENT_STATUS,
+  formatDocumentStatusLabel,
+  getDocumentStatusTone,
+  normalizeDocumentStatus,
+} from "@/components/documents/status";
 
 interface EmployeeProfile {
   id: string;
@@ -44,7 +50,6 @@ interface Props {
   profile: EmployeeProfile | null;
   documents: Document[];
   onUpload: () => void;
-  onEditProfile: () => void;
 }
 
 function formatDate(dateStr?: string | null) {
@@ -57,25 +62,22 @@ function formatDate(dateStr?: string | null) {
 }
 
 function formatStatus(status?: string | null) {
-  const normalized = (status ?? "").toLowerCase();
-  if (normalized === "verified") return "Terverifikasi";
-  if (normalized === "pending") return "Menunggu Verifikasi";
-  if (normalized === "rejected") return "Ditolak";
-  return status || "-";
+  return formatDocumentStatusLabel(status);
 }
 
 function statusTone(status?: string | null) {
-  const normalized = (status ?? "").toLowerCase();
-  if (normalized === "verified") {
-    return { bg: "#ecfdf5", color: "#059669" };
-  }
-  if (normalized === "pending") {
-    return { bg: "#fffbeb", color: "#d97706" };
-  }
-  if (normalized === "rejected") {
-    return { bg: "#fef2f2", color: "#dc2626" };
-  }
-  return { bg: "#f1f5f9", color: "#475569" };
+  return getDocumentStatusTone(status);
+}
+
+function downloadFile(filePath: string, fileName: string) {
+  const link = document.createElement("a");
+  link.href = filePath;
+  link.download = fileName;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 export default function EmployeeProfileDashboard({
@@ -83,12 +85,12 @@ export default function EmployeeProfileDashboard({
   profile,
   documents,
   onUpload,
-  onEditProfile,
 }: Props) {
   const [openDetail, setOpenDetail] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
   const itemsPerPage = 5;
 
   const isProfileEmpty = !profile;
@@ -96,7 +98,7 @@ export default function EmployeeProfileDashboard({
     profile && (!profile.nama?.trim() || !profile.nip?.trim()),
   );
   const pendingCount = documents.filter(
-    (doc) => doc.status === "pending",
+    (doc) => normalizeDocumentStatus(doc.status) === DOCUMENT_STATUS.PENDING,
   ).length;
 
   // Filter documents based on search term
@@ -108,6 +110,18 @@ export default function EmployeeProfileDashboard({
       formatStatus(doc.status).toLowerCase().includes(searchLower)
     );
   });
+
+  const selectableFilteredDocuments = filteredDocuments.filter((doc) =>
+    Boolean(doc.file_path),
+  );
+  const areAllFilteredSelected =
+    selectableFilteredDocuments.length > 0 &&
+    selectableFilteredDocuments.every((doc) =>
+      selectedDocumentIds.includes(doc.id),
+    );
+  const selectedDocuments = documents.filter(
+    (doc) => selectedDocumentIds.includes(doc.id) && doc.file_path,
+  );
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage);
@@ -123,6 +137,35 @@ export default function EmployeeProfileDashboard({
     setCurrentPage(1);
   };
 
+  function toggleDocumentSelection(documentId: string) {
+    setSelectedDocumentIds((prev) =>
+      prev.includes(documentId)
+        ? prev.filter((id) => id !== documentId)
+        : [...prev, documentId],
+    );
+  }
+
+  function toggleSelectAllFilteredDocuments() {
+    const filteredIds = selectableFilteredDocuments.map((doc) => doc.id);
+    setSelectedDocumentIds((prev) => {
+      const allSelected = filteredIds.every((id) => prev.includes(id));
+      if (allSelected) {
+        return prev.filter((id) => !filteredIds.includes(id));
+      }
+
+      return Array.from(new Set([...prev, ...filteredIds]));
+    });
+  }
+
+  function handleBatchDownload() {
+    selectedDocuments.forEach((doc, index) => {
+      if (!doc.file_path) return;
+      window.setTimeout(() => {
+        downloadFile(doc.file_path!, doc.file_name || `dokumen-${index + 1}`);
+      }, index * 150);
+    });
+  }
+
   function handleViewDocument(doc: Document) {
     setSelectedDoc({
       id: doc.id,
@@ -134,7 +177,7 @@ export default function EmployeeProfileDashboard({
       filePath: doc.file_path ?? "#",
       mimeType: doc.mime_type ?? "",
       uploadedAt: doc.uploaded_at ?? new Date().toISOString(),
-      status: (doc.status as DocumentItem["status"]) ?? "pending",
+      status: normalizeDocumentStatus(doc.status),
       verifiedBy: doc.verified_by ?? undefined,
       verifiedByName: doc.verified_by_name ?? undefined,
       verifiedAt: doc.verified_at ?? undefined,
@@ -154,8 +197,7 @@ export default function EmployeeProfileDashboard({
                 "Pegawai"}
             </h2>
             <p className="page-subtitle">
-              Pantau akun, data pegawai, dan dokumen pribadi Anda dalam satu
-              halaman.
+              Pantau akun dan dokumen pribadi Anda dalam satu halaman.
             </p>
           </div>
 
@@ -164,7 +206,7 @@ export default function EmployeeProfileDashboard({
               Total dokumen: {documents.length}
             </span>
             <span className="badge badge-warning text-xs sm:text-sm">
-              Menunggu: {pendingCount}
+              Menunggu Verifikasi: {pendingCount}
             </span>
           </div>
         </div>
@@ -187,74 +229,13 @@ export default function EmployeeProfileDashboard({
         <div className="employee-card-head">
           <div className="employee-card-head-main">
             <h3 className="employee-card-title text-gradient-primary">
-              Data Pegawai
-            </h3>
-            <p className="employee-card-subtitle">
-              Data kepegawaian yang dipakai untuk dokumen
-            </p>
-          </div>
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <button
-              type="button"
-              onClick={onEditProfile}
-              className="btn btn-secondary"
-            >
-              Edit Data Pegawai
-            </button>
-            <div
-              className="employee-card-icon flex-shrink-0"
-              aria-hidden="true"
-            >
-              👤
-            </div>
-          </div>
-        </div>
-
-        <div className="employee-profile-grid">
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">Nama</div>
-            <div className="employee-profile-value">{profile?.nama || "-"}</div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">NIP</div>
-            <div className="employee-profile-value">{profile?.nip || "-"}</div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">Jabatan</div>
-            <div className="employee-profile-value">
-              {profile?.jabatan || "-"}
-            </div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">Unit</div>
-            <div className="employee-profile-value">{profile?.unit || "-"}</div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">Email Pegawai</div>
-            <div className="employee-profile-value">
-              {profile?.email || "-"}
-            </div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">No. HP</div>
-            <div className="employee-profile-value">
-              {profile?.no_hp || "-"}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="employee-card page-panel p-4 sm:p-6">
-        <div className="employee-card-head">
-          <div className="employee-card-head-main">
-            <h3 className="employee-card-title text-gradient-primary">
               Dokumen Saya
             </h3>
             <p className="employee-card-subtitle">
               Daftar dokumen yang Anda unggah
             </p>
           </div>
-          <div className="employee-card-icon flex-shrink-0" aria-hidden="true">
+          <div className="employee-card-icon shrink-0" aria-hidden="true">
             📄
           </div>
         </div>
@@ -272,13 +253,37 @@ export default function EmployeeProfileDashboard({
               onChange={(e) => handleSearch(e.target.value)}
               className="input flex-1 text-sm"
             />
-            <span className="badge badge-info text-xs sm:text-sm flex-shrink-0">
+            <span className="badge badge-info text-xs sm:text-sm shrink-0">
               Terverifikasi:{" "}
               {
-                filteredDocuments.filter((doc) => doc.status === "verified")
-                  .length
+                filteredDocuments.filter(
+                  (doc) =>
+                    normalizeDocumentStatus(doc.status) ===
+                    DOCUMENT_STATUS.VERIFIED,
+                ).length
               }
             </span>
+            <span className="badge badge-warning text-xs sm:text-sm shrink-0">
+              Dipilih: {selectedDocuments.length}
+            </span>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={toggleSelectAllFilteredDocuments}
+              disabled={selectableFilteredDocuments.length === 0}
+            >
+              {areAllFilteredSelected
+                ? "Batal Pilih Semua"
+                : "Pilih Semua Hasil"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleBatchDownload}
+              disabled={selectedDocuments.length === 0}
+            >
+              Download Terpilih
+            </button>
             <button onClick={onUpload} className="btn btn-accent" type="button">
               + Upload Dokumen
             </button>
@@ -306,6 +311,14 @@ export default function EmployeeProfileDashboard({
               <table className="employee-doc-table">
                 <thead>
                   <tr className="employee-doc-head">
+                    <th className="employee-doc-th">
+                      <input
+                        type="checkbox"
+                        checked={areAllFilteredSelected}
+                        onChange={toggleSelectAllFilteredDocuments}
+                        disabled={selectableFilteredDocuments.length === 0}
+                      />
+                    </th>
                     <th className="employee-doc-th">Nama File</th>
                     <th className="employee-doc-th">Tipe</th>
                     <th className="employee-doc-th">Tanggal Upload</th>
@@ -318,6 +331,14 @@ export default function EmployeeProfileDashboard({
                     const tone = statusTone(doc.status);
                     return (
                       <tr key={doc.id} className="employee-doc-row">
+                        <td className="employee-doc-cell">
+                          <input
+                            type="checkbox"
+                            checked={selectedDocumentIds.includes(doc.id)}
+                            onChange={() => toggleDocumentSelection(doc.id)}
+                            disabled={!doc.file_path}
+                          />
+                        </td>
                         <td
                           className="employee-doc-cell employee-doc-file"
                           title={doc.file_name || "-"}
@@ -364,11 +385,20 @@ export default function EmployeeProfileDashboard({
                 return (
                   <div key={doc.id} className="employee-doc-card">
                     <div className="employee-doc-card-header">
-                      <div
-                        className="employee-doc-card-title"
-                        title={doc.file_name || "-"}
-                      >
-                        {doc.file_name || "-"}
+                      <div className="flex min-w-0 flex-1 items-start gap-3">
+                        <input
+                          type="checkbox"
+                          className="mt-1"
+                          checked={selectedDocumentIds.includes(doc.id)}
+                          onChange={() => toggleDocumentSelection(doc.id)}
+                          disabled={!doc.file_path}
+                        />
+                        <div
+                          className="employee-doc-card-title"
+                          title={doc.file_name || "-"}
+                        >
+                          {doc.file_name || "-"}
+                        </div>
                       </div>
                       <span
                         className="employee-status-badge"
@@ -397,13 +427,29 @@ export default function EmployeeProfileDashboard({
                     </div>
 
                     <div className="employee-doc-card-footer">
-                      <button
-                        type="button"
-                        className="btn btn-secondary w-full"
-                        onClick={() => handleViewDocument(doc)}
-                      >
-                        Lihat Detail
-                      </button>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <button
+                          type="button"
+                          className="btn btn-secondary w-full"
+                          onClick={() => handleViewDocument(doc)}
+                        >
+                          Lihat Detail
+                        </button>
+                        {doc.file_path ? (
+                          <button
+                            type="button"
+                            className="btn btn-accent w-full"
+                            onClick={() =>
+                              downloadFile(
+                                doc.file_path!,
+                                doc.file_name || "dokumen",
+                              )
+                            }
+                          >
+                            Download
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 );

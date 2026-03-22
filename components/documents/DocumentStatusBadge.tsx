@@ -1,28 +1,13 @@
 import { DocumentStatus } from "./types";
-
-const STATUS_STYLE: Record<
-  DocumentStatus,
-  { bg: string; color: string; label: string }
-> = {
-  pending: { bg: "#fef3c7", color: "#92400e", label: "Pending" },
-  verified: { bg: "#dcfce7", color: "#166534", label: "Disetujui" },
-  rejected: { bg: "#fee2e2", color: "#991b1b", label: "Ditolak" },
-};
-
-const FALLBACK_STYLE = { bg: "#e5e7eb", color: "#374151", label: "Unknown" };
+import { formatDocumentStatusLabel, getDocumentStatusTone } from "./status";
 
 export default function DocumentStatusBadge({
   status,
 }: {
   status?: DocumentStatus | string;
 }) {
-  const s = STATUS_STYLE[status as DocumentStatus] ?? {
-    ...FALLBACK_STYLE,
-    label:
-      typeof status === "string" && status.length > 0
-        ? status[0].toUpperCase() + status.slice(1)
-        : FALLBACK_STYLE.label,
-  };
+  const s = getDocumentStatusTone(status);
+  const label = formatDocumentStatusLabel(status);
 
   return (
     <span
@@ -35,7 +20,7 @@ export default function DocumentStatusBadge({
         fontWeight: 600,
       }}
     >
-      {s.label}
+      {label}
     </span>
   );
 }

@@ -4,6 +4,12 @@ import Image from "next/image";
 import { useState } from "react";
 import DocumentStatusBadge from "./DocumentStatusBadge";
 import { DocumentItem } from "./types";
+import {
+  DOCUMENT_STATUS,
+  formatDocumentStatusLabel,
+  getDocumentStatusTone,
+  normalizeDocumentStatus,
+} from "./status";
 
 interface Props {
   open: boolean;
@@ -148,12 +154,6 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function getLastStatusAction(status: DocumentItem["status"]) {
-  if (status === "verified") return "Diverifikasi";
-  if (status === "rejected") return "Ditolak";
-  return "Belum ada tindakan";
-}
-
 function formatFileSize(bytes?: number | null) {
   if (typeof bytes !== "number" || Number.isNaN(bytes) || bytes < 0) {
     return "-";
@@ -178,7 +178,8 @@ export default function DocumentDetailModal({
     ? getPreviewKind(data.filePath, data.fileName)
     : "unsupported";
 
-  const lastActionLabel = getLastStatusAction(data?.status ?? "pending");
+  const normalizedStatus = normalizeDocumentStatus(data?.status ?? "pending");
+  const statusTone = getDocumentStatusTone(data?.status ?? "pending");
   const lastActionBy = data?.verifiedByName ?? "-";
   const lastActionAt = data?.verifiedAt
     ? new Date(data.verifiedAt).toLocaleString("id-ID", {
@@ -290,12 +291,18 @@ export default function DocumentDetailModal({
               >
                 Status Terakhir
               </div>
-              <div style={{ marginTop: 6, fontSize: 13.5, color: "#0f172a" }}>
-                {lastActionLabel}
-                {data.status !== "pending" ? ` oleh ${lastActionBy}` : ""}
+              <div
+                style={{
+                  marginTop: 6,
+                  fontSize: 13.5,
+                  color: statusTone.color,
+                }}
+              >
+                {formatDocumentStatusLabel(data.status)}
+                {normalizedStatus !== "pending" ? ` oleh ${lastActionBy}` : ""}
               </div>
               <div style={{ marginTop: 2, fontSize: 12, color: "#64748b" }}>
-                {data.status !== "pending"
+                {normalizedStatus !== "pending"
                   ? `Pada ${lastActionAt}`
                   : "Belum ada tindakan verifikasi"}
               </div>
@@ -343,51 +350,59 @@ export default function DocumentDetailModal({
           </a>
 
           <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-            {canManage && onReject && data.status !== "rejected" && (
-              <button
-                onClick={async () => {
-                  try {
-                    await onReject(data);
-                  } catch (e) {
-                    console.error(e);
-                  }
-                  onClose();
-                }}
-                style={{
-                  border: "1px solid #fecaca",
-                  background: "#fef2f2",
-                  color: "#b91c1c",
-                  borderRadius: 8,
-                  padding: "8px 12px",
-                  cursor: "pointer",
-                }}
-              >
-                {data.status === "verified" ? "Tolak Ulang" : "Tolak"}
-              </button>
-            )}
+            {canManage &&
+              onReject &&
+              normalizedStatus !== DOCUMENT_STATUS.REJECTED && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await onReject(data);
+                    } catch (e) {
+                      console.error(e);
+                    }
+                    onClose();
+                  }}
+                  style={{
+                    border: "1px solid #fecaca",
+                    background: "#fef2f2",
+                    color: "#b91c1c",
+                    borderRadius: 8,
+                    padding: "8px 12px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {normalizedStatus === DOCUMENT_STATUS.VERIFIED
+                    ? "Tolak Ulang"
+                    : "Tolak"}
+                </button>
+              )}
 
-            {canManage && onVerify && data.status !== "verified" && (
-              <button
-                onClick={async () => {
-                  try {
-                    await onVerify(data);
-                  } catch (e) {
-                    console.error(e);
-                  }
-                  onClose();
-                }}
-                style={{
-                  border: "1px solid #bae6fd",
-                  background: "#ecfeff",
-                  color: "#0e7490",
-                  borderRadius: 8,
-                  padding: "8px 12px",
-                  cursor: "pointer",
-                }}
-              >
-                {data.status === "rejected" ? "Verifikasi Ulang" : "Verifikasi"}
-              </button>
-            )}
+            {canManage &&
+              onVerify &&
+              normalizedStatus !== DOCUMENT_STATUS.VERIFIED && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await onVerify(data);
+                    } catch (e) {
+                      console.error(e);
+                    }
+                    onClose();
+                  }}
+                  style={{
+                    border: "1px solid #bae6fd",
+                    background: "#ecfeff",
+                    color: "#0e7490",
+                    borderRadius: 8,
+                    padding: "8px 12px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {normalizedStatus === DOCUMENT_STATUS.REJECTED
+                    ? "Verifikasi Ulang"
+                    : "Verifikasi"}
+                </button>
+              )}
           </div>
         </div>
       </div>

@@ -2,10 +2,42 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import UserMenu from "./UserMenu";
 import { useSidebar } from "./SidebarContext";
+
+function getRoleFromToken() {
+  try {
+    if (typeof window === "undefined") return null;
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    const base64Payload = token.split(".")[1];
+    if (!base64Payload) return null;
+    const json = atob(base64Payload.replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(json) as { role?: string };
+    return (payload.role ?? "").toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+function subscribe(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  window.addEventListener("storage", onStoreChange);
+  return () => window.removeEventListener("storage", onStoreChange);
+}
+
+function getSnapshot() {
+  return getRoleFromToken();
+}
+
+function getServerSnapshot() {
+  return null;
+}
 
 function capitalize(s: string) {
   if (!s) return s;
@@ -47,15 +79,20 @@ export default function Header({
 }) {
   const pathname = usePathname();
   const { toggle } = useSidebar();
+  const role = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const showHeaderTitle = role === "employee";
 
   const title = useMemo(() => {
     if (!pathname) return "Dashboard";
     const parts = pathname.split("/").filter(Boolean);
     if (parts.length === 0) return "Dashboard";
 
+    if (parts[0] === "profile") {
+      return parts[1] === "employee" ? "Data Pegawai" : "Profil Akun";
+    }
+
     const map: Record<string, string> = {
       dashboard: "Dashboard",
-      profile: "Profil Akun",
       documents: "Dokumen",
       employees: "Pegawai",
       employee: "Pegawai",
@@ -75,7 +112,7 @@ export default function Header({
           <button
             onClick={toggle}
             aria-label="Toggle menu"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-blue-300/70 bg-linear-to-br from-blue-100 to-sky-100 text-xl text-blue-600 shadow-md transition hover:border-blue-400 hover:text-blue-700 hover:shadow-lg"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-blue-200 bg-white/90 text-blue-700 shadow-md transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
           >
             ☰
           </button>
@@ -102,10 +139,14 @@ export default function Header({
         <div className="rounded-xl border border-blue-200/50 bg-white/70 backdrop-blur-sm px-4 py-3 shadow-sm">
           <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4">
             <div className="flex items-center gap-3">
-              <span className="h-7 w-1 rounded-full bg-linear-to-b from-blue-500 to-sky-600" />
-              <h1 className="truncate text-[clamp(20px,3vw,26px)] font-semibold leading-tight text-slate-800">
-                {title}
-              </h1>
+              {showHeaderTitle ? (
+                <>
+                  <span className="h-7 w-1 rounded-full bg-linear-to-b from-blue-500 to-sky-600" />
+                  <h1 className="truncate text-[clamp(20px,3vw,26px)] font-semibold leading-tight text-blue-700">
+                    {title}
+                  </h1>
+                </>
+              ) : null}
             </div>
 
             <div className="flex items-center justify-center">

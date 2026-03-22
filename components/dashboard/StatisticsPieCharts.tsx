@@ -1,6 +1,10 @@
 "use client";
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  formatDocumentStatusLabel,
+  normalizeDocumentStatus,
+} from "@/components/documents/status";
 
 type Employee = {
   id: string;
@@ -51,20 +55,10 @@ const STATUS_COLORS: Record<string, string> = {
   verified: "#22C55E",
   pending: "#F59E0B",
   rejected: "#EF4444",
-  terverifikasi: "#22C55E",
-  "menunggu verifikasi": "#F59E0B",
-  ditolak: "#EF4444",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  verified: "Terverifikasi",
-  pending: "Menunggu Verifikasi",
-  rejected: "Ditolak",
 };
 
 function formatStatusLabel(status: string) {
-  const normalizedStatus = status.trim().toLowerCase();
-  return STATUS_LABELS[normalizedStatus] ?? status;
+  return formatDocumentStatusLabel(status);
 }
 
 function toChartData(
@@ -274,7 +268,7 @@ export default function StatisticsPieCharts({ employees, documents }: Props) {
   const documentByStatus = toChartData(
     documents.reduce<Record<string, number>>((acc, document) => {
       const status = formatStatusLabel(
-        document.status?.trim() || "Tidak Diketahui",
+        normalizeDocumentStatus(document.status),
       );
       acc[status] = (acc[status] || 0) + 1;
       return acc;

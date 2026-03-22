@@ -4,6 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { useToast } from "@/components/ToastProvider";
+import EmployeeFormModal from "@/components/employee/EmployeeFormModal";
+import {
+  getEmployeeConnectionLabel,
+  getEmployeeConnectionNoticeTitle,
+  getEmployeeConnectionTone,
+  getRoleLabel,
+} from "@/components/common/labels";
+import type {
+  Employee as EmployeeEntity,
+  EmployeeForm as EmployeeFormPayload,
+} from "@/types/employee";
 
 type JwtPayload = {
   userId?: string | number;
@@ -30,7 +41,10 @@ type EmployeeProfile = {
   nip?: string | null;
   jabatan?: string | null;
   unit?: string | null;
+  status?: string | null;
+  alamat?: string | null;
   email?: string | null;
+  no_hp?: string | null;
 };
 
 function parseJwt(token: string): JwtPayload | null {
@@ -42,14 +56,6 @@ function parseJwt(token: string): JwtPayload | null {
   } catch {
     return null;
   }
-}
-
-function getRoleLabel(role?: string | null) {
-  const normalized = (role ?? "").toLowerCase();
-  if (normalized === "admin") return "Admin";
-  if (normalized === "employee") return "Pegawai";
-  if (normalized === "hr") return "Admin Umum";
-  return "-";
 }
 
 export default function ProfilePage() {
@@ -67,6 +73,8 @@ export default function ProfilePage() {
     email: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
+  const [openEditEmployee, setOpenEditEmployee] = useState(false);
+  const backTarget = role === "employee" ? "/profile/employee" : "/dashboard";
 
   useEffect(() => {
     async function load() {
@@ -123,6 +131,62 @@ export default function ProfilePage() {
     });
     setFormError(null);
     setOpenEdit(true);
+  }
+
+  const employeeId = userProfile?.employee_id ?? null;
+
+  const initialEmployeeForm: EmployeeEntity | null = employeeId
+    ? {
+        id: employeeId,
+        nip: employeeProfile?.nip ?? "",
+        nama: employeeProfile?.nama ?? "",
+        jabatan: employeeProfile?.jabatan ?? "",
+        unit: employeeProfile?.unit ?? "",
+        status: employeeProfile?.status === "Kontrak" ? "Kontrak" : "Tetap",
+        alamat: employeeProfile?.alamat ?? "",
+        no_hp: employeeProfile?.no_hp ?? "",
+        email: employeeProfile?.email ?? "",
+        created_at: "",
+        updated_at: "",
+      }
+    : null;
+
+  async function handleSubmitEmployee(formData: EmployeeFormPayload) {
+    try {
+      if (!employeeId) {
+        const created = await apiFetch("/api/employees", {
+          method: "POST",
+          body: JSON.stringify({ ...formData, linkToCurrentUser: true }),
+        });
+        const created_profile =
+          created?.data && typeof created.data === "object"
+            ? (created.data as EmployeeProfile)
+            : created && typeof created === "object" && "id" in created
+              ? (created as EmployeeProfile)
+              : null;
+        if (!created_profile) throw new Error("Gagal membuat data pegawai.");
+        setEmployeeProfile(created_profile);
+        if (userProfile)
+          setUserProfile({ ...userProfile, employee_id: created_profile.id });
+        setOpenEditEmployee(false);
+        toast.push("Data pegawai berhasil dibuat.", "success");
+        return;
+      }
+      const updated = await apiFetch(`/api/employees/${employeeId}`, {
+        method: "PUT",
+        body: JSON.stringify(formData),
+      });
+      if (!updated || typeof updated !== "object")
+        throw new Error("Gagal memperbarui data pegawai.");
+      setEmployeeProfile(updated as EmployeeProfile);
+      setOpenEditEmployee(false);
+      toast.push("Data pegawai berhasil diperbarui.", "success");
+    } catch (error) {
+      toast.push("Gagal menyimpan data pegawai.", "error");
+      throw error instanceof Error
+        ? error
+        : new Error("Gagal menyimpan data pegawai.");
+    }
   }
 
   async function handleSubmitEdit() {
@@ -190,35 +254,171 @@ export default function ProfilePage() {
 
   return (
     <div className="page-shell">
-      <section className="header-card page-panel">
-        <div className="page-header">
-          <div className="min-w-0">
-            <h1 className="page-title text-gradient-primary">Profil Akun</h1>
-            <p className="page-subtitle">
-              Ringkasan akun login dan keterkaitannya dengan data pegawai.
-            </p>
+      {/* ── Hero Banner ── */}
+      <section
+        className="page-panel"
+        style={{
+          padding: "22px 24px",
+          position: "relative",
+          overflow: "hidden",
+          background:
+            "linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #e0e7ff 100%)",
+          border: "1px solid #bfdbfe",
+        }}
+      >
+        {/* decorative blobs */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(circle at top right, rgba(99,102,241,.14), transparent 38%), radial-gradient(circle at bottom left, rgba(6,182,212,.12), transparent 38%)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          {/* left: avatar + info */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              minWidth: 0,
+            }}
+          >
+            {/* avatar circle */}
+            <div
+              style={{
+                width: 58,
+                height: 58,
+                borderRadius: 20,
+                flexShrink: 0,
+                background: "linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontSize: 24,
+                fontWeight: 800,
+                boxShadow: "0 8px 20px rgba(99,102,241,.30)",
+                border: "2.5px solid rgba(255,255,255,.55)",
+                letterSpacing: -1,
+              }}
+            >
+              {(userProfile?.username?.[0] ?? "?").toUpperCase()}
+            </div>
+
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "clamp(17px,3vw,21px)",
+                    fontWeight: 800,
+                    color: "#0f172a",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {userProfile?.username || "-"}
+                </span>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    padding: "3px 10px",
+                    borderRadius: 999,
+                    background:
+                      "linear-gradient(90deg, rgba(255,255,255,.85), rgba(255,255,255,.7))",
+                    border: "1px solid rgba(99,102,241,.25)",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#4f46e5",
+                    letterSpacing: ".05em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {getRoleLabel(role)}
+                </span>
+              </div>
+              <p
+                style={{
+                  margin: "4px 0 0",
+                  fontSize: 13,
+                  color: "#475569",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: 280,
+                }}
+              >
+                {userProfile?.email || userProfile?.nip || "Akun SmartStaff"}
+              </p>
+            </div>
           </div>
 
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-3">
+          {/* right: status chip + back button */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "6px 13px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 700,
+                background: getEmployeeConnectionTone(
+                  Boolean(userProfile?.employee_id),
+                ).bg,
+                color: getEmployeeConnectionTone(
+                  Boolean(userProfile?.employee_id),
+                ).color,
+                border: `1px solid ${
+                  getEmployeeConnectionTone(Boolean(userProfile?.employee_id))
+                    .border
+                }`,
+                boxShadow: "0 2px 8px rgba(15,23,42,.06)",
+              }}
+            >
+              {getEmployeeConnectionLabel(Boolean(userProfile?.employee_id))}
+            </span>
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push(backTarget)}
             >
-              ← Kembali ke Dashboard
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={openEditModal}
-            >
-              Edit Akun
+              ← Kembali
             </button>
           </div>
         </div>
       </section>
 
-      <section className="page-panel p-5 sm:p-6">
+      {/* ── Data Akun ── */}
+      <section className="page-panel" style={{ padding: "20px 22px" }}>
         <div className="employee-card-head">
           <div className="employee-card-head-main">
             <h2 className="employee-card-title text-gradient-primary">
@@ -228,8 +428,17 @@ export default function ProfilePage() {
               Informasi akun yang digunakan untuk masuk ke aplikasi.
             </p>
           </div>
-          <div className="employee-card-icon" aria-hidden="true">
-            🔐
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={openEditModal}
+            >
+              ✏️ Edit Akun
+            </button>
+            <div className="employee-card-icon shrink-0" aria-hidden="true">
+              🔐
+            </div>
           </div>
         </div>
 
@@ -259,30 +468,66 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      <section className="page-panel p-5 sm:p-6">
+      {/* ── Data Pegawai ── */}
+      <section className="page-panel" style={{ padding: "20px 22px" }}>
         <div className="employee-card-head">
           <div className="employee-card-head-main">
             <h2 className="employee-card-title text-gradient-primary">
-              Koneksi Data Pegawai
+              Data Pegawai
             </h2>
             <p className="employee-card-subtitle">
-              Status hubungan akun ini dengan data pegawai di sistem.
+              Informasi kepegawaian yang terhubung dengan akun ini.
             </p>
           </div>
-          <div className="employee-card-icon" aria-hidden="true">
-            🔗
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setOpenEditEmployee(true)}
+            >
+              ✏️ {employeeId ? "Edit Data Pegawai" : "Lengkapi Data Pegawai"}
+            </button>
+            <div className="employee-card-icon shrink-0" aria-hidden="true">
+              👤
+            </div>
           </div>
         </div>
 
+        {/* connection status notice */}
+        {!userProfile?.employee_id && (
+          <div
+            style={{
+              marginBottom: 14,
+              padding: "10px 14px",
+              borderRadius: 12,
+              background: "#fffbeb",
+              border: "1px solid #fcd34d",
+              fontSize: 13,
+              color: "#92400e",
+              lineHeight: 1.5,
+            }}
+          >
+            <strong>{getEmployeeConnectionNoticeTitle(false)}.</strong> Akun ini
+            belum dikaitkan ke data pegawai. Klik tombol di atas untuk
+            melengkapi data pegawai.
+          </div>
+        )}
+
         <div className="employee-profile-grid">
           <div className="employee-profile-item">
-            <div className="employee-profile-label">Status</div>
-            <div className="employee-profile-value">
-              {userProfile?.employee_id ? "Terhubung" : "Belum terhubung"}
+            <div className="employee-profile-label">Status Koneksi</div>
+            <div
+              className="employee-profile-value"
+              style={{
+                color: userProfile?.employee_id ? "#15803d" : "#b45309",
+                fontWeight: 700,
+              }}
+            >
+              {getEmployeeConnectionLabel(Boolean(userProfile?.employee_id))}
             </div>
           </div>
           <div className="employee-profile-item">
-            <div className="employee-profile-label">Data Pegawai</div>
+            <div className="employee-profile-label">Nama Pegawai</div>
             <div className="employee-profile-value">
               {employeeProfile?.nama || "-"}
             </div>
@@ -294,6 +539,12 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="employee-profile-item">
+            <div className="employee-profile-label">Status Pegawai</div>
+            <div className="employee-profile-value">
+              {employeeProfile?.status || "-"}
+            </div>
+          </div>
+          <div className="employee-profile-item">
             <div className="employee-profile-label">Unit / Jabatan</div>
             <div className="employee-profile-value">
               {[employeeProfile?.unit, employeeProfile?.jabatan]
@@ -301,14 +552,49 @@ export default function ProfilePage() {
                 .join(" • ") || "-"}
             </div>
           </div>
+          <div className="employee-profile-item">
+            <div className="employee-profile-label">Email Pegawai</div>
+            <div className="employee-profile-value">
+              {employeeProfile?.email || "-"}
+            </div>
+          </div>
+          <div className="employee-profile-item">
+            <div className="employee-profile-label">No. HP</div>
+            <div className="employee-profile-value">
+              {employeeProfile?.no_hp || "-"}
+            </div>
+          </div>
         </div>
 
         {userProfile?.link_message && (
-          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          <div
+            style={{
+              marginTop: 14,
+              padding: "10px 14px",
+              borderRadius: 12,
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              fontSize: 13,
+              color: "#475569",
+            }}
+          >
             {userProfile.link_message}
           </div>
         )}
       </section>
+
+      <EmployeeFormModal
+        open={openEditEmployee}
+        initial={initialEmployeeForm}
+        onClose={() => setOpenEditEmployee(false)}
+        onSubmit={handleSubmitEmployee}
+        title={employeeId ? "Edit Data Pegawai" : "Lengkapi Data Pegawai"}
+        submitLabel={employeeId ? "Simpan Perubahan" : "Simpan Data Pegawai"}
+        lockNip={Boolean(userProfile?.nip)}
+        prefillNip={userProfile?.nip ?? null}
+        lockEmail={Boolean(userProfile?.email)}
+        prefillEmail={userProfile?.email ?? null}
+      />
 
       {openEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 sm:p-4">
@@ -323,13 +609,7 @@ export default function ProfilePage() {
                   dapat diubah dari halaman ini.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setOpenEdit(false)}
-                className="btn btn-secondary shrink-0"
-              >
-                Tutup
-              </button>
+              {/* Tombol Tutup dipindah ke bawah, baris aksi */}
             </div>
 
             <div className="grid gap-3">

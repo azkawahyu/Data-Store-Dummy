@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import LogoutButton from "../dashboard/LogoutButton";
+import { getRoleLabel as getRoleLabelMaster } from "../common/labels";
 
 type JwtPayload = {
   userId?: number | string;
@@ -20,14 +21,6 @@ type EmployeeResponse = {
   name?: string;
   fullName?: string;
 };
-
-function getRoleLabel(role?: string | null) {
-  const normalized = (role ?? "").toLowerCase();
-  if (normalized === "admin") return "Admin";
-  if (normalized === "employee") return "Pegawai";
-  if (normalized === "hr") return "Admin Umum";
-  return "User";
-}
 
 function parseJwt(token: string): JwtPayload | null {
   try {
@@ -248,7 +241,7 @@ export default function UserMenu() {
 
         <span className="user-menu-user">
           <span className="user-menu-name">{name}</span>
-          <span className="user-menu-role">{getRoleLabel(role)}</span>
+          <span className="user-menu-role">{getRoleLabelMaster(role)}</span>
         </span>
       </button>
 
@@ -257,7 +250,9 @@ export default function UserMenu() {
           <div className="user-menu-meta">
             Signed in as
             <div className="user-menu-meta-name">{name}</div>
-            <div className="user-menu-meta-role">{getRoleLabel(role)}</div>
+            <div className="user-menu-meta-role">
+              {getRoleLabelMaster(role)}
+            </div>
           </div>
 
           <div className="user-menu-divider" />
@@ -281,7 +276,7 @@ export default function UserMenu() {
               }}
               className="user-menu-item"
             >
-              Profil Data Pegawai
+              Data Pegawai
             </button>
 
             <LogoutButton className="user-menu-item user-menu-item--logout" />
