@@ -48,7 +48,7 @@ function getRoleLabel(role?: string | null) {
   const normalized = (role ?? "").toLowerCase();
   if (normalized === "admin") return "Admin";
   if (normalized === "employee") return "Pegawai";
-  if (normalized === "hr") return "Umum";
+  if (normalized === "hr") return "Admin Umum";
   return "-";
 }
 
@@ -326,7 +326,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setOpenEdit(false)}
-                className="btn btn-secondary flex-shrink-0"
+                className="btn btn-secondary shrink-0"
               >
                 Tutup
               </button>

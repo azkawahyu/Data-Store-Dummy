@@ -34,6 +34,7 @@ export default function DocumentsPage() {
   const [selected, setSelected] = useState<DocumentItem | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [canManage, setCanManage] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DocumentItem | null>(null);
@@ -86,6 +87,7 @@ export default function DocumentsPage() {
           const isManager = role === "admin" || role === "hr";
 
           setCanManage(isManager);
+          setCanDelete(role === "admin");
         }
 
         const data = await apiFetch("/api/documents");
@@ -581,6 +583,7 @@ export default function DocumentsPage() {
         <DocumentsTable
           rows={paginatedRows}
           canManage={canManage}
+          canDelete={canDelete}
           selectedIds={selectedIds}
           onSelectionChange={(ids) => setSelectedIds(ids)}
           onView={(d) => {

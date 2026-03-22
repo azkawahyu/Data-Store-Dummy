@@ -6,6 +6,7 @@ import { DocumentItem } from "./types";
 interface Props {
   rows: DocumentItem[];
   canManage: boolean;
+  canDelete: boolean;
   onView: (doc: DocumentItem) => void;
   onVerify: (doc: DocumentItem) => void;
   onReject: (doc: DocumentItem) => void;
@@ -18,6 +19,7 @@ interface Props {
 export default function DocumentsTable({
   rows,
   canManage,
+  canDelete,
   onView,
   onVerify,
   onReject,
@@ -275,7 +277,7 @@ export default function DocumentsTable({
                         ✏️ Edit
                       </button>
                     )}{" "} */}
-                    {canManage && onDelete && (
+                    {canDelete && onDelete && (
                       <button
                         onClick={() => onDelete(d)}
                         className="doc-action-btn delete"
@@ -349,7 +351,7 @@ export default function DocumentsTable({
                     ✏️ Edit
                   </button>
                 )} */}
-                {canManage && onDelete && (
+                {canDelete && onDelete && (
                   <button
                     onClick={() => onDelete(d)}
                     className="doc-action-btn delete"

@@ -25,7 +25,7 @@ function getRoleLabel(role?: string | null) {
   const normalized = (role ?? "").toLowerCase();
   if (normalized === "admin") return "admin";
   if (normalized === "employee") return "pegawai";
-  if (normalized === "hr") return "umum";
+  if (normalized === "hr") return "admin umum";
   return "user";
 }
 

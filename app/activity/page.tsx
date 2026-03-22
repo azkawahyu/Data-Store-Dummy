@@ -29,6 +29,18 @@ export default function ActivityPage() {
         return;
       }
 
+      const payloadRaw = token.split(".")[1];
+      if (payloadRaw) {
+        const payload = JSON.parse(
+          atob(payloadRaw.replace(/-/g, "+").replace(/_/g, "/")),
+        ) as { role?: string };
+
+        if (String(payload.role ?? "").toLowerCase() === "hr") {
+          router.replace("/hr");
+          return;
+        }
+      }
+
       const res = await apiFetch("/api/activity");
       const list = Array.isArray(res) ? res : (res?.data ?? []);
       setActivities(list);

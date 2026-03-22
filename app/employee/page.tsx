@@ -36,6 +36,7 @@ export default function EmployeePage() {
   >("newest");
   const [filterUnit, setFilterUnit] = useState("");
   const [canManage, setCanManage] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
 
   // Modal state
   const [formOpen, setFormOpen] = useState(false);
@@ -64,6 +65,7 @@ export default function EmployeePage() {
         if (payload) {
           const role = (payload.role ?? "").toString().toLowerCase();
           setCanManage(role === "admin" || role === "hr");
+          setCanDelete(role === "admin");
         }
 
         const data = await apiFetch("/api/employees");
@@ -241,6 +243,7 @@ export default function EmployeePage() {
           <EmployeeTable
             employees={paginatedEmployees}
             canManage={canManage}
+            canDelete={canDelete}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />

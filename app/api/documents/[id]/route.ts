@@ -7,7 +7,6 @@ import { getUser } from "@/lib/getUser";
 import { createActivity } from "@/lib/logActivity";
 import { unlink } from "fs/promises";
 import path from "path";
-import { get } from "http";
 
 export async function GET(
   request: Request,
@@ -49,6 +48,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { role } = getUser(req);
+
+    if (role !== "admin" && role !== "hr") {
+      return Response.json({ message: "Forbidden" }, { status: 403 });
+    }
+
     const { id } = await params;
     const body = await req.json();
 
@@ -89,6 +94,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { role } = getUser(req);
+
+    if (role !== "admin") {
+      return Response.json({ message: "Forbidden" }, { status: 403 });
+    }
+
     const { id: documentId } = await params;
 
     if (!documentId || typeof documentId !== "string") {

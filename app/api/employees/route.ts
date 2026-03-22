@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   try {
     const { role, userId } = getUser(request);
 
-    if (role !== "admin" && role !== "employee") {
+    if (role !== "admin" && role !== "hr" && role !== "employee") {
       return Response.json({ message: "Forbidden" }, { status: 403 });
     }
 

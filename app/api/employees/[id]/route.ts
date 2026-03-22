@@ -71,6 +71,10 @@ export async function PUT(
       return Response.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    if (role !== "admin" && role !== "hr") {
+      return Response.json({ message: "Forbidden" }, { status: 403 });
+    }
+
     const employeeOwner = await getEmployeeById(employeeId);
 
     if (!employeeOwner && role !== "admin") {
@@ -116,6 +120,10 @@ export async function DELETE(
 
     if (userId === null || role === null) {
       return Response.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    if (role !== "admin") {
+      return Response.json({ message: "Forbidden" }, { status: 403 });
     }
 
     const employeeOwner = await getEmployeeById(employeeId);

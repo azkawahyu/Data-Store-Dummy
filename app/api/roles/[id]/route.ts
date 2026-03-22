@@ -5,12 +5,25 @@ import { deleteRole } from "@/lib/services/roles/deleteRole";
 import { updateRole } from "@/lib/services/roles/updateRole";
 import { getUser } from "@/lib/getUser";
 import { createActivity } from "@/lib/logActivity";
+import { requireJWT } from "@/lib/auth-jwt";
+import { requireRole } from "@/lib/require-role";
 
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const user = requireJWT(request);
+
+    if (!user.role || typeof user.role !== "string") {
+      return Response.json(
+        { message: "User role is required" },
+        { status: 400 },
+      );
+    }
+
+    requireRole({ ...user, role: user.role as string }, ["admin"]);
+
     const { id } = await context.params;
 
     const role = await getRoleById(id);
@@ -32,11 +45,22 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const user = requireJWT(req);
+
+    if (!user.role || typeof user.role !== "string") {
+      return Response.json(
+        { message: "User role is required" },
+        { status: 400 },
+      );
+    }
+
+    requireRole({ ...user, role: user.role as string }, ["admin"]);
+
     const { id } = await params;
     const body = await req.json();
 
     const role = await updateRole(id, body);
-    
+
     const { userId } = getUser(req);
     await createActivity({
       userId: userId ?? null,
@@ -62,6 +86,17 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const user = requireJWT(req);
+
+    if (!user.role || typeof user.role !== "string") {
+      return Response.json(
+        { message: "User role is required" },
+        { status: 400 },
+      );
+    }
+
+    requireRole({ ...user, role: user.role as string }, ["admin"]);
+
     const { id } = await params;
 
     await prisma.employees.delete({
@@ -69,7 +104,7 @@ export async function DELETE(
         id: id,
       },
     });
-    
+
     const { userId } = getUser(req);
     await createActivity({
       userId: userId ?? null,

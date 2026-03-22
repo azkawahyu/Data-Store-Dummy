@@ -3,6 +3,7 @@ import type { Employee } from "@/types/employee";
 interface Props {
   employees: Employee[];
   canManage: boolean;
+  canDelete: boolean;
   onEdit: (emp: Employee) => void;
   onDelete: (emp: Employee) => void;
 }
@@ -10,6 +11,7 @@ interface Props {
 export default function EmployeeTable({
   employees,
   canManage,
+  canDelete,
   onEdit,
   onDelete,
 }: Props) {
@@ -218,12 +220,14 @@ export default function EmployeeTable({
                       >
                         ✏️ Edit
                       </button>{" "}
-                      <button
-                        className="emp-action-btn delete"
-                        onClick={() => onDelete(emp)}
-                      >
-                        🗑️ Hapus
-                      </button>
+                      {canDelete && (
+                        <button
+                          className="emp-action-btn delete"
+                          onClick={() => onDelete(emp)}
+                        >
+                          🗑️ Hapus
+                        </button>
+                      )}
                     </td>
                   )}
                 </tr>
@@ -264,12 +268,14 @@ export default function EmployeeTable({
                   >
                     ✏️ Edit
                   </button>
-                  <button
-                    className="emp-action-btn delete"
-                    onClick={() => onDelete(emp)}
-                  >
-                    🗑️ Hapus
-                  </button>
+                  {canDelete && (
+                    <button
+                      className="emp-action-btn delete"
+                      onClick={() => onDelete(emp)}
+                    >
+                      🗑️ Hapus
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -283,6 +289,7 @@ export default function EmployeeTable({
 interface Props {
   employees: Employee[];
   canManage: boolean;
+  canDelete: boolean;
   onEdit: (emp: Employee) => void;
   onDelete: (emp: Employee) => void;
 }

@@ -76,6 +76,7 @@ export default function RoleDashboard({
 }: Props) {
   const pendingDocs = documents.filter((d) => d.status === "pending");
   const verifiedDocs = documents.filter((d) => d.status === "verified").length;
+  const roleLabel = role === "hr" ? "ADMIN UMUM" : role.toUpperCase();
 
   if (role === "employee") {
     return (
@@ -313,9 +314,7 @@ export default function RoleDashboard({
         <div className="dash-welcome-head">
           <div className="dash-welcome-copy">
             <span className="dash-welcome-kicker">Dashboard Ringkasan</span>
-            <h2 className="dash-welcome-title">
-              Selamat datang, {role.toUpperCase()}
-            </h2>
+            <h2 className="dash-welcome-title">Selamat datang, {roleLabel}</h2>
             <p className="dash-welcome-desc">
               Pantau aktivitas dokumen, performa pengunggahan, dan ringkasan
               data pegawai dalam satu tampilan yang lebih nyaman dibaca.

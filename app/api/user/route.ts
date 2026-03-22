@@ -5,8 +5,19 @@ import { requireJWT } from "@/lib/auth-jwt";
 import { createActivity } from "@/lib/logActivity";
 import { userCreateSchema } from "@/lib/validations/userValidations";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const user = requireJWT(request);
+
+    if (!user.role || typeof user.role !== "string") {
+      return Response.json(
+        { message: "User role is required" },
+        { status: 400 },
+      );
+    }
+
+    requireRole({ ...user, role: user.role as string }, ["admin"]);
+
     const users = await getUsers();
 
     return Response.json(users);

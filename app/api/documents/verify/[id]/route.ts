@@ -9,10 +9,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { role } = getUser(request);
+    const { role, userId } = getUser(request);
 
-    if (role !== "admin") {
+    if (role !== "admin" && role !== "hr") {
       return Response.json({ message: "Forbidden" }, { status: 403 });
+    }
+
+    if (!userId) {
+      return Response.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
@@ -30,16 +34,7 @@ export async function PATCH(
       body = {};
     }
 
-    const { verified_by } = body;
-
-    if (!verified_by) {
-      return Response.json(
-        { message: "verified_by wajib diisi" },
-        { status: 400 },
-      );
-    }
-
-    const verifiedByStr = String(verified_by);
+    const verifiedByStr = String(userId);
 
     const userToVerify = await getUserById(verifiedByStr);
 

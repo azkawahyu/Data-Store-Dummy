@@ -1,15 +1,36 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "./SidebarContext";
+
+type UserRole = "admin" | "hr" | "employee";
+
+function getRoleFromToken(): UserRole | null {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) return null;
+    const json = atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(json) as { role?: string };
+    const role = String(payload.role ?? "").toLowerCase();
+    if (role === "admin" || role === "hr" || role === "employee") {
+      return role;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export default function Sidebar() {
   const { isOpen, close } = useSidebar();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const [role, setRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -24,6 +45,37 @@ export default function Sidebar() {
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, close]);
+
+  useEffect(() => {
+    const syncRole = () => setRole(getRoleFromToken());
+    syncRole();
+
+    window.addEventListener("storage", syncRole);
+    return () => window.removeEventListener("storage", syncRole);
+  }, []);
+
+  const navItems = useMemo(() => {
+    if (role === "admin") {
+      return [
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/employee", label: "Karyawan" },
+        { href: "/documents", label: "Dokumen" },
+        { href: "/activity", label: "Aktivitas" },
+        { href: "/users", label: "Pengguna" },
+      ];
+    }
+
+    if (role === "hr") {
+      return [
+        { href: "/hr", label: "Admin Umum" },
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/employee", label: "Karyawan" },
+        { href: "/documents", label: "Dokumen" },
+      ];
+    }
+
+    return [{ href: "/dashboard", label: "Dashboard" }];
+  }, [role]);
 
   const isActive = (href: string) => {
     if (!pathname) return false;
@@ -154,50 +206,17 @@ export default function Sidebar() {
         </Link>
 
         <nav style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <Link
-            href="/dashboard"
-            onClick={close}
-            className={`sidebar-link ${isActive("/dashboard") ? "active" : ""}`}
-            aria-current={isActive("/dashboard") ? "page" : undefined}
-          >
-            Dashboard
-          </Link>
-
-          <Link
-            href="/employee"
-            onClick={close}
-            className={`sidebar-link ${isActive("/employee") ? "active" : ""}`}
-            aria-current={isActive("/employee") ? "page" : undefined}
-          >
-            Karyawan
-          </Link>
-
-          <Link
-            href="/documents"
-            onClick={close}
-            className={`sidebar-link ${isActive("/documents") ? "active" : ""}`}
-            aria-current={isActive("/documents") ? "page" : undefined}
-          >
-            Dokumen
-          </Link>
-
-          <Link
-            href="/activity"
-            onClick={close}
-            className={`sidebar-link ${isActive("/activity") ? "active" : ""}`}
-            aria-current={isActive("/activity") ? "page" : undefined}
-          >
-            Aktivitas
-          </Link>
-
-          <Link
-            href="/users"
-            onClick={close}
-            className={`sidebar-link ${isActive("/users") ? "active" : ""}`}
-            aria-current={isActive("/users") ? "page" : undefined}
-          >
-            Pengguna
-          </Link>
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={close}
+              className={`sidebar-link ${isActive(item.href) ? "active" : ""}`}
+              aria-current={isActive(item.href) ? "page" : undefined}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
       </aside>
 

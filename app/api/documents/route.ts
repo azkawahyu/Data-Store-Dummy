@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   try {
     const { role } = getUser(request);
 
-    if (role !== "admin") {
+    if (role !== "admin" && role !== "hr") {
       return Response.json({ message: "Forbidden" }, { status: 403 });
     }
 
@@ -28,6 +28,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const { role } = getUser(request);
+
+    if (role !== "admin" && role !== "hr") {
+      return Response.json({ message: "Forbidden" }, { status: 403 });
+    }
+
     const body = await request.json();
 
     const process = documentCreateSchema.safeParse(body);
