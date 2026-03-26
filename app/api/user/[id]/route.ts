@@ -83,6 +83,13 @@ export async function PUT(
         return Response.json({ message: "User not found" }, { status: 404 });
       }
 
+      if (!currentUser.role_id) {
+        return Response.json(
+          { message: "Role user tidak valid" },
+          { status: 400 },
+        );
+      }
+
       nextData.role_id = currentUser.role_id;
       nextData.employee_id = currentUser.employee_id;
     }
