@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import authRouter from "./routes/auth";
 
 const port = Number.parseInt(process.env.BACKEND_PORT ?? "4000", 10);
 const upstream = (
@@ -21,6 +22,7 @@ app.use(
 );
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
+app.use(authRouter);
 
 app.get("/health", (_req, res) => {
   res.json({

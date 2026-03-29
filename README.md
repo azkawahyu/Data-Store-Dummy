@@ -49,3 +49,9 @@ Use [.env.example](.env.example) as the starting point for environment variables
 - Backend Express service: `npm run dev:api`
 
 The backend command starts an Express service. It is still safe for migration because unknown routes are proxied to the current frontend until API routes are moved one by one.
+
+Auth routes currently moved to Express:
+
+- `/api/login`
+- `/api/logout`
+- `/api/register`
