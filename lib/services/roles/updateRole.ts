@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export async function updateRole(id: string, data: Prisma.rolesUpdateInput) {
   return prisma.roles.update({

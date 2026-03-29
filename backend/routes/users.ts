@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 import { getUsers } from "@/lib/services/users/getAllUsers";
 import { createUser } from "@/lib/services/users/createUser";
@@ -192,10 +192,7 @@ router.put("/api/user/:id", async (req, res) => {
       return res.status(400).json({ message: error.message });
     }
 
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
+    if ((error as { code?: string })?.code === "P2025") {
       return res.status(404).json({ message: "User not found" });
     }
 
@@ -227,10 +224,7 @@ router.delete("/api/user/:id", async (req, res) => {
 
     return res.json({ message: "User deleted successfully" });
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
+    if ((error as { code?: string })?.code === "P2025") {
       return res.status(404).json({ message: "User not found" });
     }
 

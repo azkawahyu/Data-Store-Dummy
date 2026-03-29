@@ -6,11 +6,15 @@
     "dev": "next dev",
     "dev:web": "next dev",
     "dev:api": "tsx backend/server.ts",
-    "build": "next build",
+    "build": "npm run build:api && npm run build:web",
     "build:web": "next build",
+    "build:api": "tsup --config backend/tsup.config.ts",
     "start": "next start",
     "start:web": "next start",
-    "start:api": "tsx backend/server.ts",
+    "start:api": "node dist/backend/server.mjs",
+    "deploy:api": "npm run build:api && npm run start:api",
+    "deploy:web": "npm run build:web && npm run start:web",
+    "deploy:prod": "bash deploy-prod.sh",
     "lint": "eslint",
     "seed": "prisma db seed"
   },
@@ -53,6 +57,7 @@
     "eslint-config-next": "16.1.6",
     "prisma": "^7.4.2",
     "tailwindcss": "^4",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5"
   }

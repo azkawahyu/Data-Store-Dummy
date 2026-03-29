@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getEmployees } from "@/lib/services/employee/getEmployees";
@@ -69,7 +68,7 @@ router.post("/api/employees", async (req, res) => {
   } catch (error) {
     console.error("ERROR:", error);
 
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof Error) {
       return res.status(400).json({ message: error.message });
     }
 
@@ -158,10 +157,7 @@ router.put("/api/employees/:id", async (req, res) => {
 
     return res.json(employee);
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
+    if ((error as { code?: string })?.code === "P2025") {
       return res.status(404).json({ message: "Employee not found" });
     }
 
@@ -209,17 +205,11 @@ router.delete("/api/employees/:id", async (req, res) => {
 
     return res.json({ message: "Employee deleted successfully" });
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
+    if ((error as { code?: string })?.code === "P2025") {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2003"
-    ) {
+    if ((error as { code?: string })?.code === "P2003") {
       return res.status(409).json({
         message:
           "Employee tidak bisa dihapus karena masih terhubung ke data lain",

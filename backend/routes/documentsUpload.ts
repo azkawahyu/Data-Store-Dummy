@@ -13,6 +13,7 @@ import { validateFile } from "@/utils/fileUpload";
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 const uploadFields = upload.array("files");
+const uploadsRoot = path.join(process.cwd(), "public", "uploads", "documents");
 
 function sanitizeSegment(value: string) {
   return value
@@ -75,6 +76,9 @@ router.post("/api/documents/upload", (req, res) => {
         employee?.nama ??
         String(parsed.data.employee_id);
 
+      const employeeFolder =
+        sanitizeSegment(employeeNameFolder) || String(parsed.data.employee_id);
+
       const employeeSegment = sanitizeSegment(
         employee?.nama || String(parsed.data.employee_id),
       );
@@ -85,7 +89,7 @@ router.post("/api/documents/upload", (req, res) => {
         ? `${employeeSegment}_${docTypeSegment}_${otherTypeSegment}`
         : `${employeeSegment}_${docTypeSegment}`;
 
-      const uploadPath = path.join(process.cwd(), "public/uploads/documents");
+      const uploadPath = path.join(uploadsRoot, employeeFolder);
       await mkdir(uploadPath, { recursive: true });
 
       const documentsData = [] as Array<{
@@ -114,7 +118,7 @@ router.post("/api/documents/upload", (req, res) => {
         documentsData.push({
           employee_id: String(parsed.data.employee_id),
           document_type: parsed.data.document_type,
-          file_path: `/share/Web/uploads/documents/${employeeNameFolder}/${fileName}`,
+          file_path: `/uploads/documents/${employeeFolder}/${fileName}`,
           uploaded_at: new Date(),
           file_name: displayFileName,
           file_size: file.size,

@@ -48,7 +48,52 @@ Use [.env.example](.env.example) as the starting point for environment variables
 - Frontend: `npm run dev:web`
 - Backend Express service: `npm run dev:api`
 
-The backend command starts an Express service. It is still safe for migration because unknown routes are proxied to the current frontend until API routes are moved one by one.
+The backend command starts an Express service. In production deploys, frontend proxy is disabled by default so the backend can run independently.
+
+### Separate build and deploy flow
+
+Recommended order:
+
+1. Build backend: `npm run build:api`
+2. Deploy backend: `npm run deploy:api`
+3. Build frontend: `npm run build:web`
+4. Deploy frontend: `npm run deploy:web`
+
+This order is good when the backend must be available first and the frontend will connect to it later.
+
+### Docker deployment
+
+Recommended production order:
+
+1. Start PostgreSQL first
+   - `docker compose up -d postgres`
+2. Build and run backend
+   - `docker compose up -d backend`
+3. Verify backend health
+4. Build and run frontend
+   - `docker compose up -d web`
+5. Start pgAdmin if needed
+   - `docker compose up -d pgadmin`
+
+Useful files:
+
+- [Dockerfile.api](Dockerfile.api)
+- [Dockerfile.web](Dockerfile.web)
+- [docker-compose.yml](docker-compose.yml)
+- [docker-compose.prod.yml](docker-compose.prod.yml)
+- [.env.docker.example](.env.docker.example)
+
+This backend-first order is good because the web app depends on API availability.
+
+For production Docker deploy, copy [.env.docker.example](.env.docker.example) to [.env.docker](.env.docker) and fill the values first.
+
+The production compose file also includes PostgreSQL and pgAdmin services. Mounts are mapped to QNAP shared folders:
+
+- `/share/Web/database/postgres`
+- `/share/Web/database/pgadmin`
+- `/share/Web/uploads`
+
+To deploy backend first and then frontend automatically, run `npm run deploy:prod`.
 
 Auth routes currently moved to Express:
 
@@ -62,7 +107,7 @@ Data routes currently moved to Express:
 - `/api/user/:id`
 - `/api/roles`
 
-More routes are being migrated next, starting with `employees`.
+The main API routes have been moved to Express.
 
 Upload route currently moved to Express:
 

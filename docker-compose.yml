@@ -1,0 +1,36 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      NODE_ENV: production
+      BACKEND_PORT: 4000
+      BACKEND_PROXY_TO_UPSTREAM: "false"
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+      SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE:-lax}
+      SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-}
+      SESSION_COOKIE_MAX_AGE: ${SESSION_COOKIE_MAX_AGE:-86400}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:4000}
+    environment:
+      NODE_ENV: production
+      BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:4000}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped

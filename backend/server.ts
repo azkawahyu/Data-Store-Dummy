@@ -9,12 +9,15 @@ import employeesRouter from "./routes/employees";
 import activityRouter from "./routes/activity";
 import documentsRouter from "./routes/documents";
 import documentsUploadRouter from "./routes/documentsUpload";
+import documentsDecisionRouter from "./routes/documentsVerifyReject";
+import rolesIdRouter from "./routes/rolesId";
 
 const port = Number.parseInt(process.env.BACKEND_PORT ?? "4000", 10);
 const upstream = (
   process.env.BACKEND_UPSTREAM_URL ?? "http://localhost:3000"
 ).replace(/\/$/, "");
 const corsOrigin = process.env.CORS_ORIGIN ?? upstream;
+const proxyEnabled = process.env.BACKEND_PROXY_TO_UPSTREAM === "true";
 
 const app = express();
 
@@ -35,6 +38,8 @@ app.use(employeesRouter);
 app.use(activityRouter);
 app.use(documentsRouter);
 app.use(documentsUploadRouter);
+app.use(documentsDecisionRouter);
+app.use(rolesIdRouter);
 
 app.get("/health", (_req, res) => {
   res.json({
@@ -56,21 +61,31 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-const proxyToFrontend = createProxyMiddleware({
-  target: upstream,
-  changeOrigin: true,
-  ws: true,
-});
+if (proxyEnabled) {
+  const proxyToFrontend = createProxyMiddleware({
+    target: upstream,
+    changeOrigin: true,
+    ws: true,
+  });
 
-app.use((req, res, next) => {
-  if (req.path === "/health" || req.path === "/api/health") {
-    return next();
-  }
+  app.use((req, res, next) => {
+    if (req.path === "/health" || req.path === "/api/health") {
+      return next();
+    }
 
-  return proxyToFrontend(req, res, next);
+    return proxyToFrontend(req, res, next);
+  });
+}
+
+app.use((_req, res) => {
+  res.status(404).json({ message: "Not Found" });
 });
 
 app.listen(port, () => {
   console.log(`Express backend listening on http://localhost:${port}`);
-  console.log(`Proxying unknown routes to ${upstream}`);
+  if (proxyEnabled) {
+    console.log(`Proxying unknown routes to ${upstream}`);
+  } else {
+    console.log(`Frontend proxy is disabled`);
+  }
 });

@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 
 type EmployeeCandidate = {
   id: string;
@@ -117,7 +116,7 @@ export async function resolveEmployeeLinkForUser(input: {
           ? {
               email: {
                 equals: normalizedEmail,
-                mode: Prisma.QueryMode.insensitive,
+                mode: "insensitive" as const,
               },
             }
           : undefined,
@@ -169,7 +168,7 @@ export async function resolveUserLinkForEmployee(input: {
           ? {
               email: {
                 equals: normalizedEmail,
-                mode: Prisma.QueryMode.insensitive,
+                mode: "insensitive" as const,
               },
             }
           : undefined,

@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["172.30.28.9"],
+  output: "standalone",
   async rewrites() {
     const backendOrigin = process.env.BACKEND_ORIGIN ?? "http://localhost:4000";
 
@@ -53,6 +54,18 @@ const nextConfig: NextConfig = {
       {
         source: "/api/documents/upload",
         destination: `${backendOrigin}/api/documents/upload`,
+      },
+      {
+        source: "/api/documents/verify/:id",
+        destination: `${backendOrigin}/api/documents/verify/:id`,
+      },
+      {
+        source: "/api/documents/reject/:id",
+        destination: `${backendOrigin}/api/documents/reject/:id`,
+      },
+      {
+        source: "/api/roles/:id",
+        destination: `${backendOrigin}/api/roles/:id`,
       },
     ];
   },

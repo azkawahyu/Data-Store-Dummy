@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
 import { unlink } from "fs/promises";
 import path from "path";
 import z from "zod";
@@ -139,10 +138,7 @@ router.put("/api/documents/:id", async (req, res) => {
 
     return res.json(documentUpdate);
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
+    if ((error as { code?: string })?.code === "P2025") {
       return res.status(404).json({ message: "Document not found" });
     }
 

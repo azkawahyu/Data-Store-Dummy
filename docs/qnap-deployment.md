@@ -149,3 +149,19 @@ Untuk QNAP dan project yang sudah berjalan, pilihan terbaik adalah:
 - frontend tetap memakai token dulu
 
 Itu memberi pemisahan deployment tanpa memaksa refactor besar di frontend.
+
+## Folder QNAP yang dipakai
+
+Jika Anda sudah menyiapkan folder berikut:
+
+- `/share/Web/apps/nextjs-app` untuk source code
+- `/share/Web/uploads` untuk file upload
+- `/share/Web/database` untuk PostgreSQL dan pgAdmin
+
+maka Docker compose production sekarang cocok dengan struktur itu.
+
+Volume yang dipakai:
+
+- PostgreSQL: `/share/Web/database/postgres`
+- pgAdmin: `/share/Web/database/pgadmin`
+- Upload file: `/share/Web/uploads`
