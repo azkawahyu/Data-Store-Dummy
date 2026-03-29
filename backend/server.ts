@@ -8,6 +8,7 @@ import rolesRouter from "./routes/roles";
 import employeesRouter from "./routes/employees";
 import activityRouter from "./routes/activity";
 import documentsRouter from "./routes/documents";
+import documentsUploadRouter from "./routes/documentsUpload";
 
 const port = Number.parseInt(process.env.BACKEND_PORT ?? "4000", 10);
 const upstream = (
@@ -33,6 +34,7 @@ app.use(rolesRouter);
 app.use(employeesRouter);
 app.use(activityRouter);
 app.use(documentsRouter);
+app.use(documentsUploadRouter);
 
 app.get("/health", (_req, res) => {
   res.json({

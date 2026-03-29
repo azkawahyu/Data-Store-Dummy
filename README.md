@@ -63,3 +63,7 @@ Data routes currently moved to Express:
 - `/api/roles`
 
 More routes are being migrated next, starting with `employees`.
+
+Upload route currently moved to Express:
+
+- `/api/documents/upload`

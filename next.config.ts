@@ -50,6 +50,10 @@ const nextConfig: NextConfig = {
         source: "/api/documents/:id",
         destination: `${backendOrigin}/api/documents/:id`,
       },
+      {
+        source: "/api/documents/upload",
+        destination: `${backendOrigin}/api/documents/upload`,
+      },
     ];
   },
 };
