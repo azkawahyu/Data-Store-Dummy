@@ -5,6 +5,9 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import authRouter from "./routes/auth";
 import usersRouter from "./routes/users";
 import rolesRouter from "./routes/roles";
+import employeesRouter from "./routes/employees";
+import activityRouter from "./routes/activity";
+import documentsRouter from "./routes/documents";
 
 const port = Number.parseInt(process.env.BACKEND_PORT ?? "4000", 10);
 const upstream = (
@@ -27,6 +30,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(authRouter);
 app.use(usersRouter);
 app.use(rolesRouter);
+app.use(employeesRouter);
+app.use(activityRouter);
+app.use(documentsRouter);
 
 app.get("/health", (_req, res) => {
   res.json({

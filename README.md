@@ -61,3 +61,5 @@ Data routes currently moved to Express:
 - `/api/user`
 - `/api/user/:id`
 - `/api/roles`
+
+More routes are being migrated next, starting with `employees`.

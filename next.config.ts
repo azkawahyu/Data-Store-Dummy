@@ -30,6 +30,26 @@ const nextConfig: NextConfig = {
         source: "/api/roles",
         destination: `${backendOrigin}/api/roles`,
       },
+      {
+        source: "/api/employees",
+        destination: `${backendOrigin}/api/employees`,
+      },
+      {
+        source: "/api/employees/:path*",
+        destination: `${backendOrigin}/api/employees/:path*`,
+      },
+      {
+        source: "/api/activity",
+        destination: `${backendOrigin}/api/activity`,
+      },
+      {
+        source: "/api/documents",
+        destination: `${backendOrigin}/api/documents`,
+      },
+      {
+        source: "/api/documents/:id",
+        destination: `${backendOrigin}/api/documents/:id`,
+      },
     ];
   },
 };
