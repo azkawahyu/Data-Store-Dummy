@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/jwt";
+import { getClearedSessionCookieOptions } from "@/lib/cookie-options";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -65,14 +66,12 @@ export function proxy(request: NextRequest) {
       response.cookies.set({
         name: "token",
         value: "",
-        path: "/",
-        expires: new Date(0),
+        ...getClearedSessionCookieOptions(),
       });
       response.cookies.set({
         name: "session_id",
         value: "",
-        path: "/",
-        expires: new Date(0),
+        ...getClearedSessionCookieOptions(),
       });
       return response;
     }

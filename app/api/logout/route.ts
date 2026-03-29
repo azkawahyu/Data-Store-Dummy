@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getClearedSessionCookieOptions } from "@/lib/cookie-options";
 
 export async function POST() {
   const response = NextResponse.json({ message: "Logout berhasil" });
@@ -6,21 +7,13 @@ export async function POST() {
   response.cookies.set({
     name: "token",
     value: "",
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-    path: "/",
-    expires: new Date(0),
+    ...getClearedSessionCookieOptions(),
   });
 
   response.cookies.set({
     name: "session_id",
     value: "",
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-    path: "/",
-    expires: new Date(0),
+    ...getClearedSessionCookieOptions(),
   });
 
   return response;

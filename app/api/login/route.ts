@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import { createActivity } from "@/lib/logActivity";
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
+import { getSessionCookieOptions } from "@/lib/cookie-options";
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,21 +82,13 @@ export async function POST(request: NextRequest) {
     response.cookies.set({
       name: "token",
       value: token,
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24,
+      ...getSessionCookieOptions(),
     });
 
     response.cookies.set({
       name: "session_id",
       value: sessionId,
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24,
+      ...getSessionCookieOptions(),
     });
 
     return response;

@@ -149,9 +149,16 @@ export default function Header({
               ) : null}
             </div>
 
-            <div className="flex items-center justify-center">
-              <HeaderLogo />
-            </div>
+            <Link href="/dashboard" aria-label="Logo aplikasi">
+              <Image
+                src="/logo/TVRI_JAKARTA_2023.svg"
+                alt="TVRI DKI Jakarta"
+                width={36}
+                height={36}
+                className="h-9 w-9 object-contain"
+                priority
+              />
+            </Link>
 
             <div className="flex justify-end">
               <UserMenu />

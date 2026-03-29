@@ -27,6 +27,7 @@ export default function UploadDocumentModal({
     Array<{ id: string; name: string; nip?: string }>
   >([]);
   const [employeeSearch, setEmployeeSearch] = useState("");
+  const [selectedEmployeeName, setSelectedEmployeeName] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [docType, setDocType] = useState("");
@@ -42,6 +43,7 @@ export default function UploadDocumentModal({
   const resetForm = useCallback(() => {
     setEmployeeId("");
     setEmployeeSearch("");
+    setSelectedEmployeeName("");
     setDocType("");
     setOtherDocType("");
     setOtherDocTypeTouched(false);
@@ -64,6 +66,7 @@ export default function UploadDocumentModal({
     if (lockEmployeeSelection) {
       setEmployeeId(defaultEmployeeId ?? "");
       setEmployeeSearch(defaultEmployeeName ?? "");
+      setSelectedEmployeeName(defaultEmployeeName ?? "");
       setEmployees([]);
       return;
     }
@@ -153,6 +156,10 @@ export default function UploadDocumentModal({
 
     const formData = new FormData();
     formData.append("employee_id", employeeId);
+    const resolvedEmployeeName = selectedEmployeeName.trim();
+    if (resolvedEmployeeName) {
+      formData.append("employeeName", resolvedEmployeeName);
+    }
     formData.append("document_type", docType);
     if (docType === "LAINNYA") {
       formData.append("other_document_type", otherDocType.trim());
@@ -263,6 +270,7 @@ export default function UploadDocumentModal({
                           onClick={() => {
                             setEmployeeId(emp.id);
                             setEmployeeSearch(emp.name || "");
+                            setSelectedEmployeeName(emp.name || "");
                             setShowDropdown(false);
                           }}
                           className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm"

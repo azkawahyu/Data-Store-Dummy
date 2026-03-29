@@ -32,6 +32,7 @@ export async function POST(req: Request) {
     // validasi input
     const parsed = uploadDocumentSchema.safeParse({
       employee_id,
+      employeeName: formData.get("employeeName") as string | null,
       document_type,
     });
 
@@ -103,7 +104,7 @@ export async function POST(req: Request) {
       documentsData.push({
         employee_id: String(parsed.data.employee_id),
         document_type: parsed.data.document_type,
-        file_path: `/uploads/documents/${fileName}`,
+        file_path: `/share/Web/uploads/documents/${parsed.data.employeeName}/${fileName}`,
         uploaded_at: new Date(),
         file_name: displayFileName,
         file_size: file.size,

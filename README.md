@@ -34,3 +34,18 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Split frontend and backend
+
+If you want to separate frontend and backend for partial deployment, see [docs/split-deployment.md](docs/split-deployment.md).
+
+For a practical QNAP deployment plan with minimal frontend changes, see [docs/qnap-deployment.md](docs/qnap-deployment.md).
+
+Use [.env.example](.env.example) as the starting point for environment variables.
+
+### Command split for migration
+
+- Frontend: `npm run dev:web`
+- Backend Express service: `npm run dev:api`
+
+The backend command starts an Express service. It is still safe for migration because unknown routes are proxied to the current frontend until API routes are moved one by one.
