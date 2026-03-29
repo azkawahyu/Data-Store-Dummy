@@ -55,3 +55,9 @@ Auth routes currently moved to Express:
 - `/api/login`
 - `/api/logout`
 - `/api/register`
+
+Data routes currently moved to Express:
+
+- `/api/user`
+- `/api/user/:id`
+- `/api/roles`
