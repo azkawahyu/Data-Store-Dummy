@@ -7,6 +7,8 @@ RUN npm ci
 
 COPY . .
 
+COPY prisma ./prisma
+
 RUN npx prisma generate
 RUN npm run build:api
 
@@ -15,6 +17,8 @@ FROM node:20-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/* && apt-get install -y openssl
 
 COPY package*.json ./
 RUN npm ci --omit=dev

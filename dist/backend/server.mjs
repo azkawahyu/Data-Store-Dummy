@@ -16,25 +16,31 @@ import { fileURLToPath } from "url";
 // lib/generated/prisma/internal/class.ts
 import * as runtime from "@prisma/client/runtime/client";
 var config = {
-  "previewFeatures": [],
-  "clientVersion": "7.4.2",
-  "engineVersion": "94a226be1cf2967af2541cca5529f0f7ba866919",
-  "activeProvider": "postgresql",
-  "inlineSchema": 'generator client {\n  provider = "prisma-client"\n  output   = "../lib/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nenum DocumentStatus {\n  pending\n  verified\n  rejected\n}\n\nmodel activity_logs {\n  id          String    @id @default(uuid()) @db.Uuid\n  user_id     String?   @db.Uuid\n  action      String?   @db.VarChar(100)\n  description String?\n  created_at  DateTime? @default(now()) @db.Timestamp(6)\n  users       users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n\nmodel documents {\n  id            String         @id @default(uuid()) @db.Uuid\n  employee_id   String?        @db.Uuid\n  document_type String         @db.VarChar(50)\n  file_path     String\n  file_name     String\n  file_size     Int\n  mime_type     String\n  status        DocumentStatus @default(pending)\n  uploaded_at   DateTime?      @default(now()) @db.Timestamp(6)\n  verified_by   String?        @db.Uuid\n  verified_at   DateTime?      @db.Timestamp(6)\n  employees     employees?     @relation(fields: [employee_id], references: [id], onDelete: Cascade, onUpdate: NoAction)\n  users         users?         @relation(fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n\nmodel employees {\n  id         String      @id @default(uuid()) @db.Uuid\n  nip        String      @unique @db.VarChar(50)\n  nama       String      @db.VarChar(150)\n  jabatan    String?     @db.VarChar(100)\n  unit       String?     @db.VarChar(100)\n  status     String?     @db.VarChar(50)\n  alamat     String?\n  no_hp      String?     @db.VarChar(20)\n  email      String?     @db.VarChar(150)\n  created_at DateTime?   @default(now()) @db.Timestamp(6)\n  updated_at DateTime?   @updatedAt\n  documents  documents[]\n  users      users?\n}\n\nmodel roles {\n  id    String  @id @default(uuid()) @db.Uuid\n  name  String  @unique @db.VarChar(50)\n  users users[]\n}\n\nmodel users {\n  id            String          @id @default(uuid()) @db.Uuid\n  employee_id   String?         @unique @db.Uuid\n  role_id       String?         @db.Uuid\n  username      String          @unique @db.VarChar(100)\n  password_hash String\n  nip           String?         @unique @db.VarChar(50)\n  email         String?         @db.VarChar(150)\n  created_at    DateTime?       @default(now()) @db.Timestamp(6)\n  activity_logs activity_logs[]\n  documents     documents[]\n  employees     employees?      @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n  roles         roles?          @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n',
-  "runtimeDataModel": {
-    "models": {},
-    "enums": {},
-    "types": {}
+  previewFeatures: [],
+  clientVersion: "7.4.2",
+  engineVersion: "94a226be1cf2967af2541cca5529f0f7ba866919",
+  activeProvider: "postgresql",
+  inlineSchema:
+    'generator client {\n  provider = "prisma-client"\n  output   = "../lib/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nenum DocumentStatus {\n  pending\n  verified\n  rejected\n}\n\nmodel activity_logs {\n  id          String    @id @default(uuid()) @db.Uuid\n  user_id     String?   @db.Uuid\n  action      String?   @db.VarChar(100)\n  description String?\n  created_at  DateTime? @default(now()) @db.Timestamp(6)\n  users       users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n\nmodel documents {\n  id            String         @id @default(uuid()) @db.Uuid\n  employee_id   String?        @db.Uuid\n  document_type String         @db.VarChar(50)\n  file_path     String\n  file_name     String\n  file_size     Int\n  mime_type     String\n  status        DocumentStatus @default(pending)\n  uploaded_at   DateTime?      @default(now()) @db.Timestamp(6)\n  verified_by   String?        @db.Uuid\n  verified_at   DateTime?      @db.Timestamp(6)\n  employees     employees?     @relation(fields: [employee_id], references: [id], onDelete: Cascade, onUpdate: NoAction)\n  users         users?         @relation(fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n\nmodel employees {\n  id         String      @id @default(uuid()) @db.Uuid\n  nip        String      @unique @db.VarChar(50)\n  nama       String      @db.VarChar(150)\n  jabatan    String?     @db.VarChar(100)\n  unit       String?     @db.VarChar(100)\n  status     String?     @db.VarChar(50)\n  alamat     String?\n  no_hp      String?     @db.VarChar(20)\n  email      String?     @db.VarChar(150)\n  created_at DateTime?   @default(now()) @db.Timestamp(6)\n  updated_at DateTime?   @updatedAt\n  documents  documents[]\n  users      users?\n}\n\nmodel roles {\n  id    String  @id @default(uuid()) @db.Uuid\n  name  String  @unique @db.VarChar(50)\n  users users[]\n}\n\nmodel users {\n  id            String          @id @default(uuid()) @db.Uuid\n  employee_id   String?         @unique @db.Uuid\n  role_id       String?         @db.Uuid\n  username      String          @unique @db.VarChar(100)\n  password_hash String\n  nip           String?         @unique @db.VarChar(50)\n  email         String?         @db.VarChar(150)\n  created_at    DateTime?       @default(now()) @db.Timestamp(6)\n  activity_logs activity_logs[]\n  documents     documents[]\n  employees     employees?      @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n  roles         roles?          @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n',
+  runtimeDataModel: {
+    models: {},
+    enums: {},
+    types: {},
   },
-  "parameterizationSchema": {
-    "strings": [],
-    "graph": ""
-  }
+  parameterizationSchema: {
+    strings: [],
+    graph: "",
+  },
 };
-config.runtimeDataModel = JSON.parse('{"models":{"activity_logs":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"user_id","kind":"scalar","type":"String"},{"name":"action","kind":"scalar","type":"String"},{"name":"description","kind":"scalar","type":"String"},{"name":"created_at","kind":"scalar","type":"DateTime"},{"name":"users","kind":"object","type":"users","relationName":"activity_logsTousers"}],"dbName":null},"documents":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"employee_id","kind":"scalar","type":"String"},{"name":"document_type","kind":"scalar","type":"String"},{"name":"file_path","kind":"scalar","type":"String"},{"name":"file_name","kind":"scalar","type":"String"},{"name":"file_size","kind":"scalar","type":"Int"},{"name":"mime_type","kind":"scalar","type":"String"},{"name":"status","kind":"enum","type":"DocumentStatus"},{"name":"uploaded_at","kind":"scalar","type":"DateTime"},{"name":"verified_by","kind":"scalar","type":"String"},{"name":"verified_at","kind":"scalar","type":"DateTime"},{"name":"employees","kind":"object","type":"employees","relationName":"documentsToemployees"},{"name":"users","kind":"object","type":"users","relationName":"documentsTousers"}],"dbName":null},"employees":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"nip","kind":"scalar","type":"String"},{"name":"nama","kind":"scalar","type":"String"},{"name":"jabatan","kind":"scalar","type":"String"},{"name":"unit","kind":"scalar","type":"String"},{"name":"status","kind":"scalar","type":"String"},{"name":"alamat","kind":"scalar","type":"String"},{"name":"no_hp","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"created_at","kind":"scalar","type":"DateTime"},{"name":"updated_at","kind":"scalar","type":"DateTime"},{"name":"documents","kind":"object","type":"documents","relationName":"documentsToemployees"},{"name":"users","kind":"object","type":"users","relationName":"employeesTousers"}],"dbName":null},"roles":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"users","kind":"object","type":"users","relationName":"rolesTousers"}],"dbName":null},"users":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"employee_id","kind":"scalar","type":"String"},{"name":"role_id","kind":"scalar","type":"String"},{"name":"username","kind":"scalar","type":"String"},{"name":"password_hash","kind":"scalar","type":"String"},{"name":"nip","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"created_at","kind":"scalar","type":"DateTime"},{"name":"activity_logs","kind":"object","type":"activity_logs","relationName":"activity_logsTousers"},{"name":"documents","kind":"object","type":"documents","relationName":"documentsTousers"},{"name":"employees","kind":"object","type":"employees","relationName":"employeesTousers"},{"name":"roles","kind":"object","type":"roles","relationName":"rolesTousers"}],"dbName":null}},"enums":{},"types":{}}');
+config.runtimeDataModel = JSON.parse(
+  '{"models":{"activity_logs":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"user_id","kind":"scalar","type":"String"},{"name":"action","kind":"scalar","type":"String"},{"name":"description","kind":"scalar","type":"String"},{"name":"created_at","kind":"scalar","type":"DateTime"},{"name":"users","kind":"object","type":"users","relationName":"activity_logsTousers"}],"dbName":null},"documents":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"employee_id","kind":"scalar","type":"String"},{"name":"document_type","kind":"scalar","type":"String"},{"name":"file_path","kind":"scalar","type":"String"},{"name":"file_name","kind":"scalar","type":"String"},{"name":"file_size","kind":"scalar","type":"Int"},{"name":"mime_type","kind":"scalar","type":"String"},{"name":"status","kind":"enum","type":"DocumentStatus"},{"name":"uploaded_at","kind":"scalar","type":"DateTime"},{"name":"verified_by","kind":"scalar","type":"String"},{"name":"verified_at","kind":"scalar","type":"DateTime"},{"name":"employees","kind":"object","type":"employees","relationName":"documentsToemployees"},{"name":"users","kind":"object","type":"users","relationName":"documentsTousers"}],"dbName":null},"employees":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"nip","kind":"scalar","type":"String"},{"name":"nama","kind":"scalar","type":"String"},{"name":"jabatan","kind":"scalar","type":"String"},{"name":"unit","kind":"scalar","type":"String"},{"name":"status","kind":"scalar","type":"String"},{"name":"alamat","kind":"scalar","type":"String"},{"name":"no_hp","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"created_at","kind":"scalar","type":"DateTime"},{"name":"updated_at","kind":"scalar","type":"DateTime"},{"name":"documents","kind":"object","type":"documents","relationName":"documentsToemployees"},{"name":"users","kind":"object","type":"users","relationName":"employeesTousers"}],"dbName":null},"roles":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"name","kind":"scalar","type":"String"},{"name":"users","kind":"object","type":"users","relationName":"rolesTousers"}],"dbName":null},"users":{"fields":[{"name":"id","kind":"scalar","type":"String"},{"name":"employee_id","kind":"scalar","type":"String"},{"name":"role_id","kind":"scalar","type":"String"},{"name":"username","kind":"scalar","type":"String"},{"name":"password_hash","kind":"scalar","type":"String"},{"name":"nip","kind":"scalar","type":"String"},{"name":"email","kind":"scalar","type":"String"},{"name":"created_at","kind":"scalar","type":"DateTime"},{"name":"activity_logs","kind":"object","type":"activity_logs","relationName":"activity_logsTousers"},{"name":"documents","kind":"object","type":"documents","relationName":"documentsTousers"},{"name":"employees","kind":"object","type":"employees","relationName":"employeesTousers"},{"name":"roles","kind":"object","type":"roles","relationName":"rolesTousers"}],"dbName":null}},"enums":{},"types":{}}',
+);
 config.parameterizationSchema = {
-  strings: JSON.parse('["where","orderBy","cursor","activity_logs","documents","users","_count","employees","roles","activity_logs.findUnique","activity_logs.findUniqueOrThrow","activity_logs.findFirst","activity_logs.findFirstOrThrow","activity_logs.findMany","data","activity_logs.createOne","activity_logs.createMany","activity_logs.createManyAndReturn","activity_logs.updateOne","activity_logs.updateMany","activity_logs.updateManyAndReturn","create","update","activity_logs.upsertOne","activity_logs.deleteOne","activity_logs.deleteMany","having","_min","_max","activity_logs.groupBy","activity_logs.aggregate","documents.findUnique","documents.findUniqueOrThrow","documents.findFirst","documents.findFirstOrThrow","documents.findMany","documents.createOne","documents.createMany","documents.createManyAndReturn","documents.updateOne","documents.updateMany","documents.updateManyAndReturn","documents.upsertOne","documents.deleteOne","documents.deleteMany","_avg","_sum","documents.groupBy","documents.aggregate","employees.findUnique","employees.findUniqueOrThrow","employees.findFirst","employees.findFirstOrThrow","employees.findMany","employees.createOne","employees.createMany","employees.createManyAndReturn","employees.updateOne","employees.updateMany","employees.updateManyAndReturn","employees.upsertOne","employees.deleteOne","employees.deleteMany","employees.groupBy","employees.aggregate","roles.findUnique","roles.findUniqueOrThrow","roles.findFirst","roles.findFirstOrThrow","roles.findMany","roles.createOne","roles.createMany","roles.createManyAndReturn","roles.updateOne","roles.updateMany","roles.updateManyAndReturn","roles.upsertOne","roles.deleteOne","roles.deleteMany","roles.groupBy","roles.aggregate","users.findUnique","users.findUniqueOrThrow","users.findFirst","users.findFirstOrThrow","users.findMany","users.createOne","users.createMany","users.createManyAndReturn","users.updateOne","users.updateMany","users.updateManyAndReturn","users.upsertOne","users.deleteOne","users.deleteMany","users.groupBy","users.aggregate","AND","OR","NOT","id","employee_id","role_id","username","password_hash","nip","email","created_at","equals","in","notIn","lt","lte","gt","gte","not","contains","startsWith","endsWith","name","every","some","none","nama","jabatan","unit","status","alamat","no_hp","updated_at","document_type","file_path","file_name","file_size","mime_type","DocumentStatus","uploaded_at","verified_by","verified_at","user_id","action","description","is","isNot","connectOrCreate","upsert","createMany","set","disconnect","delete","connect","updateMany","deleteMany","increment","decrement","multiply","divide"]'),
-  graph: "wwIuUAkFAACvAQAgYQAAwwEAMGIAAAUAEGMAAMMBADBkAQAAAAFrQACtAQAhiwEBALkBACGMAQEArAEAIY0BAQCsAQAhAQAAAAEAIA8DAAC6AQAgBAAArgEAIAcAALsBACAIAAC8AQAgYQAAuAEAMGIAAAMAEGMAALgBADBkAQC-AQAhZQEAuQEAIWYBALkBACFnAQCrAQAhaAEAqwEAIWkBAKwBACFqAQCsAQAha0AArQEAIQEAAAADACAJBQAArwEAIGEAAMMBADBiAAAFABBjAADDAQAwZAEAvgEAIWtAAK0BACGLAQEAuQEAIYwBAQCsAQAhjQEBAKwBACEFBQAAmQIAIGsAAMQBACCLAQAAxAEAIIwBAADEAQAgjQEAAMQBACADAAAABQAgAQAABgAwAgAAAQAgEAUAAK8BACAHAAC7AQAgYQAAwAEAMGIAAAgAEGMAAMABADBkAQC-AQAhZQEAuQEAIX4AAMIBiAEiggEBAKsBACGDAQEAqwEAIYQBAQCrAQAhhQECAMEBACGGAQEAqwEAIYgBQACtAQAhiQEBALkBACGKAUAArQEAIQYFAACZAgAgBwAApQIAIGUAAMQBACCIAQAAxAEAIIkBAADEAQAgigEAAMQBACAQBQAArwEAIAcAALsBACBhAADAAQAwYgAACAAQYwAAwAEAMGQBAAAAAWUBALkBACF-AADCAYgBIoIBAQCrAQAhgwEBAKsBACGEAQEAqwEAIYUBAgDBAQAhhgEBAKsBACGIAUAArQEAIYkBAQC5AQAhigFAAK0BACEDAAAACAAgAQAACQAwAgAACgAgEAQAAK4BACAFAACvAQAgYQAAqgEAMGIAAAwAEGMAAKoBADBkAQC-AQAhaQEAqwEAIWoBAKwBACFrQACtAQAhewEAqwEAIXwBAKwBACF9AQCsAQAhfgEArAEAIX8BAKwBACGAAQEArAEAIYEBQACtAQAhAQAAAAwAIAMAAAAIACABAAAJADACAAAKACABAAAAAwAgAQAAAAgAIAEAAAADACABAAAADAAgBgUAAKgBACBhAACnAQAwYgAAEwAQYwAApwEAMGQBAL4BACF3AQCrAQAhAQAAABMAIAkDAACkAgAgBAAAmAIAIAcAAKUCACAIAACmAgAgZQAAxAEAIGYAAMQBACBpAADEAQAgagAAxAEAIGsAAMQBACAPAwAAugEAIAQAAK4BACAHAAC7AQAgCAAAvAEAIGEAALgBADBiAAADABBjAAC4AQAwZAEAAAABZQEAAAABZgEAuQEAIWcBAAAAAWgBAKsBACFpAQAAAAFqAQCsAQAha0AArQEAIQMAAAADACABAAAVADACAAAWACABAAAAAwAgAQAAAAUAIAEAAAAIACABAAAAAQAgAwAAAAUAIAEAAAYAMAIAAAEAIAMAAAAFACABAAAGADACAAABACADAAAABQAgAQAABgAwAgAAAQAgBgUAAKMCACBkAQAAAAFrQAAAAAGLAQEAAAABjAEBAAAAAY0BAQAAAAEBDgAAHwAgBWQBAAAAAWtAAAAAAYsBAQAAAAGMAQEAAAABjQEBAAAAAQEOAAAhADABDgAAIQAwAQAAAAMAIAYFAACiAgAgZAEAyAEAIWtAAMoBACGLAQEAyQEAIYwBAQDJAQAhjQEBAMkBACECAAAAAQAgDgAAJQAgBWQBAMgBACFrQADKAQAhiwEBAMkBACGMAQEAyQEAIY0BAQDJAQAhAgAAAAUAIA4AACcAIAIAAAAFACAOAAAnACABAAAAAwAgAwAAAAEAIBUAAB8AIBYAACUAIAEAAAABACABAAAABQAgBwYAAJ8CACAbAAChAgAgHAAAoAIAIGsAAMQBACCLAQAAxAEAIIwBAADEAQAgjQEAAMQBACAIYQAAtwEAMGIAAC8AEGMAALcBADBkAQCXAQAha0AAmwEAIYsBAQCYAQAhjAEBAJoBACGNAQEAmgEAIQMAAAAFACABAAAuADAaAAAvACADAAAABQAgAQAABgAwAgAAAQAgAQAAAAoAIAEAAAAKACADAAAACAAgAQAACQAwAgAACgAgAwAAAAgAIAEAAAkAMAIAAAoAIAMAAAAIACABAAAJADACAAAKACANBQAAlQIAIAcAAN4BACBkAQAAAAFlAQAAAAF-AAAAiAECggEBAAAAAYMBAQAAAAGEAQEAAAABhQECAAAAAYYBAQAAAAGIAUAAAAABiQEBAAAAAYoBQAAAAAEBDgAANwAgC2QBAAAAAWUBAAAAAX4AAACIAQKCAQEAAAABgwEBAAAAAYQBAQAAAAGFAQIAAAABhgEBAAAAAYgBQAAAAAGJAQEAAAABigFAAAAAAQEOAAA5ADABDgAAOQAwAQAAAAwAIAEAAAADACANBQAAkwIAIAcAANwBACBkAQDIAQAhZQEAyQEAIX4AANoBiAEiggEBAMgBACGDAQEAyAEAIYQBAQDIAQAhhQECANkBACGGAQEAyAEAIYgBQADKAQAhiQEBAMkBACGKAUAAygEAIQIAAAAKACAOAAA-ACALZAEAyAEAIWUBAMkBACF-AADaAYgBIoIBAQDIAQAhgwEBAMgBACGEAQEAyAEAIYUBAgDZAQAhhgEBAMgBACGIAUAAygEAIYkBAQDJAQAhigFAAMoBACECAAAACAAgDgAAQAAgAgAAAAgAIA4AAEAAIAEAAAAMACABAAAAAwAgAwAAAAoAIBUAADcAIBYAAD4AIAEAAAAKACABAAAACAAgCQYAAJoCACAbAACdAgAgHAAAnAIAIC0AAJsCACAuAACeAgAgZQAAxAEAIIgBAADEAQAgiQEAAMQBACCKAQAAxAEAIA5hAACwAQAwYgAASQAQYwAAsAEAMGQBAJcBACFlAQCYAQAhfgAAsgGIASKCAQEAmQEAIYMBAQCZAQAhhAEBAJkBACGFAQIAsQEAIYYBAQCZAQAhiAFAAJsBACGJAQEAmAEAIYoBQACbAQAhAwAAAAgAIAEAAEgAMBoAAEkAIAMAAAAIACABAAAJADACAAAKACAQBAAArgEAIAUAAK8BACBhAACqAQAwYgAADAAQYwAAqgEAMGQBAAAAAWkBAAAAAWoBAKwBACFrQACtAQAhewEAqwEAIXwBAKwBACF9AQCsAQAhfgEArAEAIX8BAKwBACGAAQEArAEAIYEBQACtAQAhAQAAAEwAIAEAAABMACAKBAAAmAIAIAUAAJkCACBqAADEAQAgawAAxAEAIHwAAMQBACB9AADEAQAgfgAAxAEAIH8AAMQBACCAAQAAxAEAIIEBAADEAQAgAwAAAAwAIAEAAE8AMAIAAEwAIAMAAAAMACABAABPADACAABMACADAAAADAAgAQAATwAwAgAATAAgDQQAAJYCACAFAACXAgAgZAEAAAABaQEAAAABagEAAAABa0AAAAABewEAAAABfAEAAAABfQEAAAABfgEAAAABfwEAAAABgAEBAAAAAYEBQAAAAAEBDgAAUwAgC2QBAAAAAWkBAAAAAWoBAAAAAWtAAAAAAXsBAAAAAXwBAAAAAX0BAAAAAX4BAAAAAX8BAAAAAYABAQAAAAGBAUAAAAABAQ4AAFUAMAEOAABVADANBAAAhAIAIAUAAIUCACBkAQDIAQAhaQEAyAEAIWoBAMkBACFrQADKAQAhewEAyAEAIXwBAMkBACF9AQDJAQAhfgEAyQEAIX8BAMkBACGAAQEAyQEAIYEBQADKAQAhAgAAAEwAIA4AAFgAIAtkAQDIAQAhaQEAyAEAIWoBAMkBACFrQADKAQAhewEAyAEAIXwBAMkBACF9AQDJAQAhfgEAyQEAIX8BAMkBACGAAQEAyQEAIYEBQADKAQAhAgAAAAwAIA4AAFoAIAIAAAAMACAOAABaACADAAAATAAgFQAAUwAgFgAAWAAgAQAAAEwAIAEAAAAMACALBgAAgQIAIBsAAIMCACAcAACCAgAgagAAxAEAIGsAAMQBACB8AADEAQAgfQAAxAEAIH4AAMQBACB_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_AQCsAQAhgAEBAKwBACGBAUAArQEAIY4BAAAMACCPAQAADAAgCAUAAKgBACBhAACnAQAwYgAAEwAQYwAApwEAMGQBAL4BACF3AQCrAQAhjgEAABMAII8BAAATACAIbAEAAAABbQEAAAAFbgEAAAAFbwEAAAABcAEAAAABcQEAAAABcgEAAAABcwEAvQEAIQhsAQAAAAFtAQAAAARuAQAAAARvAQAAAAFwAQAAAAFxAQAAAAFyAQAAAAFzAQC_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_gEAIAMAAAAWACAVAAD-AQAgFgAA_QEAIAEOAACyAgAwDwMAALoBACAEAACuAQAgBwAAuwEAIAgAALwBACBhAAC4AQAwYgAAAwAQYwAAuAEAMGQBAAAAAWUBAAAAAWYBALkBACFnAQAAAAFoAQCrAQAhaQEAAAABagEArAEAIWtAAK0BACECAAAAFgAgDgAA_QEAIAIAAAD7AQAgDgAA_AEAIAthAAD6AQAwYgAA-wEAEGMAAPoBADBkAQC-AQAhZQEAuQEAIWYBALkBACFnAQCrAQAhaAEAqwEAIWkBAKwBACFqAQCsAQAha0AArQEAIQthAAD6AQAwYgAA-wEAEGMAAPoBADBkAQC-AQAhZQEAuQEAIWYBALkBACFnAQCrAQAhaAEAqwEAIWkBAKwBACFqAQCsAQAha0AArQEAIQdkAQDIAQAhZQEAyQEAIWcBAMgBACFoAQDIAQAhaQEAyQEAIWoBAMkBACFrQADKAQAhCgMAAMsBACAEAADMAQAgBwAAzQEAIGQBAMgBACFlAQDJAQAhZwEAyAEAIWgBAMgBACFpAQDJAQAhagEAyQEAIWtAAMoBACEKAwAA6wEAIAQAAOwBACAHAADtAQAgZAEAAAABZQEAAAABZwEAAAABaAEAAAABaQEAAAABagEAAAABa0AAAAABBBUAAPMBADCQAQAA9AEAMJIBAAD2AQAglgEAAPcBADAAAAAACxUAAIsCADAWAACPAgAwkAEAAIwCADCRAQAAjQIAMJIBAACOAgAgkwEAANMBADCUAQAA0wEAMJUBAADTAQAwlgEAANMBADCXAQAAkAIAMJgBAADWAQAwBxUAAIYCACAWAACJAgAgkAEAAIcCACCRAQAAiAIAIJQBAAADACCVAQAAAwAglgEAABYAIAoDAADrAQAgBAAA7AEAIAgAAO4BACBkAQAAAAFmAQAAAAFnAQAAAAFoAQAAAAFpAQAAAAFqAQAAAAFrQAAAAAECAAAAFgAgFQAAhgIAIAMAAAADACAVAACGAgAgFgAAigIAIAwAAAADACADAADLAQAgBAAAzAEAIAgAAM4BACAOAACKAgAgZAEAyAEAIWYBAMkBACFnAQDIAQAhaAEAyAEAIWkBAMkBACFqAQDJAQAha0AAygEAIQoDAADLAQAgBAAAzAEAIAgAAM4BACBkAQDIAQAhZgEAyQEAIWcBAMgBACFoAQDIAQAhaQEAyQEAIWoBAMkBACFrQADKAQAhCwUAAJUCACBkAQAAAAF-AAAAiAECggEBAAAAAYMBAQAAAAGEAQEAAAABhQECAAAAAYYBAQAAAAGIAUAAAAABiQEBAAAAAYoBQAAAAAECAAAACgAgFQAAlAIAIAMAAAAKACAVAACUAgAgFgAAkgIAIAEOAACxAgAwAgAAAAoAIA4AAJICACACAAAA1wEAIA4AAJECACAKZAEAyAEAIX4AANoBiAEiggEBAMgBACGDAQEAyAEAIYQBAQDIAQAhhQECANkBACGGAQEAyAEAIYgBQADKAQAhiQEBAMkBACGKAUAAygEAIQsFAACTAgAgZAEAyAEAIX4AANoBiAEiggEBAMgBACGDAQEAyAEAIYQBAQDIAQAhhQECANkBACGGAQEAyAEAIYgBQADKAQAhiQEBAMkBACGKAUAAygEAIQcVAACsAgAgFgAArwIAIJABAACtAgAgkQEAAK4CACCUAQAAAwAglQEAAAMAIJYBAAAWACALBQAAlQIAIGQBAAAAAX4AAACIAQKCAQEAAAABgwEBAAAAAYQBAQAAAAGFAQIAAAABhgEBAAAAAYgBQAAAAAGJAQEAAAABigFAAAAAAQMVAACsAgAgkAEAAK0CACCWAQAAFgAgBBUAAIsCADCQAQAAjAIAMJIBAACOAgAglgEAANMBADADFQAAhgIAIJABAACHAgAglgEAABYAIAAJAwAApAIAIAQAAJgCACAHAAClAgAgCAAApgIAIGUAAMQBACBmAADEAQAgaQAAxAEAIGoAAMQBACBrAADEAQAgAAAAAAAAAAAHFQAApwIAIBYAAKoCACCQAQAAqAIAIJEBAACpAgAglAEAAAMAIJUBAAADACCWAQAAFgAgAxUAAKcCACCQAQAAqAIAIJYBAAAWACAACgQAAJgCACAFAACZAgAgagAAxAEAIGsAAMQBACB8AADEAQAgfQAAxAEAIH4AAMQBACB_AADEAQAggAEAAMQBACCBAQAAxAEAIAEFAACAAgAgCwQAAOwBACAHAADtAQAgCAAA7gEAIGQBAAAAAWUBAAAAAWYBAAAAAWcBAAAAAWgBAAAAAWkBAAAAAWoBAAAAAWtAAAAAAQIAAAAWACAVAACnAgAgAwAAAAMAIBUAAKcCACAWAACrAgAgDQAAAAMAIAQAAMwBACAHAADNAQAgCAAAzgEAIA4AAKsCACBkAQDIAQAhZQEAyQEAIWYBAMkBACFnAQDIAQAhaAEAyAEAIWkBAMkBACFqAQDJAQAha0AAygEAIQsEAADMAQAgBwAAzQEAIAgAAM4BACBkAQDIAQAhZQEAyQEAIWYBAMkBACFnAQDIAQAhaAEAyAEAIWkBAMkBACFqAQDJAQAha0AAygEAIQsDAADrAQAgBwAA7QEAIAgAAO4BACBkAQAAAAFlAQAAAAFmAQAAAAFnAQAAAAFoAQAAAAFpAQAAAAFqAQAAAAFrQAAAAAECAAAAFgAgFQAArAIAIAMAAAADACAVAACsAgAgFgAAsAIAIA0AAAADACADAADLAQAgBwAAzQEAIAgAAM4BACAOAACwAgAgZAEAyAEAIWUBAMkBACFmAQDJAQAhZwEAyAEAIWgBAMgBACFpAQDJAQAhagEAyQEAIWtAAMoBACELAwAAywEAIAcAAM0BACAIAADOAQAgZAEAyAEAIWUBAMkBACFmAQDJAQAhZwEAyAEAIWgBAMgBACFpAQDJAQAhagEAyQEAIWtAAMoBACEKZAEAAAABfgAAAIgBAoIBAQAAAAGDAQEAAAABhAEBAAAAAYUBAgAAAAGGAQEAAAABiAFAAAAAAYkBAQAAAAGKAUAAAAABB2QBAAAAAWUBAAAAAWcBAAAAAWgBAAAAAWkBAAAAAWoBAAAAAWtAAAAAAQJkAQAAAAF3AQAAAAECAAAAZAAgFQAAswIAIAwEAACWAgAgZAEAAAABaQEAAAABagEAAAABa0AAAAABewEAAAABfAEAAAABfQEAAAABfgEAAAABfwEAAAABgAEBAAAAAYEBQAAAAAECAAAATAAgFQAAtQIAIARkAQAAAAFrQAAAAAGMAQEAAAABjQEBAAAAAQwFAACXAgAgZAEAAAABaQEAAAABagEAAAABa0AAAAABewEAAAABfAEAAAABfQEAAAABfgEAAAABfwEAAAABgAEBAAAAAYEBQAAAAAECAAAATAAgFQAAuAIAIAMAAAAMACAVAAC4AgAgFgAAvAIAIA4AAAAMACAFAACFAgAgDgAAvAIAIGQBAMgBACFpAQDIAQAhagEAyQEAIWtAAMoBACF7AQDIAQAhfAEAyQEAIX0BAMkBACF-AQDJAQAhfwEAyQEAIYABAQDJAQAhgQFAAMoBACEMBQAAhQIAIGQBAMgBACFpAQDIAQAhagEAyQEAIWtAAMoBACF7AQDIAQAhfAEAyQEAIX0BAMkBACF-AQDJAQAhfwEAyQEAIYABAQDJAQAhgQFAAMoBACEKZAEAAAABZQEAAAABfgAAAIgBAoIBAQAAAAGDAQEAAAABhAEBAAAAAYUBAgAAAAGGAQEAAAABiAFAAAAAAYoBQAAAAAEDAAAAEwAgFQAAswIAIBYAAMACACAEAAAAEwAgDgAAwAIAIGQBAMgBACF3AQDIAQAhAmQBAMgBACF3AQDIAQAhAwAAAAwAIBUAALUCACAWAADDAgAgDgAAAAwAIAQAAIQCACAOAADDAgAgZAEAyAEAIWkBAMgBACFqAQDJAQAha0AAygEAIXsBAMgBACF8AQDJAQAhfQEAyQEAIX4BAMkBACF_AQDJAQAhgAEBAMkBACGBAUAAygEAIQwEAACEAgAgZAEAyAEAIWkBAMgBACFqAQDJAQAha0AAygEAIXsBAMgBACF8AQDJAQAhfQEAyQEAIX4BAMkBACF_AQDJAQAhgAEBAMkBACGBAUAAygEAIQEFBAIFAwcBBAsDBgAIBxIECBQGAgURAgcNBAMEDgMFDwIGAAUBBBAAAgUXAgYABwEFGAACAxkABBoAAAEFJAIBBSoCAwYADRsADhwADwAAAAMGAA0bAA4cAA8CBT0CBzwEAgVEAgdDBAUGABQbABccABgtABUuABYAAAAAAAUGABQbABccABgtABUuABYAAAMGAB0bAB4cAB8AAAADBgAdGwAeHAAfAAADBgAkGwAlHAAmAAAAAwYAJBsAJRwAJgIHhgEECIcBBgIHjQEECI4BBgMGACsbACwcAC0AAAADBgArGwAsHAAtCQIBChsBCxwBDB0BDR4BDyABECIJESMKEiYBEygJFCkLFysBGCwBGS0JHTAMHjEQHzIDIDMDITQDIjUDIzYDJDgDJToJJjsRJz8DKEEJKUISKkUDK0YDLEcJL0oTMEsZMU0EMk4EM1AENFEENVIENlQEN1YJOFcaOVkEOlsJO1wbPF0EPV4EPl8JP2IcQGMgQWUGQmYGQ2gGRGkGRWoGRmwGR24JSG8hSXEGSnMJS3QiTHUGTXYGTncJT3ojUHsnUXwCUn0CU34CVH8CVYABAlaCAQJXhAEJWIUBKFmJAQJaiwEJW4wBKVyPAQJdkAECXpEBCV-UASpglQEu"
+  strings: JSON.parse(
+    '["where","orderBy","cursor","activity_logs","documents","users","_count","employees","roles","activity_logs.findUnique","activity_logs.findUniqueOrThrow","activity_logs.findFirst","activity_logs.findFirstOrThrow","activity_logs.findMany","data","activity_logs.createOne","activity_logs.createMany","activity_logs.createManyAndReturn","activity_logs.updateOne","activity_logs.updateMany","activity_logs.updateManyAndReturn","create","update","activity_logs.upsertOne","activity_logs.deleteOne","activity_logs.deleteMany","having","_min","_max","activity_logs.groupBy","activity_logs.aggregate","documents.findUnique","documents.findUniqueOrThrow","documents.findFirst","documents.findFirstOrThrow","documents.findMany","documents.createOne","documents.createMany","documents.createManyAndReturn","documents.updateOne","documents.updateMany","documents.updateManyAndReturn","documents.upsertOne","documents.deleteOne","documents.deleteMany","_avg","_sum","documents.groupBy","documents.aggregate","employees.findUnique","employees.findUniqueOrThrow","employees.findFirst","employees.findFirstOrThrow","employees.findMany","employees.createOne","employees.createMany","employees.createManyAndReturn","employees.updateOne","employees.updateMany","employees.updateManyAndReturn","employees.upsertOne","employees.deleteOne","employees.deleteMany","employees.groupBy","employees.aggregate","roles.findUnique","roles.findUniqueOrThrow","roles.findFirst","roles.findFirstOrThrow","roles.findMany","roles.createOne","roles.createMany","roles.createManyAndReturn","roles.updateOne","roles.updateMany","roles.updateManyAndReturn","roles.upsertOne","roles.deleteOne","roles.deleteMany","roles.groupBy","roles.aggregate","users.findUnique","users.findUniqueOrThrow","users.findFirst","users.findFirstOrThrow","users.findMany","users.createOne","users.createMany","users.createManyAndReturn","users.updateOne","users.updateMany","users.updateManyAndReturn","users.upsertOne","users.deleteOne","users.deleteMany","users.groupBy","users.aggregate","AND","OR","NOT","id","employee_id","role_id","username","password_hash","nip","email","created_at","equals","in","notIn","lt","lte","gt","gte","not","contains","startsWith","endsWith","name","every","some","none","nama","jabatan","unit","status","alamat","no_hp","updated_at","document_type","file_path","file_name","file_size","mime_type","DocumentStatus","uploaded_at","verified_by","verified_at","user_id","action","description","is","isNot","connectOrCreate","upsert","createMany","set","disconnect","delete","connect","updateMany","deleteMany","increment","decrement","multiply","divide"]',
+  ),
+  graph:
+    "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-ACALZAEAyAEAIWUBAMkBACF-AADaAYgBIoIBAQDIAQAhgwEBAMgBACGEAQEAyAEAIYUBAgDZAQAhhgEBAMgBACGIAUAAygEAIYkBAQDJAQAhigFAAMoBACECAAAACAAgDgAAQAAgAgAAAAgAIA4AAEAAIAEAAAAMACABAAAAAwAgAwAAAAoAIBUAADcAIBYAAD4AIAEAAAAKACABAAAACAAgCQYAAJoCACAbAACdAgAgHAAAnAIAIC0AAJsCACAuAACeAgAgZQAAxAEAIIgBAADEAQAgiQEAAMQBACCKAQAAxAEAIA5hAACwAQAwYgAASQAQYwAAsAEAMGQBAJcBACFlAQCYAQAhfgAAsgGIASKCAQEAmQEAIYMBAQCZAQAhhAEBAJkBACGFAQIAsQEAIYYBAQCZAQAhiAFAAJsBACGJAQEAmAEAIYoBQACbAQAhAwAAAAgAIAEAAEgAMBoAAEkAIAMAAAAIACABAAAJADACAAAKACAQBAAArgEAIAUAAK8BACBhAACqAQAwYgAADAAQYwAAqgEAMGQBAAAAAWkBAAAAAWoBAKwBACFrQACtAQAhewEAqwEAIXwBAKwBACF9AQCsAQAhfgEArAEAIX8BAKwBACGAAQEArAEAIYEBQACtAQAhAQAAAEwAIAEAAABMACAKBAAAmAIAIAUAAJkCACBqAADEAQAgawAAxAEAIHwAAMQBACB9AADEAQAgfgAAxAEAIH8AAMQBACCAAQAAxAEAIIEBAADEAQAgAwAAAAwAIAEAAE8AMAIAAEwAIAMAAAAMACABAABPADACAABMACADAAAADAAgAQAATwAwAgAATAAgDQQAAJYCACAFAACXAgAgZAEAAAABaQEAAAABagEAAAABa0AAAAABewEAAAABfAEAAAABfQEAAAABfgEAAAABfwEAAAABgAEBAAAAAYEBQAAAAAEBDgAAUwAgC2QBAAAAAWkBAAAAAWoBAAAAAWtAAAAAAXsBAAAAAXwBAAAAAX0BAAAAAX4BAAAAAX8BAAAAAYABAQAAAAGBAUAAAAABAQ4AAFUAMAEOAABVADANBAAAhAIAIAUAAIUCACBkAQDIAQAhaQEAyAEAIWoBAMkBACFrQADKAQAhewEAyAEAIXwBAMkBACF9AQDJAQAhfgEAyQEAIX8BAMkBACGAAQEAyQEAIYEBQADKAQAhAgAAAEwAIA4AAFgAIAtkAQDIAQAhaQEAyAEAIWoBAMkBACFrQADKAQAhewEAyAEAIXwBAMkBACF9AQDJAQAhfgEAyQEAIX8BAMkBACGAAQEAyQEAIYEBQADKAQAhAgAAAAwAIA4AAFoAIAIAAAAMACAOAABaACADAAAATAAgFQAAUwAgFgAAWAAgAQAAAEwAIAEAAAAMACALBgAAgQIAIBsAAIMCACAcAACCAgAgagAAxAEAIGsAAMQBACB8AADEAQAgfQAAxAEAIH4AAMQBACB_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_AQCsAQAhgAEBAKwBACGBAUAArQEAIY4BAAAMACCPAQAADAAgCAUAAKgBACBhAACnAQAwYgAAEwAQYwAApwEAMGQBAL4BACF3AQCrAQAhjgEAABMAII8BAAATACAIbAEAAAABbQEAAAAFbgEAAAAFbwEAAAABcAEAAAABcQEAAAABcgEAAAABcwEAvQEAIQhsAQAAAAFtAQAAAARuAQAAAARvAQAAAAFwAQAAAAFxAQAAAAFyAQAAAAFzAQC_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_gEAIAMAAAAWACAVAAD-AQAgFgAA_QEAIAEOAACyAgAwDwMAALoBACAEAACuAQAgBwAAuwEAIAgAALwBACBhAAC4AQAwYgAAAwAQYwAAuAEAMGQBAAAAAWUBAAAAAWYBALkBACFnAQAAAAFoAQCrAQAhaQEAAAABagEArAEAIWtAAK0BACECAAAAFgAgDgAA_QEAIAIAAAD7AQAgDgAA_AEAIAthAAD6AQAwYgAA-wEAEGMAAPoBADBkAQC-AQAhZQEAuQEAIWYBALkBACFnAQCrAQAhaAEAqwEAIWkBAKwBACFqAQCsAQAha0AArQEAIQthAAD6AQAwYgAA-wEAEGMAAPoBADBkAQC-AQAhZQEAuQEAIWYBALkBACFnAQCrAQAhaAEAqwEAIWkBAKwBACFqAQCsAQAha0AArQEAIQdkAQDIAQAhZQEAyQEAIWcBAMgBACFoAQDIAQAhaQEAyQEAIWoBAMkBACFrQADKAQAhCgMAAMsBACAEAADMAQAgBwAAzQEAIGQBAMgBACFlAQDJAQAhZwEAyAEAIWgBAMgBACFpAQDJAQAhagEAyQEAIWtAAMoBACEKAwAA6wEAIAQAAOwBACAHAADtAQAgZAEAAAABZQEAAAABZwEAAAABaAEAAAABaQEAAAABagEAAAABa0AAAAABBBUAAPMBADCQAQAA9AEAMJIBAAD2AQAglgEAAPcBADAAAAAACxUAAIsCADAWAACPAgAwkAEAAIwCADCRAQAAjQIAMJIBAACOAgAgkwEAANMBADCUAQAA0wEAMJUBAADTAQAwlgEAANMBADCXAQAAkAIAMJgBAADWAQAwBxUAAIYCACAWAACJAgAgkAEAAIcCACCRAQAAiAIAIJQBAAADACCVAQAAAwAglgEAABYAIAoDAADrAQAgBAAA7AEAIAgAAO4BACBkAQAAAAFmAQAAAAFnAQAAAAFoAQAAAAFpAQAAAAFqAQAAAAFrQAAAAAECAAAAFgAgFQAAhgIAIAMAAAADACAVAACGAgAgFgAAigIAIAwAAAADACADAADLAQAgBAAAzAEAIAgAAM4BACAOAACKAgAgZAEAyAEAIWYBAMkBACFnAQDIAQAhaAEAyAEAIWkBAMkBACFqAQDJAQAha0AAygEAIQoDAADLAQAgBAAAzAEAIAgAAM4BACBkAQDIAQAhZgEAyQEAIWcBAMgBACFoAQDIAQAhaQEAyQEAIWoBAMkBACFrQADKAQAhCwUAAJUCACBkAQAAAAF-AAAAiAECggEBAAAAAYMBAQAAAAGEAQEAAAABhQECAAAAAYYBAQAAAAGIAUAAAAABiQEBAAAAAYoBQAAAAAECAAAACgAgFQAAlAIAIAMAAAAKACAVAACUAgAgFgAAkgIAIAEOAACxAgAwAgAAAAoAIA4AAJICACACAAAA1wEAIA4AAJECACAKZAEAyAEAIX4AANoBiAEiggEBAMgBACGDAQEAyAEAIYQBAQDIAQAhhQECANkBACGGAQEAyAEAIYgBQADKAQAhiQEBAMkBACGKAUAAygEAIQsFAACTAgAgZAEAyAEAIX4AANoBiAEiggEBAMgBACGDAQEAyAEAIYQBAQDIAQAhhQECANkBACGGAQEAyAEAIYgBQADKAQAhiQEBAMkBACGKAUAAygEAIQcVAACsAgAgFgAArwIAIJABAACtAgAgkQEAAK4CACCUAQAAAwAglQEAAAMAIJYBAAAWACALBQAAlQIAIGQBAAAAAX4AAACIAQKCAQEAAAABgwEBAAAAAYQBAQAAAAGFAQIAAAABhgEBAAAAAYgBQAAAAAGJAQEAAAABigFAAAAAAQMVAACsAgAgkAEAAK0CACCWAQAAFgAgBBUAAIsCADCQAQAAjAIAMJIBAACOAgAglgEAANMBADADFQAAhgIAIJABAACHAgAglgEAABYAIAAJAwAApAIAIAQAAJgCACAHAAClAgAgCAAApgIAIGUAAMQBACBmAADEAQAgaQAAxAEAIGoAAMQBACBrAADEAQAgAAAAAAAAAAAHFQAApwIAIBYAAKoCACCQAQAAqAIAIJEBAACpAgAglAEAAAMAIJUBAAADACCWAQAAFgAgAxUAAKcCACCQAQAAqAIAIJYBAAAWACAACgQAAJgCACAFAACZAgAgagAAxAEAIGsAAMQBACB8AADEAQAgfQAAxAEAIH4AAMQBACB_AADEAQAggAEAAMQBACCBAQAAxAEAIAEFAACAAgAgCwQAAOwBACAHAADtAQAgCAAA7gEAIGQBAAAAAWUBAAAAAWYBAAAAAWcBAAAAAWgBAAAAAWkBAAAAAWoBAAAAAWtAAAAAAQIAAAAWACAVAACnAgAgAwAAAAMAIBUAAKcCACAWAACrAgAgDQAAAAMAIAQAAMwBACAHAADNAQAgCAAAzgEAIA4AAKsCACBkAQDIAQAhZQEAyQEAIWYBAMkBACFnAQDIAQAhaAEAyAEAIWkBAMkBACFqAQDJAQAha0AAygEAIQsEAADMAQAgBwAAzQEAIAgAAM4BACBkAQDIAQAhZQEAyQEAIWYBAMkBACFnAQDIAQAhaAEAyAEAIWkBAMkBACFqAQDJAQAha0AAygEAIQsDAADrAQAgBwAA7QEAIAgAAO4BACBkAQAAAAFlAQAAAAFmAQAAAAFnAQAAAAFoAQAAAAFpAQAAAAFqAQAAAAFrQAAAAAECAAAAFgAgFQAArAIAIAMAAAADACAVAACsAgAgFgAAsAIAIA0AAAADACADAADLAQAgBwAAzQEAIAgAAM4BACAOAACwAgAgZAEAyAEAIWUBAMkBACFmAQDJAQAhZwEAyAEAIWgBAMgBACFpAQDJAQAhagEAyQEAIWtAAMoBACELAwAAywEAIAcAAM0BACAIAADOAQAgZAEAyAEAIWUBAMkBACFmAQDJAQAhZwEAyAEAIWgBAMgBACFpAQDJAQAhagEAyQEAIWtAAMoBACEKZAEAAAABfgAAAIgBAoIBAQAAAAGDAQEAAAABhAEBAAAAAYUBAgAAAAGGAQEAAAABiAFAAAAAAYkBAQAAAAGKAUAAAAABB2QBAAAAAWUBAAAAAWcBAAAAAWgBAAAAAWkBAAAAAWoBAAAAAWtAAAAAAQJkAQAAAAF3AQAAAAECAAAAZAAgFQAAswIAIAwEAACWAgAgZAEAAAABaQEAAAABagEAAAABa0AAAAABewEAAAABfAEAAAABfQEAAAABfgEAAAABfwEAAAABgAEBAAAAAYEBQAAAAAECAAAATAAgFQAAtQIAIARkAQAAAAFrQAAAAAGMAQEAAAABjQEBAAAAAQwFAACXAgAgZAEAAAABaQEAAAABagEAAAABa0AAAAABewEAAAABfAEAAAABfQEAAAABfgEAAAABfwEAAAABgAEBAAAAAYEBQAAAAAECAAAATAAgFQAAuAIAIAMAAAAMACAVAAC4AgAgFgAAvAIAIA4AAAAMACAFAACFAgAgDgAAvAIAIGQBAMgBACFpAQDIAQAhagEAyQEAIWtAAMoBACF7AQDIAQAhfAEAyQEAIX0BAMkBACF-AQDJAQAhfwEAyQEAIYABAQDJAQAhgQFAAMoBACEMBQAAhQIAIGQBAMgBACFpAQDIAQAhagEAyQEAIWtAAMoBACF7AQDIAQAhfAEAyQEAIX0BAMkBACF-AQDJAQAhfwEAyQEAIYABAQDJAQAhgQFAAMoBACEKZAEAAAABZQEAAAABfgAAAIgBAoIBAQAAAAGDAQEAAAABhAEBAAAAAYUBAgAAAAGGAQEAAAABiAFAAAAAAYoBQAAAAAEDAAAAEwAgFQAAswIAIBYAAMACACAEAAAAEwAgDgAAwAIAIGQBAMgBACF3AQDIAQAhAmQBAMgBACF3AQDIAQAhAwAAAAwAIBUAALUCACAWAADDAgAgDgAAAAwAIAQAAIQCACAOAADDAgAgZAEAyAEAIWkBAMgBACFqAQDJAQAha0AAygEAIXsBAMgBACF8AQDJAQAhfQEAyQEAIX4BAMkBACF_AQDJAQAhgAEBAMkBACGBAUAAygEAIQwEAACEAgAgZAEAyAEAIWkBAMgBACFqAQDJAQAha0AAygEAIXsBAMgBACF8AQDJAQAhfQEAyQEAIX4BAMkBACF_AQDJAQAhgAEBAMkBACGBAUAAygEAIQEFBAIFAwcBBAsDBgAIBxIECBQGAgURAgcNBAMEDgMFDwIGAAUBBBAAAgUXAgYABwEFGAACAxkABBoAAAEFJAIBBSoCAwYADRsADhwADwAAAAMGAA0bAA4cAA8CBT0CBzwEAgVEAgdDBAUGABQbABccABgtABUuABYAAAAAAAUGABQbABccABgtABUuABYAAAMGAB0bAB4cAB8AAAADBgAdGwAeHAAfAAADBgAkGwAlHAAmAAAAAwYAJBsAJRwAJgIHhgEECIcBBgIHjQEECI4BBgMGACsbACwcAC0AAAADBgArGwAsHAAtCQIBChsBCxwBDB0BDR4BDyABECIJESMKEiYBEygJFCkLFysBGCwBGS0JHTAMHjEQHzIDIDMDITQDIjUDIzYDJDgDJToJJjsRJz8DKEEJKUISKkUDK0YDLEcJL0oTMEsZMU0EMk4EM1AENFEENVIENlQEN1YJOFcaOVkEOlsJO1wbPF0EPV4EPl8JP2IcQGMgQWUGQmYGQ2gGRGkGRWoGRmwGR24JSG8hSXEGSnMJS3QiTHUGTXYGTncJT3ojUHsnUXwCUn0CU34CVH8CVYABAlaCAQJXhAEJWIUBKFmJAQJaiwEJW4wBKVyPAQJdkAECXpEBCV-UASpglQEu",
 };
 async function decodeBase64AsWasm(wasmBase64) {
   const { Buffer } = await import("buffer");
@@ -42,12 +48,14 @@ async function decodeBase64AsWasm(wasmBase64) {
   return new WebAssembly.Module(wasmArray);
 }
 config.compilerWasm = {
-  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.mjs"),
+  getRuntime: async () =>
+    await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.mjs"),
   getQueryCompilerWasmModule: async () => {
-    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.wasm-base64.mjs");
+    const { wasm } =
+      await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.wasm-base64.mjs");
     return await decodeBase64AsWasm(wasm);
   },
-  importName: "./query_compiler_fast_bg.js"
+  importName: "./query_compiler_fast_bg.js",
 };
 function getPrismaClientClass() {
   return runtime.getPrismaClient(config);
@@ -59,13 +67,13 @@ var getExtensionContext = runtime2.Extensions.getExtensionContext;
 var NullTypes2 = {
   DbNull: runtime2.NullTypes.DbNull,
   JsonNull: runtime2.NullTypes.JsonNull,
-  AnyNull: runtime2.NullTypes.AnyNull
+  AnyNull: runtime2.NullTypes.AnyNull,
 };
 var TransactionIsolationLevel = runtime2.makeStrictEnum({
   ReadUncommitted: "ReadUncommitted",
   ReadCommitted: "ReadCommitted",
   RepeatableRead: "RepeatableRead",
-  Serializable: "Serializable"
+  Serializable: "Serializable",
 });
 var defineExtension = runtime2.Extensions.defineExtension;
 
@@ -76,7 +84,11 @@ var PrismaClient = getPrismaClientClass();
 // lib/prisma.ts
 import { PrismaPg } from "@prisma/adapter-pg";
 var globalForPrisma = global;
-var prisma = globalForPrisma.prisma || new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
+var prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+  });
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 // lib/jwt.ts
@@ -84,7 +96,7 @@ import jwt from "jsonwebtoken";
 var JWT_SECRET = process.env.JWT_SECRET;
 function signToken(payload) {
   const options = {
-    expiresIn: process.env.JWT_EXPIRES_IN || "1d"
+    expiresIn: process.env.JWT_EXPIRES_IN || "1d",
   };
   return jwt.sign(payload, JWT_SECRET, options);
 }
@@ -95,13 +107,16 @@ function verifyToken(token) {
 // lib/logActivity.ts
 async function createActivity(opts) {
   const { userId = null, action, description = null } = opts;
-  const desc = description === null || typeof description === "string" ? description : JSON.stringify(description);
+  const desc =
+    description === null || typeof description === "string"
+      ? description
+      : JSON.stringify(description);
   return prisma.activity_logs.create({
     data: {
       user_id: userId,
       action,
-      description: desc
-    }
+      description: desc,
+    },
   });
 }
 
@@ -123,44 +138,43 @@ function normalizeNip(nip) {
   const value = normalizeValue(nip);
   return value.length > 0 ? value : "";
 }
-function evaluateCandidates({
-  matchesByNip,
-  matchesByEmail
-}) {
+function evaluateCandidates({ matchesByNip, matchesByEmail }) {
   const nipSingle = matchesByNip.length === 1 ? matchesByNip[0] : null;
   const emailSingle = matchesByEmail.length === 1 ? matchesByEmail[0] : null;
   if (matchesByNip.length > 1 || matchesByEmail.length > 1) {
     return {
       employeeId: null,
       status: "conflict",
-      message: "Ditemukan lebih dari satu kandidat pegawai. Perlu pengaitan manual."
+      message:
+        "Ditemukan lebih dari satu kandidat pegawai. Perlu pengaitan manual.",
     };
   }
   if (nipSingle && emailSingle && nipSingle.id !== emailSingle.id) {
     return {
       employeeId: null,
       status: "conflict",
-      message: "Data NIP dan email mengarah ke pegawai berbeda. Perlu pengaitan manual."
+      message:
+        "Data NIP dan email mengarah ke pegawai berbeda. Perlu pengaitan manual.",
     };
   }
   if (nipSingle) {
     return {
       employeeId: nipSingle.id,
       status: "linked_auto",
-      message: "Akun berhasil dikaitkan otomatis berdasarkan NIP."
+      message: "Akun berhasil dikaitkan otomatis berdasarkan NIP.",
     };
   }
   if (emailSingle) {
     return {
       employeeId: emailSingle.id,
       status: "linked_auto",
-      message: "Akun berhasil dikaitkan otomatis berdasarkan email."
+      message: "Akun berhasil dikaitkan otomatis berdasarkan email.",
     };
   }
   return {
     employeeId: null,
     status: "unlinked",
-    message: "Belum ada pegawai yang cocok otomatis."
+    message: "Belum ada pegawai yang cocok otomatis.",
   };
 }
 async function resolveEmployeeLinkForUser(input) {
@@ -169,7 +183,7 @@ async function resolveEmployeeLinkForUser(input) {
     return {
       employeeId: manualEmployeeId,
       status: "linked_manual",
-      message: "Akun dikaitkan manual oleh admin."
+      message: "Akun dikaitkan manual oleh admin.",
     };
   }
   const normalizedEmail = normalizeEmail(input.email);
@@ -178,33 +192,39 @@ async function resolveEmployeeLinkForUser(input) {
     return {
       employeeId: null,
       status: "unlinked",
-      message: "Tidak ada data pencocokan otomatis (NIP/email)."
+      message: "Tidak ada data pencocokan otomatis (NIP/email).",
     };
   }
   const candidates = await prisma.employees.findMany({
     where: {
       OR: [
         normalizedNip ? { nip: normalizedNip } : void 0,
-        normalizedEmail ? {
-          email: {
-            equals: normalizedEmail,
-            mode: "insensitive"
-          }
-        } : void 0
-      ].filter((v) => v != null)
+        normalizedEmail
+          ? {
+              email: {
+                equals: normalizedEmail,
+                mode: "insensitive",
+              },
+            }
+          : void 0,
+      ].filter((v) => v != null),
     },
     select: {
       id: true,
       nip: true,
-      email: true
-    }
+      email: true,
+    },
   });
-  const matchesByNip = normalizedNip ? candidates.filter(
-    (candidate) => normalizeNip(candidate.nip) === normalizedNip
-  ) : [];
-  const matchesByEmail = normalizedEmail ? candidates.filter(
-    (candidate) => normalizeEmail(candidate.email) === normalizedEmail
-  ) : [];
+  const matchesByNip = normalizedNip
+    ? candidates.filter(
+        (candidate) => normalizeNip(candidate.nip) === normalizedNip,
+      )
+    : [];
+  const matchesByEmail = normalizedEmail
+    ? candidates.filter(
+        (candidate) => normalizeEmail(candidate.email) === normalizedEmail,
+      )
+    : [];
   return evaluateCandidates({ matchesByNip, matchesByEmail });
 }
 async function resolveUserLinkForEmployee(input) {
@@ -214,7 +234,7 @@ async function resolveUserLinkForEmployee(input) {
     return {
       userId: null,
       status: "unlinked",
-      message: "Tidak ada data pencocokan otomatis (NIP/email)."
+      message: "Tidak ada data pencocokan otomatis (NIP/email).",
     };
   }
   const users = await prisma.users.findMany({
@@ -222,28 +242,35 @@ async function resolveUserLinkForEmployee(input) {
       employee_id: null,
       OR: [
         normalizedNip ? { nip: normalizedNip } : void 0,
-        normalizedEmail ? {
-          email: {
-            equals: normalizedEmail,
-            mode: "insensitive"
-          }
-        } : void 0
-      ].filter((v) => v != null)
+        normalizedEmail
+          ? {
+              email: {
+                equals: normalizedEmail,
+                mode: "insensitive",
+              },
+            }
+          : void 0,
+      ].filter((v) => v != null),
     },
     select: {
       id: true,
       username: true,
       nip: true,
-      email: true
-    }
+      email: true,
+    },
   });
-  const matchesByNip = normalizedNip ? users.filter((user) => normalizeNip(user.nip) === normalizedNip) : [];
-  const matchesByEmail = normalizedEmail ? users.filter((user) => normalizeEmail(user.email) === normalizedEmail) : [];
+  const matchesByNip = normalizedNip
+    ? users.filter((user) => normalizeNip(user.nip) === normalizedNip)
+    : [];
+  const matchesByEmail = normalizedEmail
+    ? users.filter((user) => normalizeEmail(user.email) === normalizedEmail)
+    : [];
   if (matchesByNip.length > 1 || matchesByEmail.length > 1) {
     return {
       userId: null,
       status: "conflict",
-      message: "Ditemukan lebih dari satu kandidat user. Perlu pengaitan manual."
+      message:
+        "Ditemukan lebih dari satu kandidat user. Perlu pengaitan manual.",
     };
   }
   const nipSingle = matchesByNip.length === 1 ? matchesByNip[0] : null;
@@ -252,27 +279,28 @@ async function resolveUserLinkForEmployee(input) {
     return {
       userId: null,
       status: "conflict",
-      message: "Data NIP dan email mengarah ke user berbeda. Perlu pengaitan manual."
+      message:
+        "Data NIP dan email mengarah ke user berbeda. Perlu pengaitan manual.",
     };
   }
   if (nipSingle) {
     return {
       userId: nipSingle.id,
       status: "linked_auto",
-      message: "Pegawai berhasil dikaitkan otomatis ke user berdasarkan NIP."
+      message: "Pegawai berhasil dikaitkan otomatis ke user berdasarkan NIP.",
     };
   }
   if (emailSingle) {
     return {
       userId: emailSingle.id,
       status: "linked_auto",
-      message: "Pegawai berhasil dikaitkan otomatis ke user berdasarkan email."
+      message: "Pegawai berhasil dikaitkan otomatis ke user berdasarkan email.",
     };
   }
   return {
     userId: null,
     status: "unlinked",
-    message: "Belum ada user yang cocok otomatis."
+    message: "Belum ada user yang cocok otomatis.",
   };
 }
 
@@ -283,7 +311,8 @@ import { z } from "zod";
 var USERNAME_REGEX = /^[a-zA-Z0-9_.-]+$/;
 var NIP_REGEX = /^\d+$/;
 var PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)\S+$/;
-var UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+var UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 var USERNAME_MIN_LENGTH = 3;
 var USERNAME_MAX_LENGTH = 100;
 var NIP_MIN_LENGTH = 8;
@@ -295,35 +324,66 @@ function isValidUuid(value) {
 }
 
 // lib/validations/userValidations.ts
-var usernameSchema = z.string({ error: "Username wajib diisi" }).trim().min(1, "Username wajib diisi").min(USERNAME_MIN_LENGTH, "Username minimal 3 karakter").max(USERNAME_MAX_LENGTH, "Username maksimal 100 karakter").regex(
-  USERNAME_REGEX,
-  "Username hanya boleh huruf, angka, titik, garis bawah, atau strip"
-);
-var nipSchema = z.string({ error: "NIP wajib diisi" }).trim().min(1, "NIP wajib diisi").min(NIP_MIN_LENGTH, "NIP minimal 8 digit").max(NIP_MAX_LENGTH, "NIP maksimal 50 digit").regex(NIP_REGEX, "NIP hanya boleh berisi angka");
-var passwordSchema = z.string({ error: "Password wajib diisi" }).min(1, "Password wajib diisi").min(PASSWORD_MIN_LENGTH, "Password minimal 8 karakter").regex(
-  PASSWORD_REGEX,
-  "Password harus mengandung huruf dan angka tanpa spasi"
-);
-var emailSchema = z.string({ error: "Email wajib diisi" }).trim().min(1, "Email wajib diisi").max(EMAIL_MAX_LENGTH, "Email maksimal 150 karakter").email("Format email tidak valid");
-var roleIdSchema = z.string({ error: "Role wajib dipilih" }).trim().min(1, "Role wajib dipilih").refine((value) => isValidUuid(value), {
-  message: "Format role tidak valid"
-});
-var employeeIdSchema = z.string().trim().optional().nullable().transform((value) => value && value.length > 0 ? value : null).refine((value) => value === null || isValidUuid(value), {
-  message: "Format pegawai tidak valid"
-});
+var usernameSchema = z
+  .string({ error: "Username wajib diisi" })
+  .trim()
+  .min(1, "Username wajib diisi")
+  .min(USERNAME_MIN_LENGTH, "Username minimal 3 karakter")
+  .max(USERNAME_MAX_LENGTH, "Username maksimal 100 karakter")
+  .regex(
+    USERNAME_REGEX,
+    "Username hanya boleh huruf, angka, titik, garis bawah, atau strip",
+  );
+var nipSchema = z
+  .string({ error: "NIP wajib diisi" })
+  .trim()
+  .min(1, "NIP wajib diisi")
+  .min(NIP_MIN_LENGTH, "NIP minimal 8 digit")
+  .max(NIP_MAX_LENGTH, "NIP maksimal 50 digit")
+  .regex(NIP_REGEX, "NIP hanya boleh berisi angka");
+var passwordSchema = z
+  .string({ error: "Password wajib diisi" })
+  .min(1, "Password wajib diisi")
+  .min(PASSWORD_MIN_LENGTH, "Password minimal 8 karakter")
+  .regex(
+    PASSWORD_REGEX,
+    "Password harus mengandung huruf dan angka tanpa spasi",
+  );
+var emailSchema = z
+  .string({ error: "Email wajib diisi" })
+  .trim()
+  .min(1, "Email wajib diisi")
+  .max(EMAIL_MAX_LENGTH, "Email maksimal 150 karakter")
+  .email("Format email tidak valid");
+var roleIdSchema = z
+  .string({ error: "Role wajib dipilih" })
+  .trim()
+  .min(1, "Role wajib dipilih")
+  .refine((value) => isValidUuid(value), {
+    message: "Format role tidak valid",
+  });
+var employeeIdSchema = z
+  .string()
+  .trim()
+  .optional()
+  .nullable()
+  .transform((value) => (value && value.length > 0 ? value : null))
+  .refine((value) => value === null || isValidUuid(value), {
+    message: "Format pegawai tidak valid",
+  });
 var userCreateSchema = z.object({
   username: usernameSchema,
   password: passwordSchema,
   nip: nipSchema,
   email: emailSchema,
   role_id: roleIdSchema,
-  employee_id: employeeIdSchema
+  employee_id: employeeIdSchema,
 });
 var userUpdateSchema = z.object({
   nip: nipSchema,
   email: emailSchema,
   role_id: roleIdSchema,
-  employee_id: employeeIdSchema
+  employee_id: employeeIdSchema,
 });
 
 // lib/services/users/createUser.ts
@@ -331,7 +391,7 @@ async function createUser(data) {
   const parsed = userCreateSchema.parse(data);
   const { username, password, nip, email, role_id, employee_id } = parsed;
   const existingUser = await prisma.users.findUnique({
-    where: { username }
+    where: { username },
   });
   if (existingUser) {
     throw new Error("Username sudah digunakan");
@@ -340,7 +400,7 @@ async function createUser(data) {
   const linkResolution = await resolveEmployeeLinkForUser({
     nip,
     email,
-    manualEmployeeId: employee_id
+    manualEmployeeId: employee_id,
   });
   const user = await prisma.users.create({
     data: {
@@ -349,13 +409,13 @@ async function createUser(data) {
       nip,
       email,
       role_id,
-      employee_id: linkResolution.employeeId
-    }
+      employee_id: linkResolution.employeeId,
+    },
   });
   return {
     ...user,
     link_status: linkResolution.status,
-    link_message: linkResolution.message
+    link_message: linkResolution.message,
   };
 }
 
@@ -364,13 +424,13 @@ var publicRegisterSchema = z2.object({
   username: z2.string(),
   password: z2.string(),
   nip: z2.string(),
-  email: z2.string()
+  email: z2.string(),
 });
 async function registerPublicUser(input) {
   const parsed = publicRegisterSchema.parse(input);
   const employeeRole = await prisma.roles.findUnique({
     where: { name: "employee" },
-    select: { id: true }
+    select: { id: true },
   });
   if (!employeeRole) {
     throw new Error("Role employee belum tersedia. Hubungi admin.");
@@ -381,14 +441,14 @@ async function registerPublicUser(input) {
     nip: parsed.nip,
     email: parsed.email,
     role_id: employeeRole.id,
-    employee_id: null
+    employee_id: null,
   });
   return {
     id: user.id,
     username: user.username,
     email: user.email,
     link_status: user.link_status,
-    link_message: user.link_message
+    link_message: user.link_message,
   };
 }
 
@@ -414,17 +474,20 @@ function getSessionCookieOptions(overrides = {}) {
     httpOnly: true,
     secure: parseBoolean(
       process.env.SESSION_COOKIE_SECURE,
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === "production",
     ),
     sameSite: parseSameSite(process.env.SESSION_COOKIE_SAMESITE, "lax"),
     path: "/",
     maxAge: parseMaxAge(process.env.SESSION_COOKIE_MAX_AGE),
     domain: process.env.SESSION_COOKIE_DOMAIN || void 0,
-    ...overrides
+    ...overrides,
   };
 }
 function getClearedSessionCookieOptions() {
-  return getSessionCookieOptions({ expires: /* @__PURE__ */ new Date(0), maxAge: 0 });
+  return getSessionCookieOptions({
+    expires: /* @__PURE__ */ new Date(0),
+    maxAge: 0,
+  });
 }
 
 // backend/routes/auth.ts
@@ -445,11 +508,11 @@ router.post("/api/register", async (req, res) => {
       username: req.body?.username,
       password: req.body?.password,
       nip: req.body?.nip,
-      email: req.body?.email
+      email: req.body?.email,
     });
     return res.status(201).json({
       message: "Registrasi berhasil. Silakan login.",
-      data: user
+      data: user,
     });
   } catch (error) {
     console.error("Public register error:", error);
@@ -470,21 +533,20 @@ router.post("/api/login", async (req, res) => {
           return res.json({
             message: "Sesi aktif ditemukan",
             token: activeToken,
-            alreadyLoggedIn: true
+            alreadyLoggedIn: true,
           });
         }
-      } catch {
-      }
+      } catch {}
     }
     const { username, password } = req.body ?? {};
     if (!username || !password) {
       return res.status(400).json({
-        message: "Username dan password wajib diisi"
+        message: "Username dan password wajib diisi",
       });
     }
     const user = await prisma.users.findUnique({
       where: { username },
-      include: { roles: true }
+      include: { roles: true },
     });
     if (!user) {
       return res.status(401).json({ message: "User tidak ditemukan" });
@@ -498,18 +560,18 @@ router.post("/api/login", async (req, res) => {
       userId: user.id,
       username: user.username,
       role: user.roles?.name,
-      sessionId
+      sessionId,
     });
     await createActivity({
       userId: user.id,
       action: "login",
-      description: { username: user.username, message: "login" }
+      description: { username: user.username, message: "login" },
     });
     res.cookie("token", token, getSessionCookieOptions());
     res.cookie("session_id", sessionId, getSessionCookieOptions());
     return res.json({
       message: "Login berhasil",
-      token
+      token,
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -534,14 +596,14 @@ async function getUsers() {
       const resolution = await resolveEmployeeLinkForUser({
         nip: user.nip,
         email: user.email,
-        manualEmployeeId: user.employee_id
+        manualEmployeeId: user.employee_id,
       });
       return {
         ...user,
         link_status: resolution.status,
-        link_message: resolution.message
+        link_message: resolution.message,
       };
-    })
+    }),
   );
   return mappedUsers;
 }
@@ -550,19 +612,19 @@ async function getUsers() {
 async function getUserById(id) {
   const user = await prisma.users.findUnique({
     where: {
-      id
-    }
+      id,
+    },
   });
   if (!user) return null;
   const resolution = await resolveEmployeeLinkForUser({
     nip: user.nip,
     email: user.email,
-    manualEmployeeId: user.employee_id
+    manualEmployeeId: user.employee_id,
   });
   return {
     ...user,
     link_status: resolution.status,
-    link_message: resolution.message
+    link_message: resolution.message,
   };
 }
 
@@ -575,18 +637,28 @@ async function updateUser(id, data) {
       username: true,
       nip: true,
       email: true,
-      employee_id: true
-    }
+      employee_id: true,
+    },
   });
   if (!currentUser) {
     throw new Error("User not found");
   }
-  const nextNip = typeof data.nip === "string" ? data.nip : data.nip === null ? null : currentUser.nip ?? null;
+  const nextNip =
+    typeof data.nip === "string"
+      ? data.nip
+      : data.nip === null
+        ? null
+        : (currentUser.nip ?? null);
   const normalizedNip = nextNip?.trim() ?? "";
   if (!normalizedNip) {
     throw new Error("NIP wajib diisi");
   }
-  const nextEmail = typeof data.email === "string" ? data.email : data.email === null ? null : currentUser.email;
+  const nextEmail =
+    typeof data.email === "string"
+      ? data.email
+      : data.email === null
+        ? null
+        : currentUser.email;
   let nextEmployeeId;
   if (typeof data.employee_id === "string") {
     nextEmployeeId = data.employee_id;
@@ -596,41 +668,45 @@ async function updateUser(id, data) {
   const linkResolution = await resolveEmployeeLinkForUser({
     nip: normalizedNip,
     email: nextEmail,
-    manualEmployeeId: nextEmployeeId
+    manualEmployeeId: nextEmployeeId,
   });
   const updated = await prisma.users.update({
     where: {
-      id
+      id,
     },
     data: {
       ...data,
       nip: normalizedNip,
-      employee_id: linkResolution.employeeId
-    }
+      employee_id: linkResolution.employeeId,
+    },
   });
   const resolvedEmployeeId = linkResolution.employeeId ?? updated.employee_id;
-  const isNewLink = resolvedEmployeeId && resolvedEmployeeId !== currentUser.employee_id;
-  const isEmailChanged = resolvedEmployeeId && nextEmail && nextEmail !== currentUser.email;
+  const isNewLink =
+    resolvedEmployeeId && resolvedEmployeeId !== currentUser.employee_id;
+  const isEmailChanged =
+    resolvedEmployeeId && nextEmail && nextEmail !== currentUser.email;
   if (isNewLink) {
-    await prisma.employees.update({
-      where: { id: resolvedEmployeeId },
-      data: {
-        ...nextEmail ? { email: nextEmail } : {},
-        ...normalizedNip ? { nip: normalizedNip } : {}
-      }
-    }).catch(() => {
-    });
+    await prisma.employees
+      .update({
+        where: { id: resolvedEmployeeId },
+        data: {
+          ...(nextEmail ? { email: nextEmail } : {}),
+          ...(normalizedNip ? { nip: normalizedNip } : {}),
+        },
+      })
+      .catch(() => {});
   } else if (isEmailChanged) {
-    await prisma.employees.update({
-      where: { id: resolvedEmployeeId },
-      data: { email: nextEmail }
-    }).catch(() => {
-    });
+    await prisma.employees
+      .update({
+        where: { id: resolvedEmployeeId },
+        data: { email: nextEmail },
+      })
+      .catch(() => {});
   }
   return {
     ...updated,
     link_status: linkResolution.status,
-    link_message: linkResolution.message
+    link_message: linkResolution.message,
   };
 }
 
@@ -638,8 +714,8 @@ async function updateUser(id, data) {
 async function deleteUser(id) {
   return prisma.users.delete({
     where: {
-      id
-    }
+      id,
+    },
   });
 }
 
@@ -666,7 +742,9 @@ function requireJWT(req) {
   const cookieHeader = req.headers.cookie;
   const tokenFromCookie = getCookieValue2(cookieHeader, "token");
   const sessionIdFromCookie = getCookieValue2(cookieHeader, "session_id");
-  const tokenFromHeader = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+  const tokenFromHeader = authHeader?.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : null;
   if (!tokenFromCookie || !sessionIdFromCookie) {
     throw new Error("TOKEN_NOT_FOUND");
   }
@@ -708,17 +786,19 @@ router2.post("/api/user", async (req, res) => {
     requireRole({ ...user, role: user.role }, ["admin"]);
     const process2 = userCreateSchema.safeParse(req.body);
     if (!process2.success) {
-      const firstError = process2.error.issues[0]?.message ?? "Data tidak valid";
+      const firstError =
+        process2.error.issues[0]?.message ?? "Data tidak valid";
       return res.status(400).json({ message: firstError });
     }
-    const { username, password, nip, email, role_id, employee_id } = process2.data;
+    const { username, password, nip, email, role_id, employee_id } =
+      process2.data;
     const userCreate = await createUser({
       username,
       password,
       nip,
       email,
       role_id,
-      employee_id
+      employee_id,
     });
     await createActivity({
       userId: userCreate.id ? String(userCreate.id) : null,
@@ -726,8 +806,8 @@ router2.post("/api/user", async (req, res) => {
       description: {
         userId: userCreate.id,
         username: userCreate.username,
-        message: "created"
-      }
+        message: "created",
+      },
     });
     return res.status(201).json({
       message: "User berhasil dibuat",
@@ -739,9 +819,9 @@ router2.post("/api/user", async (req, res) => {
         link_status: userCreate.link_status,
         link_message: userCreate.link_message,
         role: {
-          role_id: userCreate.role_id
-        }
-      }
+          role_id: userCreate.role_id,
+        },
+      },
     });
   } catch (error) {
     console.error("Create user error:", error);
@@ -787,7 +867,8 @@ router2.put("/api/user/:id", async (req, res) => {
     }
     const process2 = userUpdateSchema.safeParse(req.body);
     if (!process2.success) {
-      const firstError = process2.error.issues[0]?.message ?? "Data tidak valid";
+      const firstError =
+        process2.error.issues[0]?.message ?? "Data tidak valid";
       return res.status(400).json({ message: firstError });
     }
     const nextData = { ...process2.data };
@@ -804,9 +885,12 @@ router2.put("/api/user/:id", async (req, res) => {
     }
     const user = await updateUser(id, nextData);
     await createActivity({
-      userId: authUser.userId === null || authUser.userId === void 0 ? null : String(authUser.userId),
+      userId:
+        authUser.userId === null || authUser.userId === void 0
+          ? null
+          : String(authUser.userId),
       action: "update_user",
-      description: { userId: id, message: "updated" }
+      description: { userId: id, message: "updated" },
     });
     return res.json(user);
   } catch (error) {
@@ -832,9 +916,12 @@ router2.delete("/api/user/:id", async (req, res) => {
     const { id } = req.params;
     await deleteUser(id);
     await createActivity({
-      userId: authUser.userId === null || authUser.userId === void 0 ? null : String(authUser.userId),
+      userId:
+        authUser.userId === null || authUser.userId === void 0
+          ? null
+          : String(authUser.userId),
       action: "delete_user",
-      description: { userId: id, message: "deleted" }
+      description: { userId: id, message: "deleted" },
     });
     return res.json({ message: "User deleted successfully" });
   } catch (error) {
@@ -887,16 +974,16 @@ async function getEmployees() {
 // lib/services/employee/createEmployee.ts
 async function createEmployee(data) {
   const employee = await prisma.employees.create({
-    data
+    data,
   });
   const resolution = await resolveUserLinkForEmployee({
     nip: employee.nip,
-    email: employee.email
+    email: employee.email,
   });
   if (resolution.userId) {
     await prisma.users.update({
       where: { id: resolution.userId },
-      data: { employee_id: employee.id }
+      data: { employee_id: employee.id },
     });
   }
   return employee;
@@ -906,8 +993,8 @@ async function createEmployee(data) {
 async function getEmployeeById(id) {
   return prisma.employees.findUnique({
     where: {
-      id
-    }
+      id,
+    },
   });
 }
 
@@ -915,14 +1002,17 @@ async function getEmployeeById(id) {
 async function updateEmployee(id, data) {
   const directLinkedUser = await prisma.users.findFirst({
     where: { employee_id: id },
-    select: { id: true, email: true, nip: true }
+    select: { id: true, email: true, nip: true },
   });
   const nextEmployeeData = { ...data };
   if (directLinkedUser) {
-    const requestedEmail = typeof data.email === "string" ? data.email.trim() : null;
+    const requestedEmail =
+      typeof data.email === "string" ? data.email.trim() : null;
     const requestedNip = typeof data.nip === "string" ? data.nip.trim() : null;
-    const shouldUpdateUserEmail = requestedEmail !== null && requestedEmail !== directLinkedUser.email;
-    const shouldUpdateUserNip = requestedNip !== null && requestedNip !== directLinkedUser.nip;
+    const shouldUpdateUserEmail =
+      requestedEmail !== null && requestedEmail !== directLinkedUser.email;
+    const shouldUpdateUserNip =
+      requestedNip !== null && requestedNip !== directLinkedUser.nip;
     let masterEmail = directLinkedUser.email;
     let masterNip = directLinkedUser.nip;
     if (shouldUpdateUserEmail || shouldUpdateUserNip) {
@@ -930,10 +1020,10 @@ async function updateEmployee(id, data) {
         where: { id: directLinkedUser.id },
         data: {
           employee_id: id,
-          ...shouldUpdateUserEmail ? { email: requestedEmail } : {},
-          ...shouldUpdateUserNip ? { nip: requestedNip } : {}
+          ...(shouldUpdateUserEmail ? { email: requestedEmail } : {}),
+          ...(shouldUpdateUserNip ? { nip: requestedNip } : {}),
         },
-        select: { email: true, nip: true }
+        select: { email: true, nip: true },
       });
       masterEmail = updatedUser.email;
       masterNip = updatedUser.nip;
@@ -947,22 +1037,22 @@ async function updateEmployee(id, data) {
   }
   const employee = await prisma.employees.update({
     where: {
-      id
+      id,
     },
-    data: nextEmployeeData
+    data: nextEmployeeData,
   });
   if (directLinkedUser) {
     return employee;
   }
   const resolution = await resolveUserLinkForEmployee({
     nip: employee.nip,
-    email: employee.email
+    email: employee.email,
   });
   const linkedUserId = resolution.userId;
   if (linkedUserId) {
     await prisma.users.update({
       where: { id: linkedUserId },
-      data: { employee_id: employee.id }
+      data: { employee_id: employee.id },
     });
   }
   return employee;
@@ -972,25 +1062,25 @@ async function updateEmployee(id, data) {
 async function getDocumentsByEmployee(employeeId) {
   const docs = await prisma.documents.findMany({
     where: {
-      employee_id: employeeId
+      employee_id: employeeId,
     },
     include: {
       employees: true,
       users: {
         include: {
-          employees: true
-        }
-      }
+          employees: true,
+        },
+      },
     },
     orderBy: {
-      uploaded_at: "desc"
-    }
+      uploaded_at: "desc",
+    },
   });
   return docs.map((d) => ({
     ...d,
     employee_name: d.employees?.nama ?? null,
     verified_by: d.users?.id ?? d.verified_by ?? null,
-    verified_by_name: d.users?.username ?? d.users?.employees?.nama ?? null
+    verified_by_name: d.users?.username ?? d.users?.employees?.nama ?? null,
   }));
 }
 
@@ -1004,9 +1094,12 @@ var employeeSchema = z3.object({
   status: z3.string().min(1, "Status wajib diisi"),
   alamat: z3.string().min(1, "Alamat wajib diisi"),
   no_hp: z3.string().min(1, "No HP wajib diisi"),
-  email: z3.string({
-    error: "Email wajib diisi"
-  }).min(1, "Email wajib diisi").email("Format email tidak valid")
+  email: z3
+    .string({
+      error: "Email wajib diisi",
+    })
+    .min(1, "Email wajib diisi")
+    .email("Format email tidak valid"),
 });
 
 // backend/routes/employees.ts
@@ -1039,7 +1132,7 @@ router4.post("/api/employees", async (req, res) => {
     if ((role === "employee" || shouldLinkToCurrentUser) && userId) {
       await prisma.users.update({
         where: { id: String(userId) },
-        data: { employee_id: employee.id }
+        data: { employee_id: employee.id },
       });
     }
     await createActivity({
@@ -1048,12 +1141,12 @@ router4.post("/api/employees", async (req, res) => {
       description: {
         employeeId: employee.id,
         name: employee.nama ?? null,
-        message: "created"
-      }
+        message: "created",
+      },
     });
     return res.status(201).json({
       message: "Employee created successfully",
-      data: employee
+      data: employee,
     });
   } catch (error) {
     console.error("ERROR:", error);
@@ -1076,7 +1169,7 @@ router4.get("/api/employees/:id", async (req, res) => {
       }
       const me = await prisma.users.findUnique({
         where: { id: String(auth.userId) },
-        select: { employee_id: true }
+        select: { employee_id: true },
       });
       if (!me?.employee_id || me.employee_id !== id) {
         return res.status(404).json({ message: "Not Found" });
@@ -1105,7 +1198,7 @@ router4.put("/api/employees/:id", async (req, res) => {
     if (role === "hr") {
       const me = await prisma.users.findUnique({
         where: { id: String(userId) },
-        select: { employee_id: true }
+        select: { employee_id: true },
       });
       if (!me?.employee_id || me.employee_id !== employeeId) {
         return res.status(403).json({ message: "Forbidden" });
@@ -1122,8 +1215,8 @@ router4.put("/api/employees/:id", async (req, res) => {
       description: {
         employeeId,
         employeeName: employeeOwner?.nama ?? null,
-        message: "updated"
-      }
+        message: "updated",
+      },
     });
     return res.json(employee);
   } catch (error) {
@@ -1150,7 +1243,7 @@ router4.delete("/api/employees/:id", async (req, res) => {
     await prisma.$transaction(async (tx) => {
       await tx.users.updateMany({
         where: { employee_id: employeeId },
-        data: { employee_id: null }
+        data: { employee_id: null },
       });
       await tx.employees.delete({ where: { id: employeeId } });
     });
@@ -1160,8 +1253,8 @@ router4.delete("/api/employees/:id", async (req, res) => {
       description: {
         employeeId,
         employeeName: employeeOwner?.nama ?? null,
-        message: "deleted"
-      }
+        message: "deleted",
+      },
     });
     return res.json({ message: "Employee deleted successfully" });
   } catch (error) {
@@ -1170,7 +1263,8 @@ router4.delete("/api/employees/:id", async (req, res) => {
     }
     if (error?.code === "P2003") {
       return res.status(409).json({
-        message: "Employee tidak bisa dihapus karena masih terhubung ke data lain"
+        message:
+          "Employee tidak bisa dihapus karena masih terhubung ke data lain",
       });
     }
     console.error("DELETE employee error:", error);
@@ -1197,8 +1291,8 @@ import { Router as Router5 } from "express";
 async function getActivity() {
   return prisma.activity_logs.findMany({
     orderBy: {
-      created_at: "desc"
-    }
+      created_at: "desc",
+    },
   });
 }
 
@@ -1236,23 +1330,23 @@ async function getDocuments() {
       employees: true,
       users: {
         include: {
-          employees: true
-        }
-      }
-    }
+          employees: true,
+        },
+      },
+    },
   });
   return docs.map((d) => ({
     ...d,
     employee_name: d.employees?.nama ?? null,
     verified_by: d.users?.id ?? d.verified_by ?? null,
-    verified_by_name: d.users?.username ?? d.users?.employees?.nama ?? null
+    verified_by_name: d.users?.username ?? d.users?.employees?.nama ?? null,
   }));
 }
 
 // lib/services/document/createDocument.ts
 async function createDocument(data) {
   return prisma.documents.create({
-    data
+    data,
   });
 }
 
@@ -1260,8 +1354,8 @@ async function createDocument(data) {
 async function getDocumentById(id) {
   return prisma.documents.findUnique({
     where: {
-      id
-    }
+      id,
+    },
   });
 }
 
@@ -1269,9 +1363,9 @@ async function getDocumentById(id) {
 async function updateDocument(id, data) {
   return prisma.documents.update({
     where: {
-      id
+      id,
     },
-    data
+    data,
   });
 }
 
@@ -1279,8 +1373,8 @@ async function updateDocument(id, data) {
 async function deleteDocument(documentId) {
   return prisma.documents.delete({
     where: {
-      id: documentId
-    }
+      id: documentId,
+    },
   });
 }
 
@@ -1288,8 +1382,8 @@ async function deleteDocument(documentId) {
 async function getRoleById(id) {
   return prisma.roles.findUnique({
     where: {
-      id
-    }
+      id,
+    },
   });
 }
 
@@ -1297,28 +1391,43 @@ async function getRoleById(id) {
 import { z as z4 } from "zod";
 var documentCreateSchema = z4.object({
   // employee IDs are UUID strings in the DB
-  employee_id: z4.string({
-    error: "Employee ID harus diisi sebagai string"
-  }).min(1).optional(),
-  document_type: z4.string({
-    error: "Tipe dokumen wajib diisi"
-  }).min(1, "Tipe dokumen tidak boleh kosong").max(50, "Tipe dokumen maksimal 50 karakter"),
-  file_path: z4.string({
-    error: "File path wajib diisi"
-  }).min(1, "File path tidak boleh kosong"),
+  employee_id: z4
+    .string({
+      error: "Employee ID harus diisi sebagai string",
+    })
+    .min(1)
+    .optional(),
+  document_type: z4
+    .string({
+      error: "Tipe dokumen wajib diisi",
+    })
+    .min(1, "Tipe dokumen tidak boleh kosong")
+    .max(50, "Tipe dokumen maksimal 50 karakter"),
+  file_path: z4
+    .string({
+      error: "File path wajib diisi",
+    })
+    .min(1, "File path tidak boleh kosong"),
   uploaded_at: z4.coerce.date().optional(),
-  verified_by: z4.string({
-    error: "Verified by harus berupa string"
-  }).min(1).optional(),
-  verified_at: z4.coerce.date().optional()
+  verified_by: z4
+    .string({
+      error: "Verified by harus berupa string",
+    })
+    .min(1)
+    .optional(),
+  verified_at: z4.coerce.date().optional(),
 });
 var documentUpdateSchema = z4.object({
   employee_id: z4.string().min(1).optional(),
-  document_type: z4.string().min(1, "Tipe dokumen tidak boleh kosong").max(50).optional(),
+  document_type: z4
+    .string()
+    .min(1, "Tipe dokumen tidak boleh kosong")
+    .max(50)
+    .optional(),
   file_path: z4.string().min(1, "File path tidak boleh kosong").optional(),
   uploaded_at: z4.coerce.date().optional(),
   verified_by: z4.string().min(1).optional(),
-  verified_at: z4.coerce.date().optional()
+  verified_at: z4.coerce.date().optional(),
 });
 
 // backend/routes/documents.ts
@@ -1350,7 +1459,7 @@ router6.post("/api/documents", async (req, res) => {
       ...process2.data,
       file_name: req.body.file_name,
       file_size: req.body.file_size,
-      mime_type: req.body.mime_type
+      mime_type: req.body.mime_type,
     });
     await createActivity({
       userId: userId === null || userId === void 0 ? null : String(userId),
@@ -1358,12 +1467,12 @@ router6.post("/api/documents", async (req, res) => {
       description: {
         documentId: document.id,
         fileName: document.file_name,
-        message: "created"
-      }
+        message: "created",
+      },
     });
     return res.status(201).json({
       message: "Document created successfully",
-      data: document
+      data: document,
     });
   } catch (error) {
     console.error("ERROR:", error);
@@ -1378,7 +1487,7 @@ router6.get("/api/documents/:id", async (req, res) => {
     const { id } = req.params;
     const documentGet = await getDocumentById(id);
     const getRole = await getRoleById(
-      documentGet?.verified_by?.toString() || "0"
+      documentGet?.verified_by?.toString() || "0",
     );
     if (!documentGet) {
       return res.status(404).json({ message: "Document not found" });
@@ -1391,7 +1500,7 @@ router6.get("/api/documents/:id", async (req, res) => {
       verified_by_id: documentGet.verified_by,
       verified_by_role: getRole ? getRole.name : null,
       uploaded_at: documentGet.uploaded_at,
-      verified_at: documentGet.verified_at
+      verified_at: documentGet.verified_at,
     };
     return res.json(result);
   } catch (error) {
@@ -1417,8 +1526,8 @@ router6.put("/api/documents/:id", async (req, res) => {
       description: {
         documentId: id,
         documentName: getDocument?.file_name ?? null,
-        message: "updated"
-      }
+        message: "updated",
+      },
     });
     return res.json(documentUpdate);
   } catch (error) {
@@ -1443,8 +1552,7 @@ router6.delete("/api/documents/:id", async (req, res) => {
       return res.status(404).json({ message: "Document tidak ditemukan" });
     }
     const filePath = path2.join(process.cwd(), "public", document.file_path);
-    await unlink(filePath).catch(() => {
-    });
+    await unlink(filePath).catch(() => {});
     await deleteDocument(documentId);
     await createActivity({
       userId: userId === null || userId === void 0 ? null : String(userId),
@@ -1452,12 +1560,12 @@ router6.delete("/api/documents/:id", async (req, res) => {
       description: {
         documentId,
         documentName: document?.file_name ?? null,
-        message: "deleted"
-      }
+        message: "deleted",
+      },
     });
     return res.json({
       success: true,
-      message: "Document berhasil dihapus"
+      message: "Document berhasil dihapus",
     });
   } catch (error) {
     console.error(error);
@@ -1493,7 +1601,7 @@ var uploadDocumentSchema = z6.object({
   // employees.id is a UUID string in the database, accept non-empty string
   employee_id: z6.string().min(1),
   employeeName: z6.string().min(2).max(100).optional(),
-  document_type: z6.string().min(2).max(100)
+  document_type: z6.string().min(2).max(100),
 });
 
 // utils/fileUpload.ts
@@ -1513,7 +1621,12 @@ var router7 = Router7();
 var upload = multer({ storage: multer.memoryStorage() });
 var uploadFields = upload.array("files");
 function sanitizeSegment(value) {
-  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "").replace(/_{2,}/g, "_");
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .replace(/_{2,}/g, "_");
 }
 router7.post("/api/documents/upload", (req, res) => {
   uploadFields(req, res, async (err) => {
@@ -1534,29 +1647,37 @@ router7.post("/api/documents/upload", (req, res) => {
       const parsed = uploadDocumentSchema.safeParse({
         employee_id,
         employeeName: employeeNameField,
-        document_type
+        document_type,
       });
       if (!parsed.success) {
         return res.status(400).json({ message: parsed.error.flatten() });
       }
       const isOtherType = parsed.data.document_type === "LAINNYA";
-      const otherTypeLabel = typeof other_document_type === "string" ? other_document_type.trim() : "";
+      const otherTypeLabel =
+        typeof other_document_type === "string"
+          ? other_document_type.trim()
+          : "";
       if (isOtherType && !otherTypeLabel) {
         return res.status(400).json({
-          message: "Nama tipe dokumen wajib diisi saat memilih opsi LAINNYA"
+          message: "Nama tipe dokumen wajib diisi saat memilih opsi LAINNYA",
         });
       }
       const employee = await prisma.employees.findUnique({
         where: { id: String(parsed.data.employee_id) },
-        select: { nama: true }
+        select: { nama: true },
       });
-      const employeeNameFolder = parsed.data.employeeName ?? employee?.nama ?? String(parsed.data.employee_id);
+      const employeeNameFolder =
+        parsed.data.employeeName ??
+        employee?.nama ??
+        String(parsed.data.employee_id);
       const employeeSegment = sanitizeSegment(
-        employee?.nama || String(parsed.data.employee_id)
+        employee?.nama || String(parsed.data.employee_id),
       );
       const docTypeSegment = sanitizeSegment(parsed.data.document_type);
       const otherTypeSegment = sanitizeSegment(otherTypeLabel);
-      const baseDisplayName = isOtherType ? `${employeeSegment}_${docTypeSegment}_${otherTypeSegment}` : `${employeeSegment}_${docTypeSegment}`;
+      const baseDisplayName = isOtherType
+        ? `${employeeSegment}_${docTypeSegment}_${otherTypeSegment}`
+        : `${employeeSegment}_${docTypeSegment}`;
       const uploadPath = path3.join(process.cwd(), "public/uploads/documents");
       await mkdir(uploadPath, { recursive: true });
       const documentsData = [];
@@ -1576,23 +1697,26 @@ router7.post("/api/documents/upload", (req, res) => {
           uploaded_at: /* @__PURE__ */ new Date(),
           file_name: displayFileName,
           file_size: file.size,
-          mime_type: file.mimetype
+          mime_type: file.mimetype,
         });
       }
       const result = await prisma.documents.createMany({ data: documentsData });
       await createActivity({
-        userId: auth.userId === null || auth.userId === void 0 ? null : String(auth.userId),
+        userId:
+          auth.userId === null || auth.userId === void 0
+            ? null
+            : String(auth.userId),
         action: "upload_document",
         description: {
           employeeId: String(parsed.data.employee_id),
           files: documentsData.map((d) => d.file_name),
-          message: "uploaded"
-        }
+          message: "uploaded",
+        },
       });
       return res.json({
         message: "Upload berhasil",
         count: result.count,
-        files: documentsData
+        files: documentsData,
       });
     } catch (error) {
       console.error("Upload error:", error);
@@ -1615,15 +1739,15 @@ async function verifyDocument(documentId, verifiedBy) {
     data: {
       verified_by: verifiedBy,
       verified_at: /* @__PURE__ */ new Date(),
-      status: "verified"
+      status: "verified",
     },
     include: {
       users: {
         include: {
-          employees: true
-        }
-      }
-    }
+          employees: true,
+        },
+      },
+    },
   });
   return {
     id: doc.id,
@@ -1632,7 +1756,7 @@ async function verifyDocument(documentId, verifiedBy) {
     verified_by: doc.verified_by,
     // prefer users.username since verifier is a user (admin), fallback to employee name
     verified_by_name: doc.users?.username ?? doc.users?.employees?.nama ?? null,
-    file_path: doc.file_path
+    file_path: doc.file_path,
   };
 }
 
@@ -1643,15 +1767,15 @@ async function rejectDocument(documentId, verifiedBy) {
     data: {
       verified_by: verifiedBy,
       verified_at: /* @__PURE__ */ new Date(),
-      status: "rejected"
+      status: "rejected",
     },
     include: {
       users: {
         include: {
-          employees: true
-        }
-      }
-    }
+          employees: true,
+        },
+      },
+    },
   });
   return {
     id: doc.id,
@@ -1660,7 +1784,7 @@ async function rejectDocument(documentId, verifiedBy) {
     verified_by: doc.verified_by,
     // prefer users.username since verifier is a user (admin), fallback to employee name
     verified_by_name: doc.users?.username ?? doc.users?.employees?.nama ?? null,
-    file_path: doc.file_path
+    file_path: doc.file_path,
   };
 }
 
@@ -1678,16 +1802,24 @@ async function handleDecision(req, res, decision) {
     const verifiedByStr = String(userId);
     const userToVerify = await getUserById(verifiedByStr);
     if (!userToVerify) {
-      return res.status(404).json({ message: "User yang memverifikasi tidak ditemukan" });
+      return res
+        .status(404)
+        .json({ message: "User yang memverifikasi tidak ditemukan" });
     }
     const documentId = String(req.params.id);
     const getDocument = await getDocumentById(documentId);
     if (!getDocument) {
       return res.status(404).json({
-        message: decision === "verified" ? "Document yang akan diverifikasi tidak ditemukan" : "Document yang akan ditolak tidak ditemukan"
+        message:
+          decision === "verified"
+            ? "Document yang akan diverifikasi tidak ditemukan"
+            : "Document yang akan ditolak tidak ditemukan",
       });
     }
-    const document = decision === "verified" ? await verifyDocument(documentId, verifiedByStr) : await rejectDocument(documentId, verifiedByStr);
+    const document =
+      decision === "verified"
+        ? await verifyDocument(documentId, verifiedByStr)
+        : await rejectDocument(documentId, verifiedByStr);
     await createActivity({
       userId: verifiedByStr,
       action: `${decision === "verified" ? "verify" : "reject"}_document ${getDocument?.file_name ?? ""}`,
@@ -1695,13 +1827,16 @@ async function handleDecision(req, res, decision) {
         documentId,
         documentName: getDocument?.file_name ?? null,
         [decision === "verified" ? "verifiedBy" : "rejectedBy"]: verifiedByStr,
-        message: decision
-      }
+        message: decision,
+      },
     });
     return res.json({
       success: true,
-      message: decision === "verified" ? "Document berhasil diverifikasi" : "Document berhasil ditolak",
-      data: document
+      message:
+        decision === "verified"
+          ? "Document berhasil diverifikasi"
+          : "Document berhasil ditolak",
+      data: document,
     });
   } catch (error) {
     console.error(error);
@@ -1724,8 +1859,8 @@ import { Router as Router9 } from "express";
 async function deleteRole(id) {
   return prisma.roles.delete({
     where: {
-      id
-    }
+      id,
+    },
   });
 }
 
@@ -1733,9 +1868,9 @@ async function deleteRole(id) {
 async function updateRole(id, data) {
   return prisma.roles.update({
     where: {
-      id
+      id,
     },
-    data
+    data,
   });
 }
 
@@ -1767,9 +1902,12 @@ router9.put("/api/roles/:id", async (req, res) => {
     requireRole({ ...user, role: user.role }, ["admin"]);
     const role = await updateRole(req.params.id, req.body);
     await createActivity({
-      userId: user.userId === null || user.userId === void 0 ? null : String(user.userId),
+      userId:
+        user.userId === null || user.userId === void 0
+          ? null
+          : String(user.userId),
       action: "update_role",
-      description: { roleId: req.params.id, message: "updated" }
+      description: { roleId: req.params.id, message: "updated" },
     });
     return res.json(role);
   } catch (error) {
@@ -1789,14 +1927,17 @@ router9.delete("/api/roles/:id", async (req, res) => {
     await prisma.$transaction(async (tx) => {
       await tx.users.updateMany({
         where: { role_id: req.params.id },
-        data: { role_id: null }
+        data: { role_id: null },
       });
       await deleteRole(req.params.id);
     });
     await createActivity({
-      userId: user.userId === null || user.userId === void 0 ? null : String(user.userId),
+      userId:
+        user.userId === null || user.userId === void 0
+          ? null
+          : String(user.userId),
       action: "delete_role",
-      description: { roleId: req.params.id, message: "deleted" }
+      description: { roleId: req.params.id, message: "deleted" },
     });
     return res.json({ message: "Role deleted successfully" });
   } catch (error) {
@@ -1811,7 +1952,9 @@ var rolesId_default = router9;
 
 // backend/server.ts
 var port = Number.parseInt(process.env.BACKEND_PORT ?? "4000", 10);
-var upstream = (process.env.BACKEND_UPSTREAM_URL ?? "http://localhost:3000").replace(/\/$/, "");
+var upstream = (
+  process.env.BACKEND_UPSTREAM_URL ?? "http://localhost:3000"
+).replace(/\/$/, "");
 var corsOrigin = process.env.CORS_ORIGIN ?? upstream;
 var proxyEnabled = process.env.BACKEND_PROXY_TO_UPSTREAM === "true";
 var app = express();
@@ -1820,8 +1963,8 @@ app.use(morgan("dev"));
 app.use(
   cors({
     origin: corsOrigin === "*" ? true : corsOrigin,
-    credentials: true
-  })
+    credentials: true,
+  }),
 );
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -1840,7 +1983,7 @@ app.get("/health", (_req, res) => {
     service: "backend",
     framework: "express",
     upstream,
-    timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    timestamp: /* @__PURE__ */ new Date().toISOString(),
   });
 });
 app.get("/api/health", (_req, res) => {
@@ -1849,14 +1992,14 @@ app.get("/api/health", (_req, res) => {
     service: "backend-api",
     framework: "express",
     upstream,
-    timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    timestamp: /* @__PURE__ */ new Date().toISOString(),
   });
 });
 if (proxyEnabled) {
   const proxyToFrontend = createProxyMiddleware({
     target: upstream,
     changeOrigin: true,
-    ws: true
+    ws: true,
   });
   app.use((req, res, next) => {
     if (req.path === "/health" || req.path === "/api/health") {

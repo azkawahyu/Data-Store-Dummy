@@ -5,8 +5,8 @@ services:
       - .env.docker
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-data_store_dummy}
-      POSTGRES_USER: ${POSTGRES_USER:-data_store_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_USER: ${POSTGRES_USER:-smartstaff}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-1z2x3c4v}
     volumes:
       - /share/Web/database/postgres:/var/lib/postgresql/data
     restart: unless-stopped
@@ -14,7 +14,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-data_store_user} -d ${POSTGRES_DB:-data_store_dummy}",
+          "pg_isready -U ${POSTGRES_USER:-smartstaff} -d ${POSTGRES_DB:-data_store_dummy}",
         ]
       interval: 10s
       timeout: 5s
@@ -26,8 +26,8 @@ services:
     env_file:
       - .env.docker
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-change-me}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-adminsmartstaff@mail.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-1z2x3c4v}
       PGADMIN_CONFIG_SERVER_MODE: "True"
     volumes:
       - /share/Web/database/pgadmin:/var/lib/pgadmin
@@ -39,9 +39,8 @@ services:
     restart: unless-stopped
 
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
+    image: my-backend
+    command: sh -c "npx prisma migrate deploy && node dist/backend/server.mjs"
     env_file:
       - .env.docker
     environment:
@@ -49,15 +48,15 @@ services:
       BACKEND_PORT: 4000
       BACKEND_PROXY_TO_UPSTREAM: "false"
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
-      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE:-lax}
       SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-}
       SESSION_COOKIE_MAX_AGE: ${SESSION_COOKIE_MAX_AGE:-86400}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://app.internal.company}
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
-    expose:
-      - "4000"
+    ports:
+      - "4000:4000"
     volumes:
       - /share/Web/uploads:/app/public/uploads
     depends_on:
@@ -65,22 +64,14 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'node -e "fetch(''http://127.0.0.1:4000/health'').then(r=>{if(!r.ok) process.exit(1)}).catch(()=>process.exit(1))"',
-        ]
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:4000/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 30s
 
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile.web
-      args:
-        BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:4000}
+    image: my-web
     env_file:
       - .env.docker
     environment:

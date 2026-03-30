@@ -1,8 +1,42 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    env_file:
+      - .env.docker
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-data_store_dummy}
+      POSTGRES_USER: ${POSTGRES_USER:-data_store_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - /share/Web/database/postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:4000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    env_file:
+      - .env.docker
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-change-me}
+      PGADMIN_CONFIG_SERVER_MODE: "True"
+    volumes:
+      - /share/Web/database/pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
+    image: my-backend
+    command: sh -c "npx prisma migrate deploy && node dist/backend/server.mjs"
     environment:
       NODE_ENV: production
       BACKEND_PORT: 4000
@@ -10,7 +44,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
-      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
       SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE:-lax}
       SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-}
       SESSION_COOKIE_MAX_AGE: ${SESSION_COOKIE_MAX_AGE:-86400}
@@ -20,11 +54,7 @@ services:
     restart: unless-stopped
 
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile.web
-      args:
-        BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:4000}
+    image: my-web
     environment:
       NODE_ENV: production
       BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:4000}
