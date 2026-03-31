@@ -20,18 +20,20 @@ echo "[3/5] Starting backend"
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d backend
 
 echo "[4/5] Waiting for backend health"
-for i in {1..30}; do
-  if docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T backend node -e "fetch('http://127.0.0.1:4000/health').then(r=>{if(!r.ok) process.exit(1)}).catch(()=>process.exit(1))" >/dev/null 2>&1; then
+for i in {1..60}; do
+  if docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T backend curl -fsS http://127.0.0.1:4000/health >/dev/null 2>&1; then
     echo "Backend is healthy"
     break
   fi
 
-  if [[ "$i" -eq 30 ]]; then
+  if [[ "$i" -eq 60 ]]; then
+    echo "Backend logs:"
+    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" logs --no-color --tail 100 backend || true
     echo "Backend did not become healthy in time"
     exit 1
   fi
 
-  sleep 2
+  sleep 5
 done
 
 echo "[5/5] Building and starting frontend"
