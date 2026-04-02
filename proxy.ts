@@ -40,6 +40,17 @@ export function proxy(request: NextRequest) {
       }
       const role = String(payload.role ?? "").toLowerCase();
 
+      if (payload.mustChangePassword) {
+        const allowedPages = ["/login", "/forgot-password"];
+        const isAllowedPage = allowedPages.some(
+          (route) => pathname === route || pathname.startsWith(`${route}/`),
+        );
+
+        if (!isAllowedPage) {
+          return NextResponse.redirect(new URL("/login", request.url));
+        }
+      }
+
       const isUsersPage =
         pathname === "/users" || pathname.startsWith("/users/");
       const isActivityPage =
@@ -110,6 +121,20 @@ export function proxy(request: NextRequest) {
         { message: "Sesi tidak valid, silakan login kembali" },
         { status: 401 },
       );
+    }
+
+    if (payload.mustChangePassword) {
+      const allowedApiRoutes = ["/api/change-password", "/api/logout"];
+      const isAllowedApiRoute = allowedApiRoutes.some(
+        (route) => pathname === route || pathname.startsWith(`${route}/`),
+      );
+
+      if (!isAllowedApiRoute) {
+        return NextResponse.json(
+          { message: "Silakan ubah password terlebih dahulu" },
+          { status: 403 },
+        );
+      }
     }
 
     const requestHeaders = new Headers(request.headers);

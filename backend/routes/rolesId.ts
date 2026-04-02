@@ -12,7 +12,7 @@ const router = Router();
 
 router.get("/api/roles/:id", async (req, res) => {
   try {
-    const user = requireJWT(req);
+    const user = await requireJWT(req);
 
     if (!user.role || typeof user.role !== "string") {
       return res.status(400).json({ message: "User role is required" });
@@ -28,6 +28,18 @@ router.get("/api/roles/:id", async (req, res) => {
 
     return res.json(role);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     console.error("GET Role Error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -35,7 +47,7 @@ router.get("/api/roles/:id", async (req, res) => {
 
 router.put("/api/roles/:id", async (req, res) => {
   try {
-    const user = requireJWT(req);
+    const user = await requireJWT(req);
 
     if (!user.role || typeof user.role !== "string") {
       return res.status(400).json({ message: "User role is required" });
@@ -60,13 +72,25 @@ router.put("/api/roles/:id", async (req, res) => {
       return res.status(404).json({ message: "Role not found" });
     }
 
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     return res.status(500).json({ message: "Internal server error" });
   }
 });
 
 router.delete("/api/roles/:id", async (req, res) => {
   try {
-    const user = requireJWT(req);
+    const user = await requireJWT(req);
 
     if (!user.role || typeof user.role !== "string") {
       return res.status(400).json({ message: "User role is required" });
@@ -96,6 +120,18 @@ router.delete("/api/roles/:id", async (req, res) => {
   } catch (error) {
     if ((error as { code?: string })?.code === "P2025") {
       return res.status(404).json({ message: "Role not found" });
+    }
+
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     console.error("DELETE role error:", error);

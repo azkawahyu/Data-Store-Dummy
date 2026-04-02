@@ -2,6 +2,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import type { AuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
+import { compareStoredPassword } from "@/lib/password";
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -34,7 +35,12 @@ export const authOptions: AuthOptions = {
           throw new Error("User tidak ditemukan");
         }
 
-        if (creds.password !== user.password_hash) {
+        const passwordMatch = await compareStoredPassword(
+          creds.password,
+          user.password_hash,
+        );
+
+        if (!passwordMatch) {
           throw new Error("Password salah");
         }
 

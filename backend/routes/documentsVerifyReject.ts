@@ -16,7 +16,7 @@ async function handleDecision(
   decision: "verified" | "rejected",
 ) {
   try {
-    const { role, userId } = requireJWT(req);
+    const { role, userId } = await requireJWT(req);
 
     if (role !== "admin" && role !== "hr") {
       return res.status(403).json({ message: "Forbidden" });
@@ -74,6 +74,16 @@ async function handleDecision(
   } catch (error: unknown) {
     console.error(error);
     const message = error instanceof Error ? error.message : "Unknown error";
+    if (
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(message)
+    ) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
     return res.status(500).json({ success: false, message });
   }
 }

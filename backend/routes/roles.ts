@@ -8,7 +8,7 @@ const router = Router();
 
 router.get("/api/roles", async (req, res) => {
   try {
-    const user = requireJWT(req);
+    const user = await requireJWT(req);
 
     if (!user.role || typeof user.role !== "string") {
       return res.status(400).json({ message: "User role is required" });
@@ -21,6 +21,18 @@ router.get("/api/roles", async (req, res) => {
   } catch (error) {
     if (error instanceof Error && error.message === "FORBIDDEN") {
       return res.status(403).json({ message: "Forbidden" });
+    }
+
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     console.error("GET roles error:", error);

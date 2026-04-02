@@ -8,6 +8,8 @@ interface Props {
   employeeMap: Map<string, EmployeeItem>;
   toDate: (value: string | null) => string;
   onEdit: (user: UserItem) => void;
+  onResetPassword: (user: UserItem) => void;
+  showResetPassword?: boolean;
   onDelete: (user: UserItem) => void;
 }
 
@@ -34,6 +36,8 @@ export default function UsersTable({
   employeeMap,
   toDate,
   onEdit,
+  onResetPassword,
+  showResetPassword = false,
   onDelete,
 }: Props) {
   return (
@@ -89,6 +93,15 @@ export default function UsersTable({
                     >
                       Edit
                     </button>
+                    {showResetPassword ? (
+                      <button
+                        onClick={() => onResetPassword(user)}
+                        className="btn btn-primary"
+                        style={{ padding: "5px 10px", fontSize: "12px" }}
+                      >
+                        Reset Password
+                      </button>
+                    ) : null}
                     <button
                       onClick={() => onDelete(user)}
                       className="btn btn-danger"

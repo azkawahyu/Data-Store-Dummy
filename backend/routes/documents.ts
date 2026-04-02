@@ -17,7 +17,7 @@ const router = Router();
 
 router.get("/api/documents", async (req, res) => {
   try {
-    const { role } = requireJWT(req);
+    const { role } = await requireJWT(req);
 
     if (role !== "admin" && role !== "hr") {
       return res.status(403).json({ message: "Forbidden" });
@@ -26,6 +26,18 @@ router.get("/api/documents", async (req, res) => {
     const documents = await getDocuments();
     return res.json(documents);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     console.error("GET documents error:", error);
     return res.status(500).json({ message: "Failed to fetch documents" });
   }
@@ -33,7 +45,7 @@ router.get("/api/documents", async (req, res) => {
 
 router.post("/api/documents", async (req, res) => {
   try {
-    const { role, userId } = requireJWT(req);
+    const { role, userId } = await requireJWT(req);
 
     if (role !== "admin" && role !== "hr") {
       return res.status(403).json({ message: "Forbidden" });
@@ -73,6 +85,18 @@ router.post("/api/documents", async (req, res) => {
       return res.status(400).json({ message: error.issues });
     }
 
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     return res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -103,6 +127,18 @@ router.get("/api/documents/:id", async (req, res) => {
 
     return res.json(result);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     console.error("GET Document Error:", error);
 
     return res.status(500).json({ message: "Internal server error" });
@@ -111,7 +147,7 @@ router.get("/api/documents/:id", async (req, res) => {
 
 router.put("/api/documents/:id", async (req, res) => {
   try {
-    const { role, userId } = requireJWT(req);
+    const { role, userId } = await requireJWT(req);
 
     if (role !== "admin" && role !== "hr") {
       return res.status(403).json({ message: "Forbidden" });
@@ -142,13 +178,25 @@ router.put("/api/documents/:id", async (req, res) => {
       return res.status(404).json({ message: "Document not found" });
     }
 
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     return res.status(500).json({ message: "Internal server error" });
   }
 });
 
 router.delete("/api/documents/:id", async (req, res) => {
   try {
-    const { role, userId } = requireJWT(req);
+    const { role, userId } = await requireJWT(req);
 
     if (role !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
@@ -188,6 +236,16 @@ router.delete("/api/documents/:id", async (req, res) => {
   } catch (error: unknown) {
     console.error(error);
     const message = error instanceof Error ? error.message : "Unknown error";
+    if (
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(message)
+    ) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
     return res.status(500).json({ success: false, message });
   }
 });

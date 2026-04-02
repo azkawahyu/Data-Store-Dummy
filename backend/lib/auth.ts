@@ -1,5 +1,6 @@
 import type { Request } from "express";
 import { verifyToken } from "@/lib/jwt";
+import { prisma } from "@/lib/prisma";
 
 function getCookieValue(cookieHeader: string | undefined, key: string) {
   if (!cookieHeader) return null;
@@ -14,7 +15,7 @@ function getCookieValue(cookieHeader: string | undefined, key: string) {
   return null;
 }
 
-export function requireJWT(req: Request) {
+export async function requireJWT(req: Request) {
   const authHeader = req.headers.authorization;
   const cookieHeader = req.headers.cookie;
 
@@ -38,6 +39,19 @@ export function requireJWT(req: Request) {
   }
 
   const payload = verifyToken(token);
+
+  const user = await prisma.users.findUnique({
+    where: { id: String(payload.userId) },
+    select: { password_hash: true },
+  });
+
+  if (!user) {
+    throw new Error("INVALID_TOKEN");
+  }
+
+  if (payload.passwordHash !== user.password_hash) {
+    throw new Error("INVALID_TOKEN");
+  }
 
   if (sessionIdFromCookie && payload.sessionId !== sessionIdFromCookie) {
     throw new Error("SESSION_MISMATCH");

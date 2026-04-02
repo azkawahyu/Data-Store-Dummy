@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
         destination: `${backendOrigin}/api/logout`,
       },
       {
+        source: "/api/change-password",
+        destination: `${backendOrigin}/api/change-password`,
+      },
+      {
         source: "/api/register",
         destination: `${backendOrigin}/api/register`,
       },
@@ -58,6 +62,10 @@ const nextConfig: NextConfig = {
       {
         source: "/api/documents/verify/:id",
         destination: `${backendOrigin}/api/documents/verify/:id`,
+      },
+      {
+        source: "/uploads/:path*",
+        destination: `${backendOrigin}/uploads/:path*`,
       },
       {
         source: "/api/documents/reject/:id",

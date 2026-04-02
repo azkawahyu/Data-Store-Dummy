@@ -123,7 +123,6 @@ export default function EmployeeFormModal({
   onSubmit,
   title,
   submitLabel,
-  hideCloseButton = false,
   hideCancelButton = false,
   disableBackdropClose = false,
   prefillNip,
@@ -154,6 +153,7 @@ export default function EmployeeFormModal({
       void updated_at;
       setForm({
         ...rest,
+        status: "Tetap",
         nip: rest.nip?.trim() ? rest.nip : (prefillNip?.trim() ?? ""),
         email: rest.email?.trim() ? rest.email : (prefillEmail?.trim() ?? ""),
       });
@@ -440,20 +440,6 @@ export default function EmployeeFormModal({
                   {fieldErrors.nip && (
                     <span className="emp-field-error">{fieldErrors.nip}</span>
                   )}
-                </div>
-
-                <div className="emp-form-group">
-                  <label className="emp-form-label">
-                    Status <span>*</span>
-                  </label>
-                  <select
-                    className="emp-form-select"
-                    value={form.status}
-                    onChange={(e) => set("status", e.target.value)}
-                  >
-                    <option value="Tetap">Tetap</option>
-                    <option value="Kontrak">Kontrak</option>
-                  </select>
                 </div>
               </div>
 

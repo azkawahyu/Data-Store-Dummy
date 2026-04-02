@@ -5,6 +5,8 @@ import type { Employee } from "@/types/employee";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import EmployeeFormModal from "@/components/employee/EmployeeFormModal";
+import EmployeeDetailInfo from "@/components/employee/EmployeeDetailInfo";
+import ResetPasswordModal from "@/components/common/ResetPasswordModal";
 import DocumentDetailModal from "@/components/documents/DocumentDetailModal";
 import type { DocumentItem as DetailDocumentItem } from "@/components/documents/types";
 import UploadDocumentModal from "@/components/documents/UploadDocumentModal";
@@ -29,6 +31,20 @@ interface DocumentItem {
   verified_at?: string | null;
 }
 
+type JwtPayload = {
+  role?: string;
+};
+
+function parseJwt(token: string): JwtPayload | null {
+  try {
+    const p = token.split(".")[1];
+    if (!p) return null;
+    return JSON.parse(atob(p.replace(/-/g, "+").replace(/_/g, "/")));
+  } catch {
+    return null;
+  }
+}
+
 export default function EmployeeDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -42,6 +58,9 @@ export default function EmployeeDetailPage() {
     null,
   );
   const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
+  const [canResetPassword, setCanResetPassword] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resettingPassword, setResettingPassword] = useState(false);
 
   // Document filter and pagination state
   const [searchTerm, setSearchTerm] = useState("");
@@ -110,6 +129,37 @@ export default function EmployeeDetailPage() {
     document.body.removeChild(link);
   }
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const payload = token ? parseJwt(token) : null;
+    setCanResetPassword(String(payload?.role ?? "").toLowerCase() === "admin");
+  }, []);
+
+  async function handleResetPassword() {
+    if (!employee) return "";
+
+    setResettingPassword(true);
+
+    try {
+      const res = await fetch(`/api/user/${employee.id}/reset-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Gagal reset password.");
+      }
+
+      return String(data.temporaryPassword ?? "");
+    } finally {
+      setResettingPassword(false);
+    }
+  }
+
   // Debounce search term
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -140,6 +190,9 @@ export default function EmployeeDetailPage() {
   const selectedDocuments = documents.filter(
     (doc) => selectedDocumentIds.includes(doc.id) && doc.file_path,
   );
+  const verifiedDocumentsCount = filteredDocuments.filter(
+    (doc) => normalizeDocumentStatus(doc.status) === DOCUMENT_STATUS.VERIFIED,
+  ).length;
 
   // Pagination logic
   const totalPages = Math.max(
@@ -248,57 +301,20 @@ export default function EmployeeDetailPage() {
         </div>
       </section>
 
-      {/* Data Pegawai Card */}
-      <section className="employee-card page-panel p-4 sm:p-6">
-        <div className="employee-card-head">
-          <div className="employee-card-head-main">
-            <h3 className="employee-card-title text-gradient-primary">
-              Data Pegawai
-            </h3>
-            <p className="employee-card-subtitle">
-              Informasi detail pegawai terpilih.
-            </p>
-          </div>
-          <div className="employee-card-icon shrink-0" aria-hidden>
-            👤
-          </div>
-        </div>
+      <EmployeeDetailInfo
+        employee={employee}
+        canResetPassword={canResetPassword}
+        resettingPassword={resettingPassword}
+        onResetPassword={() => setResetOpen(true)}
+      />
 
-        <div className="employee-profile-grid">
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">NIP</div>
-            <div className="employee-profile-value">{employee.nip}</div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">Nama</div>
-            <div className="employee-profile-value">{employee.nama}</div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">Jabatan</div>
-            <div className="employee-profile-value">{employee.jabatan}</div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">Unit</div>
-            <div className="employee-profile-value">{employee.unit}</div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">Email</div>
-            <div className="employee-profile-value">{employee.email}</div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">No. HP</div>
-            <div className="employee-profile-value">{employee.no_hp}</div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">Alamat</div>
-            <div className="employee-profile-value">{employee.alamat}</div>
-          </div>
-          <div className="employee-profile-item">
-            <div className="employee-profile-label">Status</div>
-            <div className="employee-profile-value">{employee.status}</div>
-          </div>
-        </div>
-      </section>
+      <ResetPasswordModal
+        open={resetOpen}
+        title="Reset Password Pegawai"
+        description="Password lama akan dinonaktifkan. Pegawai akan menerima password sementara untuk login pertama."
+        onClose={() => setResetOpen(false)}
+        onConfirm={handleResetPassword}
+      />
 
       {/* Dokumen Card - with filter and pagination */}
       <section className="employee-card page-panel p-4 sm:p-6">
@@ -311,14 +327,51 @@ export default function EmployeeDetailPage() {
               Daftar dokumen yang diunggah untuk pegawai ini.
             </p>
           </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="badge badge-info text-xs sm:text-sm">
+              Total: {documents.length}
+            </span>
+            <span className="badge badge-success text-xs sm:text-sm">
+              Terverifikasi: {verifiedDocumentsCount}
+            </span>
+            <span className="badge badge-warning text-xs sm:text-sm">
+              Dipilih: {selectedDocuments.length}
+            </span>
+          </div>
         </div>
 
-        <div className="employee-doc-toolbar">
-          <p className="employee-doc-summary text-xs sm:text-sm">
-            {filteredDocuments.length} dari {documents.length} dokumen
-          </p>
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="text-sm text-slate-600">
+              <span className="font-semibold text-slate-900">
+                {filteredDocuments.length}
+              </span>{" "}
+              dokumen sesuai pencarian dari {documents.length} total dokumen.
+            </div>
 
-          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={toggleSelectAllFilteredDocuments}
+                disabled={selectableFilteredDocuments.length === 0}
+              >
+                {areAllFilteredSelected
+                  ? "Batal Pilih Semua"
+                  : "Pilih Semua Hasil"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-accent"
+                onClick={handleBatchDownload}
+                disabled={selectedDocuments.length === 0}
+              >
+                Download Terpilih
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <input
               type="text"
               placeholder="Cari dokumen..."
@@ -326,37 +379,14 @@ export default function EmployeeDetailPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input flex-1 text-sm"
             />
-            <span className="badge badge-info text-xs sm:text-sm shrink-0">
-              Terverifikasi:{" "}
-              {
-                filteredDocuments.filter(
-                  (doc) =>
-                    normalizeDocumentStatus(doc.status) ===
-                    DOCUMENT_STATUS.VERIFIED,
-                ).length
-              }
-            </span>
-            <span className="badge badge-warning text-xs sm:text-sm shrink-0">
-              Dipilih: {selectedDocuments.length}
-            </span>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={toggleSelectAllFilteredDocuments}
-              disabled={selectableFilteredDocuments.length === 0}
-            >
-              {areAllFilteredSelected
-                ? "Batal Pilih Semua"
-                : "Pilih Semua Hasil"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-accent"
-              onClick={handleBatchDownload}
-              disabled={selectedDocuments.length === 0}
-            >
-              Download Terpilih
-            </button>
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span className="rounded-full bg-white px-3 py-2 border border-slate-200">
+                Hasil: {filteredDocuments.length}
+              </span>
+              <span className="rounded-full bg-white px-3 py-2 border border-slate-200">
+                Halaman: {currentPage}/{totalPages}
+              </span>
+            </div>
           </div>
         </div>
 

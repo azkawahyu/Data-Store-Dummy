@@ -9,35 +9,66 @@ type Props = {
     email: string;
     no_hp: string;
     alamat: string;
-    status: string;
   };
+  canResetPassword?: boolean;
+  onResetPassword?: () => void;
+  resettingPassword?: boolean;
 };
 
-export default function EmployeeDetailInfo({ employee }: Props) {
+export default function EmployeeDetailInfo({
+  employee,
+  canResetPassword = false,
+  onResetPassword,
+  resettingPassword = false,
+}: Props) {
+  const fields = [
+    { label: "NIP", value: employee.nip },
+    { label: "Nama", value: employee.nama },
+    { label: "Jabatan", value: employee.jabatan },
+    { label: "Unit", value: employee.unit },
+    { label: "Email", value: employee.email },
+    { label: "No. HP", value: employee.no_hp },
+    { label: "Alamat", value: employee.alamat },
+  ];
+
   return (
-    <div className="bg-white rounded shadow p-6 mb-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <section className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="font-semibold text-slate-700">NIP</div>
-          <div className="mb-2">{employee.nip}</div>
-          <div className="font-semibold text-slate-700">Nama</div>
-          <div className="mb-2">{employee.nama}</div>
-          <div className="font-semibold text-slate-700">Jabatan</div>
-          <div className="mb-2">{employee.jabatan}</div>
-          <div className="font-semibold text-slate-700">Unit</div>
-          <div className="mb-2">{employee.unit}</div>
+          <h3 className="text-lg font-semibold text-slate-900">
+            Informasi Pegawai
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Ringkasan data pegawai yang tersimpan.
+          </p>
         </div>
-        <div>
-          <div className="font-semibold text-slate-700">Email</div>
-          <div className="mb-2">{employee.email}</div>
-          <div className="font-semibold text-slate-700">No. HP</div>
-          <div className="mb-2">{employee.no_hp}</div>
-          <div className="font-semibold text-slate-700">Alamat</div>
-          <div className="mb-2">{employee.alamat}</div>
-          <div className="font-semibold text-slate-700">Status</div>
-          <div className="mb-2">{employee.status}</div>
-        </div>
+        {canResetPassword && onResetPassword ? (
+          <button
+            type="button"
+            onClick={onResetPassword}
+            disabled={resettingPassword}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-rose-600 px-4 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {resettingPassword ? "Mereset..." : "Reset Password"}
+          </button>
+        ) : null}
       </div>
-    </div>
+
+      <div className="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
+        {fields.map((field) => (
+          <div
+            key={field.label}
+            className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+          >
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {field.label}
+            </div>
+            <div className="mt-1 wrap-break-word text-sm font-semibold text-slate-900">
+              {field.value || "-"}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import path from "path";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import authRouter from "./routes/auth";
 import usersRouter from "./routes/users";
@@ -21,8 +22,11 @@ const proxyEnabled = process.env.BACKEND_PROXY_TO_UPSTREAM === "true";
 
 const app = express();
 
+const uploadsDir = path.join(process.cwd(), "public", "uploads");
+
 app.set("trust proxy", true);
 app.use(morgan("dev"));
+app.use("/uploads", express.static(uploadsDir));
 app.use(
   cors({
     origin: corsOrigin === "*" ? true : corsOrigin,

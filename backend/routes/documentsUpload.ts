@@ -31,7 +31,7 @@ router.post("/api/documents/upload", (req, res) => {
     }
 
     try {
-      const auth = requireJWT(req);
+      const auth = await requireJWT(req);
       const form = req.body as Record<string, string | undefined>;
       const files = (req.files as Express.Multer.File[] | undefined) ?? [];
 
@@ -150,6 +150,17 @@ router.post("/api/documents/upload", (req, res) => {
       console.error("Upload error:", error);
 
       if (error instanceof Error) {
+        if (
+          [
+            "TOKEN_NOT_FOUND",
+            "TOKEN_OUT_OF_SYNC",
+            "SESSION_MISMATCH",
+            "INVALID_TOKEN",
+          ].includes(error.message)
+        ) {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+
         return res.status(500).json({ message: error.message });
       }
 

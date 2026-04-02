@@ -14,7 +14,7 @@ const router = Router();
 
 router.get("/api/employees", async (req, res) => {
   try {
-    const user = requireJWT(req);
+    const user = await requireJWT(req);
     if (!user.role || typeof user.role !== "string") {
       return res.status(400).json({ message: "User role is required" });
     }
@@ -22,6 +22,18 @@ router.get("/api/employees", async (req, res) => {
     const employees = await getEmployees();
     return res.json(employees);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     console.error("GET employees error:", error);
     return res.status(500).json({ message: "Failed to fetch employees" });
   }
@@ -29,7 +41,7 @@ router.get("/api/employees", async (req, res) => {
 
 router.post("/api/employees", async (req, res) => {
   try {
-    const { role, userId } = requireJWT(req);
+    const { role, userId } = await requireJWT(req);
 
     if (role !== "admin" && role !== "employee" && role !== "hr") {
       return res.status(403).json({ message: "Forbidden" });
@@ -68,6 +80,18 @@ router.post("/api/employees", async (req, res) => {
   } catch (error) {
     console.error("ERROR:", error);
 
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     if (error instanceof Error) {
       return res.status(400).json({ message: error.message });
     }
@@ -78,7 +102,7 @@ router.post("/api/employees", async (req, res) => {
 
 router.get("/api/employees/:id", async (req, res) => {
   try {
-    const auth = requireJWT(req);
+    const auth = await requireJWT(req);
     const { id } = req.params;
 
     if (!auth.role || typeof auth.role !== "string") {
@@ -108,6 +132,18 @@ router.get("/api/employees/:id", async (req, res) => {
 
     return res.json(employee);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     console.error("GET Employee Error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -115,7 +151,7 @@ router.get("/api/employees/:id", async (req, res) => {
 
 router.put("/api/employees/:id", async (req, res) => {
   try {
-    const { userId, role } = requireJWT(req);
+    const { userId, role } = await requireJWT(req);
     const employeeId = req.params.id;
 
     if (userId === null || role === null) {
@@ -161,13 +197,25 @@ router.put("/api/employees/:id", async (req, res) => {
       return res.status(404).json({ message: "Employee not found" });
     }
 
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     return res.status(500).json({ message: "Internal server error" });
   }
 });
 
 router.delete("/api/employees/:id", async (req, res) => {
   try {
-    const { userId, role } = requireJWT(req);
+    const { userId, role } = await requireJWT(req);
     const employeeId = req.params.id;
 
     if (userId === null || role === null) {
@@ -207,6 +255,18 @@ router.delete("/api/employees/:id", async (req, res) => {
   } catch (error) {
     if ((error as { code?: string })?.code === "P2025") {
       return res.status(404).json({ message: "Employee not found" });
+    }
+
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     if ((error as { code?: string })?.code === "P2003") {

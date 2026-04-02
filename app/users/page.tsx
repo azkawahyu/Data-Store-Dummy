@@ -9,6 +9,7 @@ import UsersToolbar from "@/components/users/UsersToolbar";
 import UsersTable from "@/components/users/UsersTable";
 import UserDeleteModal from "@/components/users/UserDeleteModal";
 import UserFormModal from "@/components/users/UserFormModal";
+import ResetPasswordModal from "@/components/common/ResetPasswordModal";
 import UsersTableFilters from "@/components/users/UsersTableFilters";
 import type {
   EmployeeItem,
@@ -207,6 +208,7 @@ export default function UsersPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -221,6 +223,8 @@ export default function UsersPage() {
     Partial<Record<keyof UserFormState, boolean>>
   >({});
   const [deleteTarget, setDeleteTarget] = useState<UserItem | null>(null);
+  const [resetTarget, setResetTarget] = useState<UserItem | null>(null);
+  const [resetOpen, setResetOpen] = useState(false);
   const [employeeTouchedManual, setEmployeeTouchedManual] = useState(false);
   const [autoLinkHint, setAutoLinkHint] = useState("");
 
@@ -257,6 +261,7 @@ export default function UsersPage() {
 
         const payload = parseJwt(token);
         const role = String(payload?.role ?? "").toLowerCase();
+        setIsAdmin(role === "admin");
         if (role !== "admin") {
           toast.push("Hanya admin yang dapat mengelola akun user.", "error");
           router.push("/dashboard");
@@ -497,6 +502,16 @@ export default function UsersPage() {
     }
   }
 
+  async function handleResetPassword() {
+    if (!resetTarget) return "";
+
+    const res = await apiFetch(`/api/user/${resetTarget.id}/reset-password`, {
+      method: "POST",
+    });
+
+    return String(res?.temporaryPassword ?? "");
+  }
+
   if (loading) {
     return <div className="p-6 text-slate-500">Memuat data user...</div>;
   }
@@ -521,10 +536,30 @@ export default function UsersPage() {
           employeeMap={employeeMap}
           toDate={toDate}
           onEdit={openEditModal}
+          showResetPassword={isAdmin}
+          onResetPassword={(user) => {
+            setResetTarget(user);
+            setResetOpen(true);
+          }}
           onDelete={setDeleteTarget}
         />
         {/* ...existing mobile list + pagination... */}
       </div>
+
+      <ResetPasswordModal
+        open={resetOpen}
+        title="Reset Password User"
+        description={
+          resetTarget
+            ? `Password user ${resetTarget.username} akan diganti dengan password sementara.`
+            : "Password user akan diganti dengan password sementara."
+        }
+        onClose={() => {
+          setResetOpen(false);
+          setResetTarget(null);
+        }}
+        onConfirm={handleResetPassword}
+      />
 
       <UserDeleteModal
         open={!!deleteTarget}

@@ -1,5 +1,4 @@
 import { Router } from "express";
-import bcrypt from "bcrypt";
 import { randomUUID } from "crypto";
 
 import { prisma } from "@/lib/prisma";
@@ -10,7 +9,12 @@ import {
   getClearedSessionCookieOptions,
   getSessionCookieOptions,
 } from "@/lib/cookie-options";
-import { error } from "console";
+import {
+  compareStoredPassword,
+  hashPassword,
+  isTemporaryPasswordHash,
+} from "@/lib/password";
+import { requireJWT } from "@/backend/lib/auth";
 
 const router = Router();
 
@@ -61,11 +65,22 @@ router.post("/api/login", async (req, res) => {
         const payload = verifyToken(activeToken);
 
         if (payload.sessionId === activeSessionId) {
-          return res.json({
-            message: "Sesi aktif ditemukan",
-            token: activeToken,
-            alreadyLoggedIn: true,
+          const currentUser = await prisma.users.findUnique({
+            where: { id: String(payload.userId) },
+            select: { password_hash: true },
           });
+
+          if (
+            currentUser &&
+            currentUser.password_hash === payload.passwordHash
+          ) {
+            return res.json({
+              message: "Sesi aktif ditemukan",
+              token: activeToken,
+              alreadyLoggedIn: true,
+              mustChangePassword: Boolean(payload.mustChangePassword),
+            });
+          }
         }
       } catch (error) {
         console.warn("Token verification failed:", error);
@@ -89,11 +104,16 @@ router.post("/api/login", async (req, res) => {
       return res.status(401).json({ message: "User tidak ditemukan" });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password_hash);
+    const passwordMatch = await compareStoredPassword(
+      password,
+      user.password_hash,
+    );
 
     if (!passwordMatch) {
       return res.status(401).json({ message: "Username atau Password salah" });
     }
+
+    const mustChangePassword = isTemporaryPasswordHash(user.password_hash);
 
     const sessionId = randomUUID();
     const token = signToken({
@@ -101,6 +121,8 @@ router.post("/api/login", async (req, res) => {
       username: user.username,
       role: user.roles?.name,
       sessionId,
+      passwordHash: user.password_hash,
+      mustChangePassword,
     });
 
     await createActivity({
@@ -115,10 +137,98 @@ router.post("/api/login", async (req, res) => {
     return res.json({
       message: "Login berhasil",
       token,
+      mustChangePassword,
     });
   } catch (error) {
     console.error("Login error:", error);
 
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.post("/api/change-password", async (req, res) => {
+  try {
+    const auth = await requireJWT(req);
+    const { currentPassword, newPassword, confirmPassword } = req.body ?? {};
+
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).json({ message: "Password baru wajib diisi" });
+    }
+
+    if (String(newPassword) !== String(confirmPassword)) {
+      return res
+        .status(400)
+        .json({ message: "Konfirmasi password tidak sama" });
+    }
+
+    if (String(newPassword).trim().length < 8) {
+      return res.status(400).json({ message: "Password minimal 8 karakter" });
+    }
+
+    const user = await prisma.users.findUnique({
+      where: { id: String(auth.userId) },
+      select: { id: true, username: true, password_hash: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
+    if (!auth.mustChangePassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: "Password lama wajib diisi" });
+      }
+
+      const currentMatch = await compareStoredPassword(
+        String(currentPassword),
+        user.password_hash,
+      );
+
+      if (!currentMatch) {
+        return res.status(401).json({ message: "Password lama salah" });
+      }
+    }
+
+    const nextPasswordHash = await hashPassword(String(newPassword));
+    const sessionId = randomUUID();
+    const nextToken = signToken({
+      userId: user.id,
+      username: auth.username,
+      role: auth.role,
+      sessionId,
+      passwordHash: nextPasswordHash,
+      mustChangePassword: false,
+    });
+
+    await prisma.users.update({
+      where: { id: user.id },
+      data: { password_hash: nextPasswordHash },
+    });
+
+    await createActivity({
+      userId: user.id,
+      action: "change_password",
+      description: { username: user.username, message: "password changed" },
+    });
+
+    res.cookie("token", nextToken, getSessionCookieOptions());
+    res.cookie("session_id", sessionId, getSessionCookieOptions());
+
+    return res.json({
+      message: "Password berhasil diubah",
+      token: nextToken,
+      mustChangePassword: false,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "TOKEN_NOT_FOUND") {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (error instanceof Error && error.message === "INVALID_TOKEN") {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    console.error("Change password error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 });

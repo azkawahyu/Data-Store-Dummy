@@ -1,5 +1,9 @@
 import { Router } from "express";
-import type { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import {
+  generateTemporaryPassword,
+  hashTemporaryPassword,
+} from "@/lib/password";
 
 import { getUsers } from "@/lib/services/users/getAllUsers";
 import { createUser } from "@/lib/services/users/createUser";
@@ -18,7 +22,7 @@ const router = Router();
 
 router.get("/api/user", async (req, res) => {
   try {
-    const user = requireJWT(req);
+    const user = await requireJWT(req);
 
     if (!user.role || typeof user.role !== "string") {
       return res.status(400).json({ message: "User role is required" });
@@ -29,6 +33,18 @@ router.get("/api/user", async (req, res) => {
     const users = await getUsers();
     return res.json(users);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     if (error instanceof Error && error.message === "FORBIDDEN") {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -52,7 +68,7 @@ router.get("/api/user", async (req, res) => {
 
 router.post("/api/user", async (req, res) => {
   try {
-    const user = requireJWT(req);
+    const user = await requireJWT(req);
 
     if (!user.role || typeof user.role !== "string") {
       return res.status(400).json({ message: "User role is required" });
@@ -105,6 +121,18 @@ router.post("/api/user", async (req, res) => {
   } catch (error: unknown) {
     console.error("Create user error:", error);
 
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     if (error instanceof Error) {
       return res.status(400).json({ message: error.message });
     }
@@ -115,7 +143,7 @@ router.post("/api/user", async (req, res) => {
 
 router.get("/api/user/:id", async (req, res) => {
   try {
-    const authUser = requireJWT(req);
+    const authUser = await requireJWT(req);
 
     if (!authUser.role || typeof authUser.role !== "string") {
       return res.status(400).json({ message: "User role is required" });
@@ -138,6 +166,18 @@ router.get("/api/user/:id", async (req, res) => {
 
     return res.json(user);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     console.error("GET User Error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -145,7 +185,7 @@ router.get("/api/user/:id", async (req, res) => {
 
 router.put("/api/user/:id", async (req, res) => {
   try {
-    const authUser = requireJWT(req);
+    const authUser = await requireJWT(req);
 
     if (!authUser.role || typeof authUser.role !== "string") {
       return res.status(400).json({ message: "User role is required" });
@@ -196,6 +236,18 @@ router.put("/api/user/:id", async (req, res) => {
 
     return res.json(user);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     if (error instanceof Error && error.message === "User not found") {
       return res.status(404).json({ message: "User not found" });
     }
@@ -215,7 +267,7 @@ router.put("/api/user/:id", async (req, res) => {
 
 router.delete("/api/user/:id", async (req, res) => {
   try {
-    const authUser = requireJWT(req);
+    const authUser = await requireJWT(req);
 
     if (!authUser.role || authUser.role.toLowerCase() !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
@@ -236,11 +288,98 @@ router.delete("/api/user/:id", async (req, res) => {
 
     return res.json({ message: "User deleted successfully" });
   } catch (error) {
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     if ((error as { code?: string })?.code === "P2025") {
       return res.status(404).json({ message: "User not found" });
     }
 
     console.error("DELETE user error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.post("/api/user/:id/reset-password", async (req, res) => {
+  try {
+    const authUser = await requireJWT(req);
+
+    if (!authUser.role || authUser.role.toLowerCase() !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const { id } = req.params;
+    const user = await getUserById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const temporaryPassword = generateTemporaryPassword();
+    const temporaryPasswordHash =
+      await hashTemporaryPassword(temporaryPassword);
+
+    await prisma.users.update({
+      where: { id },
+      data: { password_hash: temporaryPasswordHash },
+    });
+
+    await createActivity({
+      userId:
+        authUser.userId === null || authUser.userId === undefined
+          ? null
+          : String(authUser.userId),
+      action: "reset_password",
+      description: {
+        userId: id,
+        username: user.username,
+        message: "password reset",
+      },
+    });
+
+    return res.json({
+      message: "Password berhasil direset",
+      temporaryPassword,
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (error instanceof Error && error.message === "FORBIDDEN") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    console.error("Reset password error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 });

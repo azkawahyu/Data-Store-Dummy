@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { broadcastAuthEvent } from "@/lib/auth-sync";
+import ForcePasswordChangeModal from "@/components/auth/ForcePasswordChangeModal";
 
 type JwtPayload = {
   role?: string;
+  mustChangePassword?: boolean;
 };
 
 function parseJwt(token: string): JwtPayload | null {
@@ -35,11 +37,20 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [forceChangeOpen, setForceChangeOpen] = useState(false);
+  const [forceChangeSaving, setForceChangeSaving] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      router.replace(getDefaultRoute(parseJwt(token)?.role));
+      const payload = parseJwt(token);
+
+      if (payload?.mustChangePassword) {
+        setForceChangeOpen(true);
+        return;
+      }
+
+      router.replace(getDefaultRoute(payload?.role));
     }
   }, [router]);
 
@@ -67,6 +78,11 @@ export default function LoginPage() {
       localStorage.setItem("token", data.token);
       broadcastAuthEvent("login");
 
+      if (data.mustChangePassword) {
+        setForceChangeOpen(true);
+        return;
+      }
+
       router.replace(getDefaultRoute(parseJwt(data.token)?.role));
     } catch {
       setError("Terjadi kesalahan jaringan. Silakan coba lagi.");
@@ -75,8 +91,50 @@ export default function LoginPage() {
     }
   }
 
+  async function handleForcePasswordChange(
+    password: string,
+    confirmPassword: string,
+  ) {
+    setForceChangeSaving(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          newPassword: password,
+          confirmPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Gagal mengubah password.");
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      broadcastAuthEvent("login");
+      setForceChangeOpen(false);
+      router.replace(getDefaultRoute(parseJwt(data.token)?.role));
+    } catch {
+      setError("Terjadi kesalahan jaringan. Silakan coba lagi.");
+    } finally {
+      setForceChangeSaving(false);
+    }
+  }
+
   return (
     <main className="relative min-h-screen overflow-hidden">
+      <ForcePasswordChangeModal
+        open={forceChangeOpen}
+        saving={forceChangeSaving}
+        onSubmit={handleForcePasswordChange}
+      />
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
