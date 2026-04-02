@@ -22,21 +22,24 @@ export function requireJWT(request: Request) {
   const tokenFromHeader = authHeader?.startsWith("Bearer ")
     ? authHeader.split(" ")[1]
     : null;
+  const token = tokenFromCookie ?? tokenFromHeader;
 
-  if (!tokenFromCookie || !sessionIdFromCookie) {
+  if (!token) {
     throw new Error("TOKEN_NOT_FOUND");
   }
 
-  if (tokenFromHeader && tokenFromHeader !== tokenFromCookie) {
+  if (
+    tokenFromCookie &&
+    tokenFromHeader &&
+    tokenFromHeader !== tokenFromCookie
+  ) {
     throw new Error("TOKEN_OUT_OF_SYNC");
   }
-
-  const token = tokenFromCookie;
 
   try {
     const payload = verifyToken(token);
 
-    if (payload.sessionId !== sessionIdFromCookie) {
+    if (sessionIdFromCookie && payload.sessionId !== sessionIdFromCookie) {
       throw new Error("SESSION_MISMATCH");
     }
 

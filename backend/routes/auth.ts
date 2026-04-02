@@ -10,6 +10,7 @@ import {
   getClearedSessionCookieOptions,
   getSessionCookieOptions,
 } from "@/lib/cookie-options";
+import { error } from "console";
 
 const router = Router();
 
@@ -66,8 +67,8 @@ router.post("/api/login", async (req, res) => {
             alreadyLoggedIn: true,
           });
         }
-      } catch {
-        // ignore invalid active session and continue normal login flow
+      } catch (error) {
+        console.warn("Token verification failed:", error);
       }
     }
 

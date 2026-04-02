@@ -33,6 +33,18 @@ router.get("/api/user", async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
     }
 
+    if (
+      error instanceof Error &&
+      [
+        "TOKEN_NOT_FOUND",
+        "TOKEN_OUT_OF_SYNC",
+        "SESSION_MISMATCH",
+        "INVALID_TOKEN",
+      ].includes(error.message)
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     console.error("GET users error:", error);
     return res.status(500).json({ message: "Failed to fetch users" });
   }
