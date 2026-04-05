@@ -8,12 +8,13 @@ import { prisma } from "@/lib/prisma";
 import { uploadDocumentSchema } from "@/lib/validations/document.schema";
 import { createActivity } from "@/lib/logActivity";
 import { requireJWT } from "@/backend/lib/auth";
+import { uploadsRoot } from "@/backend/lib/uploads";
 import { validateFile } from "@/utils/fileUpload";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 const uploadFields = upload.array("files");
-const uploadsRoot = path.join(process.cwd(), "public", "uploads", "documents");
+const documentsUploadsRoot = path.join(uploadsRoot, "documents");
 
 function sanitizeSegment(value: string) {
   return value
@@ -89,7 +90,7 @@ router.post("/api/documents/upload", (req, res) => {
         ? `${employeeSegment}_${docTypeSegment}_${otherTypeSegment}`
         : `${employeeSegment}_${docTypeSegment}`;
 
-      const uploadPath = path.join(uploadsRoot, employeeFolder);
+      const uploadPath = path.join(documentsUploadsRoot, employeeFolder);
       await mkdir(uploadPath, { recursive: true });
 
       const documentsData = [] as Array<{

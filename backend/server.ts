@@ -12,6 +12,7 @@ import documentsRouter from "./routes/documents";
 import documentsUploadRouter from "./routes/documentsUpload";
 import documentsDecisionRouter from "./routes/documentsVerifyReject";
 import rolesIdRouter from "./routes/rolesId";
+import { uploadsRoot } from "./lib/uploads";
 
 const port = Number.parseInt(process.env.BACKEND_PORT ?? "4000", 10);
 const upstream = (
@@ -22,11 +23,9 @@ const proxyEnabled = process.env.BACKEND_PROXY_TO_UPSTREAM === "true";
 
 const app = express();
 
-const uploadsDir = path.join(process.cwd(), "public", "uploads");
-
 app.set("trust proxy", true);
 app.use(morgan("dev"));
-app.use("/uploads", express.static(uploadsDir));
+app.use("/uploads", express.static(uploadsRoot));
 app.use(
   cors({
     origin: corsOrigin === "*" ? true : corsOrigin,

@@ -10,8 +10,12 @@ sudo docker buildx build \
   -t my-backend \
   --load .
 
-echo "📦 Save backend image..."
+echo "✅ Finished building backend image..."
+
+echo "📦 Start saving backend image to tar"
 sudo docker save my-backend > backend.tar
+echo "✅ Finished saving backend image to tar"
+
 
 echo "🚀 Build frontend image..."
 sudo docker buildx build \
@@ -20,5 +24,8 @@ sudo docker buildx build \
   -t my-frontend \
   --load .
 
-echo "📦 Save frontend image..."
+echo "✅ Finished building frontend image..."
+
+echo "📦 Start saving frontend image to tar"
 sudo docker save my-frontend > frontend.tar
+echo "✅ Finished saving frontend image to tar"

@@ -19,7 +19,7 @@ router.get("/api/documents", async (req, res) => {
   try {
     const { role } = await requireJWT(req);
 
-    if (role !== "admin" && role !== "hr") {
+    if (role !== "admin" && role !== "hr" && role !== "employee") {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -106,13 +106,17 @@ router.get("/api/documents/:id", async (req, res) => {
     const { id } = req.params;
 
     const documentGet = await getDocumentById(id);
-    const getRole = await getRoleById(
-      documentGet?.verified_by?.toString() || "0",
-    );
 
     if (!documentGet) {
       return res.status(404).json({ message: "Document not found" });
     }
+
+    const verifiedById =
+      documentGet.verified_by === null || documentGet.verified_by === undefined
+        ? null
+        : String(documentGet.verified_by);
+
+    const getRole = verifiedById ? await getRoleById(verifiedById) : null;
 
     const result = {
       id: documentGet.id,
