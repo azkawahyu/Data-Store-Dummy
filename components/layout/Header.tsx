@@ -65,7 +65,7 @@ function HeaderLogo() {
           TVRI DKI JAKARTA
         </span>
         <span className="text-sm font-semibold text-slate-800 transition group-hover:text-slate-900">
-          SmartStaff
+          Smart Data Staff
         </span>
       </span>
     </Link>

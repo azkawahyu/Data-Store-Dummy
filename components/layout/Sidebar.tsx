@@ -201,7 +201,7 @@ export default function Sidebar() {
           </span>
           <span className="sidebar-brand-label">
             <span className="sidebar-brand-eyebrow">TVRI DKI JAKARTA</span>
-            <span className="sidebar-brand-title">SmartStaff</span>
+            <span className="sidebar-brand-title">Smart Data Staff</span>
           </span>
         </Link>
 

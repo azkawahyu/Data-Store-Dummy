@@ -368,7 +368,9 @@ export default function ProfilePage() {
                   maxWidth: 280,
                 }}
               >
-                {userProfile?.email || userProfile?.nip || "Akun SmartStaff"}
+                {userProfile?.email ||
+                  userProfile?.nip ||
+                  "Akun Smart Data Staff"}
               </p>
             </div>
           </div>

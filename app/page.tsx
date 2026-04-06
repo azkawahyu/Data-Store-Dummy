@@ -144,10 +144,10 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-slate-900/35" />
 
       <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md rounded-2xl border border-white/20 bg-white/90 p-6 shadow-xl backdrop-blur-sm sm:p-8">
+        <div className="w-full max-w-md rounded-2xl border border-white/20 bg-white/80 p-6 shadow-xl backdrop-blur-sm sm:p-8">
           <div className="mb-6">
             <div className="mb-5 flex items-center justify-center">
-              <div className="inline-flex items-center gap-3 rounded-2xl border border-blue-200/70 bg-blue-50/80 px-4 py-3 shadow-sm">
+              <div className="inline-flex items-center gap-3 rounded-2xl border border-blue-200/70 bg-blue-50/60 px-4 py-3 shadow-sm">
                 <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-linear-to-br from-blue-100 to-sky-100 ring-1 ring-blue-200">
                   <Image
                     src="/logo/TVRI_JAKARTA_2023.svg"
@@ -163,7 +163,7 @@ export default function LoginPage() {
                     TVRI DKI JAKARTA
                   </span>
                   <span className="text-base font-semibold text-slate-900">
-                    SmartStaff
+                    Smart Data Staff
                   </span>
                 </span>
               </div>
@@ -172,15 +172,14 @@ export default function LoginPage() {
               Selamat Datang
             </h1>
             <p className="mt-1 text-sm text-slate-600">
-              Masuk untuk mengakses dashboard SmartStaff.
+              Masuk untuk mengakses dashboard Smart Data Staff.
             </p>
           </div>
-
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label
                 htmlFor="username"
-                className="mb-1.5 block text-sm font-medium text-slate-700"
+                className="mb-1.5 block text-sm font-medium text-slate-950"
               >
                 Username
               </label>
@@ -197,7 +196,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="mb-1.5 block text-sm font-medium text-slate-700"
+                className="mb-1.5 block text-sm font-medium text-slate-950"
               >
                 Password
               </label>
