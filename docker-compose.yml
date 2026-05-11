@@ -11,7 +11,7 @@ services:
       - /share/Web/database/postgres:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:4000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:5050/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -39,7 +39,7 @@ services:
     command: sh -c "npx prisma migrate deploy && node dist/backend/server.mjs"
     environment:
       NODE_ENV: production
-      BACKEND_PORT: 4000
+      BACKEND_PORT: 5050
       BACKEND_PROXY_TO_UPSTREAM: "false"
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
@@ -50,14 +50,14 @@ services:
       SESSION_COOKIE_MAX_AGE: ${SESSION_COOKIE_MAX_AGE:-86400}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
     ports:
-      - "4000:4000"
+      - "5050:5050"
     restart: unless-stopped
 
   web:
     image: my-web
     environment:
       NODE_ENV: production
-      BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:4000}
+      BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:5050}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
     ports:
       - "3000:3000"

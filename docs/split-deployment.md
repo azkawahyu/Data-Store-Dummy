@@ -130,7 +130,7 @@ Setiap device di LAN harus bisa resolve nama domain yang sama ke IP server lokal
 ## Contoh skenario port lokal
 
 - Frontend Next.js: `3000`
-- Backend API: `4000`
+- Backend API: `5050`
 - Reverse proxy: `80` atau `443`
 
 Reverse proxy akan menerima request dari browser lalu meneruskan ke service yang benar.

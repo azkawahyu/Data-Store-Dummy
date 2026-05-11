@@ -45,7 +45,7 @@ services:
       - .env.docker
     environment:
       NODE_ENV: production
-      BACKEND_PORT: 4000
+      BACKEND_PORT: 5050
       BACKEND_PROXY_TO_UPSTREAM: "false"
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
@@ -56,7 +56,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
     ports:
-      - "4000:4000"
+      - "5050:5050"
     volumes:
       - /share/Web/uploads:/app/public/uploads
     depends_on:
@@ -64,7 +64,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:4000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:5050/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -76,10 +76,10 @@ services:
       - .env.docker
     environment:
       NODE_ENV: production
-      BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:4000}
+      BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:5050}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
     ports:
-      - "3000:3000"
+      - "5000:5000"
     volumes:
       - /share/Web/uploads:/app/public/uploads
     depends_on:
