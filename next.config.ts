@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["172.30.28.9"],
+  allowedDevOrigins: ["172.30.28.25"],
   output: "standalone",
   async rewrites() {
-    const backendOrigin = process.env.BACKEND_ORIGIN ?? "http://localhost:5050";
+    const backendOrigin = process.env.BACKEND_ORIGIN ?? "http://localhost:12000";
 
     return [
       {

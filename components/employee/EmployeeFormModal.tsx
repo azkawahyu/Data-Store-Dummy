@@ -34,6 +34,100 @@ const EMPTY: EmployeeForm = {
   email: "",
 };
 
+const JABATAN_OPTIONS = [
+  "Kepala TVRI Stasiun DKI Jakarta (Pimpinan)",
+  "Kepala Sub Bagian Tata Usaha",
+  "KPP Teknik",
+  "KPP Umum",
+  "KPP Program",
+  "KPP Berita",
+  "KPP Keuangan",
+  "KPP Konten Media Baru",
+  "KPP Pengembangan Usaha",
+  "Analis Anggaran Ahli Pertama",
+  "Analis Pengelolaan Keuangan APBN Ahli Pertama",
+  "Analis Sumber Daya Manusia Aparatur Ahli Madya",
+  "Analis Sumber Daya Manusia Aparatur Ahli Pertama",
+  "Arsiparis Ahli Pertama",
+  "Arsiparis Terampil",
+  "Asisten Pranata Siaran Terampil",
+  "Asisten Teknisi Siaran Pemula",
+  "Asisten Teknisi Siaran Penyelia",
+  "Asisten Teknisi Siaran Terampil",
+  "Fungsional Umum",
+  "Pelaksana",
+  "Penata Kelola Pemerintahan",
+  "Penata Layanan Operasional",
+  "Penelaah Teknis Kebijakan",
+  "Pengelola Layanan Operasional",
+  "Pengelola Pengadaan Barang/Jasa Ahli Madya",
+  "Penyusun Laporan Keuangan",
+  "Pranata Hubungan Masyarakat Ahli Muda",
+  "Pranata Hubungan Masyarakat Ahli Pertama",
+  "Pranata Keuangan APBN Mahir",
+  "Pranata Keuangan APBN Terampil",
+  "Pranata Siaran Ahli Pertama",
+  "Teknisi Siaran Ahli Muda",
+  "Teknisi Siaran Ahli Pertama"
+]
+
+const JABATAN_OPTIONS_TEKNIK = [
+  "KPP Teknik",
+  "Teknisi Siaran Ahli Utama",
+  "Teknisi Siaran Ahli Madya",
+  "Teknisi Siaran Ahli Muda",
+  "Teknisi Siaran Ahli Pertama",
+  "Asisten Teknisi Siaran Penyelia",
+  "Asisten Teknisi Siaran Mahir",
+  "Asisten Teknisi Siaran Terampil",
+  "Asisten Teknisi Siaran Pemula",
+]
+
+const JABATAN_OPTIONS_UMUM = [
+  "KPP Umum",
+]
+
+const JABATAN_OPTIONS_PROGRAM = [
+  "KPP Program",
+  "Pranata Siaran Ahli Utama",
+  "Pranata Siaran Ahli Madya",
+  "Pranata Siaran Ahli Muda",
+  "Pranata Siaran Ahli Pertama",
+  "Asisten pranata Siaran Penyelia",
+  "Asisten pranata Siaran Mahir",
+  "Asisten pranata Siaran Terampil",
+  "Asisten pranata Siaran Pemula",
+]
+
+const JABATAN_OPTIONS_BERITA = [
+  "KPP Berita",
+  "Pranata Siaran Ahli Utama",
+  "Pranata Siaran Ahli Madya",
+  "Pranata Siaran Ahli Muda",
+  "Pranata Siaran Ahli Pertama",
+  "Asisten pranata Siaran Penyelia",
+  "Asisten pranata Siaran Mahir",
+  "Asisten pranata Siaran Terampil",
+  "Asisten pranata Siaran Pemula",
+]
+
+const JABATAN_OPTIONS_KEUANGAN = [
+  "KPP Keuangan",
+]
+
+const JABATAN_OPTIONS_KMB = [
+  "KPP Konten Media Baru",
+]
+
+const JABATAN_OPTIONS_TATA_USAHA = [
+  "Kepala Sub Bagian Tata Usaha",
+  "Arsiparis Ahli Utama",
+  "Arsiparis Ahli Madya",
+  "Arsiparis Ahli Muda",
+  "Arsiparis Ahli Pertama",
+  "Penata Kelola Pemerintahan"
+]
+
 const UNIT_OPTIONS = [
   "Teknik",
   "Umum",
@@ -42,6 +136,7 @@ const UNIT_OPTIONS = [
   "Keuangan",
   "KMB",
   "Tata Usaha",
+  "Pengembangan Usaha",
   "Kepala Stasiun",
 ];
 
@@ -459,26 +554,7 @@ export default function EmployeeFormModal({
                 )}
               </div>
 
-              <div className="emp-form-row">
-                <div className="emp-form-group">
-                  <label className="emp-form-label">
-                    Jabatan <span>*</span>
-                  </label>
-                  <input
-                    className={`emp-form-input${fieldErrors.jabatan ? " emp-form-input-error" : ""}`}
-                    value={form.jabatan}
-                    onChange={(e) => set("jabatan", e.target.value)}
-                    onBlur={() => handleBlur("jabatan")}
-                    placeholder="Staff IT"
-                  />
-                  {fieldErrors.jabatan && (
-                    <span className="emp-field-error">
-                      {fieldErrors.jabatan}
-                    </span>
-                  )}
-                </div>
-
-                <div className="emp-form-group">
+<div className="emp-form-group">
                   <label className="emp-form-label">
                     Unit <span>*</span>
                   </label>
@@ -499,6 +575,27 @@ export default function EmployeeFormModal({
                     <span className="emp-field-error">{fieldErrors.unit}</span>
                   )}
                 </div>
+
+              <div className="emp-form-row">
+                <div className="emp-form-group">
+                  <label className="emp-form-label">
+                    Jabatan <span>*</span>
+                  </label>
+                  <input
+                    className={`emp-form-input${fieldErrors.jabatan ? " emp-form-input-error" : ""}`}
+                    value={form.jabatan}
+                    onChange={(e) => set("jabatan", e.target.value)}
+                    onBlur={() => handleBlur("jabatan")}
+                    placeholder="Staff IT"
+                  />
+                  {fieldErrors.jabatan && (
+                    <span className="emp-field-error">
+                      {fieldErrors.jabatan}
+                    </span>
+                  )}
+                </div>
+
+                
               </div>
 
               <div className="emp-form-row">

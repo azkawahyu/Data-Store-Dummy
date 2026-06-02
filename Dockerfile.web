@@ -7,7 +7,7 @@ RUN npm ci
 
 COPY . .
 
-ARG BACKEND_ORIGIN=http://backend:5050
+ARG BACKEND_ORIGIN=http://backend:12000
 ENV BACKEND_ORIGIN=${BACKEND_ORIGIN}
 
 RUN npx prisma generate
@@ -23,6 +23,6 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-EXPOSE 5000
+EXPOSE 11000
 
 CMD ["node", "server.js"]

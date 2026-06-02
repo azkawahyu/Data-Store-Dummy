@@ -95,7 +95,7 @@ docs/                   # Additional documentation
 ## Core Architecture Decisions
 
 ### Backend-First Approach
-- **Express backend runs independently** on port 5050 (configurable via `BACKEND_PORT`)
+- **Express backend runs independently** on port 12000 (configurable via `BACKEND_PORT`)
 - **Frontend proxies API requests** to backend during development (configurable via `BACKEND_PROXY_TO_UPSTREAM`)
 - **Production**: Backend and frontend can run separately on different machines
 - **Benefit**: Allows flexible deployment scenarios (Vercel frontend + VPS backend, Docker containers, QNAP NAS)
@@ -147,7 +147,7 @@ npm run build:web   # Build Next.js frontend
 
 **Start production servers**
 ```bash
-npm run start:api   # Run compiled backend (port 5050)
+npm run start:api   # Run compiled backend (port 12000)
 npm run start:web   # Run compiled frontend (port 3000)
 ```
 
@@ -170,7 +170,7 @@ npm run lint        # Run ESLint on workspace
 ### Environment Variables
 Load from `.env.local` or `.env.docker` based on runtime:
 - `DATABASE_URL`: PostgreSQL connection string (required)
-- `BACKEND_PORT`: Express server port (default: 5050)
+- `BACKEND_PORT`: Express server port (default: 12000)
 - `BACKEND_UPSTREAM_URL`: Frontend URL for backend proxy (default: http://localhost:3000)
 - `CORS_ORIGIN`: Allowed CORS origin (default: backend upstream URL)
 - `BACKEND_PROXY_TO_UPSTREAM`: Enable frontend proxy (default: false in production)
@@ -250,7 +250,7 @@ export default function ProtectedComponent() {
 ### Production Build Order (Recommended)
 ```bash
 npm run build:api       # Build backend
-npm run deploy:api      # Start backend on port 5050
+npm run deploy:api      # Start backend on port 12000
 npm run build:web       # Build Next.js
 npm run deploy:web      # Start frontend on port 3000
 # Or use: npm run deploy:prod  # One command for both (runs deploy-prod.sh)
@@ -258,7 +258,7 @@ npm run deploy:web      # Start frontend on port 3000
 
 ## Common Pitfalls & Tips
 
-1. **Backend port conflict**: If port 5050 is in use, set `BACKEND_PORT` env var
+1. **Backend port conflict**: If port 12000 is in use, set `BACKEND_PORT` env var
 2. **CORS errors in development**: Ensure `CORS_ORIGIN` matches frontend URL
 3. **JWT expiry**: Set `JWT_EXPIRES_IN` appropriately for your security requirements
 4. **File uploads**: Check `process.env.UPLOADS_DIR` for upload directory path

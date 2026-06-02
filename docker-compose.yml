@@ -1,66 +1,50 @@
 services:
   postgres:
     image: postgres:16-alpine
-    env_file:
-      - .env.docker
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-data_store_dummy}
-      POSTGRES_USER: ${POSTGRES_USER:-data_store_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: data_store_dummy
+      POSTGRES_USER: smartstaff
+      POSTGRES_PASSWORD: 1z2x3c4v
+    ports:
+      - "5432:5432"
     volumes:
-      - /share/Web/database/postgres:/var/lib/postgresql/data
+      - C:/Users/MONITORING/DockerData/postgres:/var/lib/postgresql/data
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:5050/health || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
   pgadmin:
-    image: dpage/pgadmin4:latest
-    env_file:
-      - .env.docker
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-change-me}
-      PGADMIN_CONFIG_SERVER_MODE: "True"
-    volumes:
-      - /share/Web/database/pgadmin:/var/lib/pgadmin
+    image: dpage/pgadmin4
     ports:
-      - "5050:80"
+      - "6060:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: adminsmartstaff@mail.com
+      PGADMIN_DEFAULT_PASSWORD: 1z2x3c4v
+    volumes:
+      - C:/Users/MONITORING/DockerData/pgadmin:/var/lib/pgadmin
     depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
+      - postgres
 
   backend:
-    image: my-backend
-    command: sh -c "npx prisma migrate deploy && node dist/backend/server.mjs"
-    environment:
-      NODE_ENV: production
-      BACKEND_PORT: 5050
-      BACKEND_PROXY_TO_UPSTREAM: "false"
-      DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
-      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
-      SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE:-lax}
-      SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-}
-      SESSION_COOKIE_MAX_AGE: ${SESSION_COOKIE_MAX_AGE:-86400}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+    build:
+      context: .
+      dockerfile: Dockerfile.api
     ports:
-      - "5050:5050"
-    restart: unless-stopped
+      - "12000:12000"
+    env_file:
+      - .env.docker
+    depends_on:
+      - postgres
+    volumes:
+      - C:/Users/MONITORING/DockerData/uploads:/app/public/uploads
 
   web:
-    image: my-web
-    environment:
-      NODE_ENV: production
-      BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://backend:5050}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+    build:
+      context: .
+      dockerfile: Dockerfile.web
     ports:
-      - "3000:3000"
+      - "11000:3000"
+    env_file:
+      - .env.docker
     depends_on:
       - backend
-    restart: unless-stopped
+
+command: sh -c "npx prisma migrate deploy && node dist/backend/server.mjs"

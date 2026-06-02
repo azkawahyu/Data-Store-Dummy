@@ -86,7 +86,7 @@ Backend:
 
 ## Contoh alur deploy
 
-1. Backend baru jalan di port internal, misalnya `5050`.
+1. Backend baru jalan di port internal, misalnya `12000`.
 2. Frontend tetap jalan di port `3000`.
 3. QNAP reverse proxy meneruskan `/api` ke backend.
 4. Browser tetap mengakses satu domain utama.

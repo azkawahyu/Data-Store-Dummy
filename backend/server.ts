@@ -14,9 +14,9 @@ import documentsDecisionRouter from "./routes/documentsVerifyReject";
 import rolesIdRouter from "./routes/rolesId";
 import { uploadsRoot } from "./lib/uploads";
 
-const port = Number.parseInt(process.env.BACKEND_PORT ?? "5050", 10);
+const port = Number.parseInt(process.env.BACKEND_PORT ?? "12000", 10);
 const upstream = (
-  process.env.BACKEND_UPSTREAM_URL ?? "http://localhost:3000"
+  process.env.BACKEND_UPSTREAM_URL ?? "http://localhost:12000"
 ).replace(/\/$/, "");
 const corsOrigin = process.env.CORS_ORIGIN ?? upstream;
 const proxyEnabled = process.env.BACKEND_PROXY_TO_UPSTREAM === "true";

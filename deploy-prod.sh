@@ -21,7 +21,7 @@ docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d backend
 
 echo "[4/5] Waiting for backend health"
 for i in {1..60}; do
-  if docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T backend curl -fsS http://127.0.0.1:5050/health >/dev/null 2>&1; then
+  if docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T backend curl -fsS http://127.0.0.1:12000/health >/dev/null 2>&1; then
     echo "Backend is healthy"
     break
   fi

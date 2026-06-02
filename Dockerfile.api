@@ -27,6 +27,6 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-EXPOSE 5050
+EXPOSE 12000
 
 CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && node dist/backend/server.mjs"]

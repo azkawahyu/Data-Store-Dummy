@@ -2153,7 +2153,7 @@ router9.delete("/api/roles/:id", async (req, res) => {
 var rolesId_default = router9;
 
 // backend/server.ts
-var port = Number.parseInt(process.env.BACKEND_PORT ?? "5050", 10);
+var port = Number.parseInt(process.env.BACKEND_PORT ?? "12000", 10);
 var upstream = (process.env.BACKEND_UPSTREAM_URL ?? "http://localhost:3000").replace(/\/$/, "");
 var corsOrigin = process.env.CORS_ORIGIN ?? upstream;
 var proxyEnabled = process.env.BACKEND_PROXY_TO_UPSTREAM === "true";

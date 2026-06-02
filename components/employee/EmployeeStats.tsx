@@ -63,8 +63,8 @@ const UNIT_STATS = [
     border: "#bbf7d0",
   },
   {
-    key: "Kepala Stasiun",
-    label: "Kepala Stasiun",
+    key: "Pengembangan Usaha",
+    label: "Pengembangan Usaha",
     bg: "linear-gradient(135deg,#ffe4e6 0%,#fecdd3 100%)",
     textColor: "#9f1239",
     labelColor: "#be123c",

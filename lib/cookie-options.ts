@@ -10,7 +10,7 @@ type CookieSerializeOptions = {
   expires?: Date;
 };
 
-const DEFAULT_MAX_AGE = 60 * 60 * 24;
+const DEFAULT_MAX_AGE = 60 * 60 * 24 * 1000;
 
 function parseBoolean(value: string | undefined, fallback: boolean) {
   if (value === undefined) return fallback;
@@ -33,7 +33,9 @@ function parseSameSite(
 
 function parseMaxAge(value: string | undefined) {
   const parsed = Number.parseInt(value ?? "", 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MAX_AGE;
+  return Number.isFinite(parsed) && parsed > 0
+    ? parsed * 1000
+    : DEFAULT_MAX_AGE;
 }
 
 export function getSessionCookieOptions(
