@@ -330,13 +330,17 @@ router.post("/api/user/:id/reset-password", async (req, res) => {
     }
 
     const { id } = req.params;
-    const user = await getUserById(id);
+    const user = await prisma.users.findUnique({
+      where: { id },
+      include: { employees: { select: { nip: true } } },
+    });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const temporaryPassword = generateTemporaryPassword();
+    const temporaryPassword =
+      user.employees?.nip ?? generateTemporaryPassword();
     const temporaryPasswordHash =
       await hashTemporaryPassword(temporaryPassword);
 
@@ -354,7 +358,9 @@ router.post("/api/user/:id/reset-password", async (req, res) => {
       description: {
         userId: id,
         username: user.username,
-        message: "password reset",
+        message: user.employees?.nip
+          ? "password reset to employee NIP"
+          : "password reset",
       },
     });
 

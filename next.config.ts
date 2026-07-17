@@ -20,10 +20,6 @@ const nextConfig: NextConfig = {
         destination: `${backendOrigin}/api/change-password`,
       },
       {
-        source: "/api/register",
-        destination: `${backendOrigin}/api/register`,
-      },
-      {
         source: "/api/user",
         destination: `${backendOrigin}/api/user`,
       },

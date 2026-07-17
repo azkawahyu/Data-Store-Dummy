@@ -6,7 +6,7 @@ import { getClearedSessionCookieOptions } from "@/lib/cookie-options";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const publicApiRoutes = ["/api/login", "/api/register", "/api/logout"];
+  const publicApiRoutes = ["/api/login", "/api/logout"];
   const protectedPages = [
     "/dashboard",
     "/employees",
@@ -15,6 +15,7 @@ export function proxy(request: NextRequest) {
     "/users",
     "/activity",
     "/hr",
+    "/change-password",
   ];
 
   const isProtectedPage = protectedPages.some(
@@ -40,15 +41,8 @@ export function proxy(request: NextRequest) {
       }
       const role = String(payload.role ?? "").toLowerCase();
 
-      if (payload.mustChangePassword) {
-        const allowedPages = ["/login", "/forgot-password"];
-        const isAllowedPage = allowedPages.some(
-          (route) => pathname === route || pathname.startsWith(`${route}/`),
-        );
-
-        if (!isAllowedPage) {
-          return NextResponse.redirect(new URL("/login", request.url));
-        }
+      if (payload.mustChangePassword && pathname !== "/change-password") {
+        return NextResponse.redirect(new URL("/change-password", request.url));
       }
 
       const isUsersPage =

@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: smartstaff
       POSTGRES_PASSWORD: 1z2x3c4v
     ports:
-      - "5432:5432"
+      - process.env.POSTGRES_PORT + process.env.POSTGRES_HOST + ":5432:5432"
     volumes:
       - C:/Users/MONITORING/DockerData/postgres:/var/lib/postgresql/data
     restart: unless-stopped

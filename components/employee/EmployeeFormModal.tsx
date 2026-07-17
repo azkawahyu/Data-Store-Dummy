@@ -2,16 +2,25 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Employee } from "@/types/employee";
+import {
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_REGEX,
+} from "@/lib/validations/userRules";
 
 type EmployeeForm = Omit<Employee, "id" | "created_at" | "updated_at">;
 
-type FieldErrors = Partial<Record<keyof EmployeeForm, string>>;
+type FieldErrors = Partial<Record<keyof EmployeeForm | "username", string>>;
 
 interface Props {
   open: boolean;
   initial: Employee | null; // null = tambah, ada isi = edit
   onClose: () => void;
-  onSubmit: (form: EmployeeForm) => Promise<void>;
+  onSubmit: (
+    form: EmployeeForm,
+    account?: { username: string },
+  ) => Promise<void>;
+  createAccount?: boolean;
   title?: string;
   submitLabel?: string;
   hideCloseButton?: boolean;
@@ -216,6 +225,7 @@ export default function EmployeeFormModal({
   initial,
   onClose,
   onSubmit,
+  createAccount = false,
   title,
   submitLabel,
   hideCancelButton = false,
@@ -226,6 +236,7 @@ export default function EmployeeFormModal({
   lockEmail = false,
 }: Props) {
   const [form, setForm] = useState<EmployeeForm>(EMPTY);
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -260,6 +271,7 @@ export default function EmployeeFormModal({
       });
     }
     setServerError("");
+    setUsername("");
     setFieldErrors({});
     setTouched({});
   }, [open, initial, prefillNip, prefillEmail]);
@@ -276,6 +288,17 @@ export default function EmployeeFormModal({
       }
       return next;
     });
+  }
+
+  function validateUsername(value: string) {
+    const normalized = value.trim();
+    if (!normalized) return "Username wajib diisi.";
+    if (!USERNAME_REGEX.test(normalized)) {
+      return "Username hanya boleh huruf, angka, titik, garis bawah, atau strip.";
+    }
+    if (normalized.length < USERNAME_MIN_LENGTH) return "Username minimal 3 karakter.";
+    if (normalized.length > USERNAME_MAX_LENGTH) return "Username maksimal 100 karakter.";
+    return undefined;
   }
 
   // Filter NIP: tolak karakter non-digit saat mengetik
@@ -315,11 +338,17 @@ export default function EmployeeFormModal({
     const errs = validateForm(form);
     setFieldErrors(errs);
 
+    if (createAccount) {
+      const usernameError = validateUsername(username);
+      if (usernameError) errs.username = usernameError;
+    }
+    setFieldErrors(errs);
+
     if (Object.keys(errs).length > 0) return;
 
     try {
       setLoading(true);
-      await onSubmit(form);
+      await onSubmit(form, createAccount ? { username: username.trim() } : undefined);
       onClose();
     } catch {
       setServerError("Terjadi kesalahan. Coba lagi.");
@@ -537,6 +566,42 @@ export default function EmployeeFormModal({
                   )}
                 </div>
               </div>
+
+              {createAccount ? (
+                <div className="emp-form-group">
+                  <label className="emp-form-label">
+                    Username <span>*</span>
+                  </label>
+                  <input
+                    className={`emp-form-input${fieldErrors.username ? " emp-form-input-error" : ""}`}
+                    value={username}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setUsername(value);
+                      if (fieldErrors.username) {
+                        setFieldErrors((previous) => ({
+                          ...previous,
+                          username: validateUsername(value),
+                        }));
+                      }
+                    }}
+                    onBlur={() =>
+                      setFieldErrors((previous) => ({
+                        ...previous,
+                        username: validateUsername(username),
+                      }))
+                    }
+                    placeholder="contoh: budi.santoso"
+                    autoComplete="username"
+                  />
+                  <span className="emp-field-hint">
+                    Password sementara otomatis menggunakan NIP pegawai dan wajib diubah saat login pertama.
+                  </span>
+                  {fieldErrors.username ? (
+                    <span className="emp-field-error">{fieldErrors.username}</span>
+                  ) : null}
+                </div>
+              ) : null}
 
               <div className="emp-form-group">
                 <label className="emp-form-label">

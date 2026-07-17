@@ -2,11 +2,13 @@ import { Router } from "express";
 
 import { prisma } from "@/lib/prisma";
 import { getEmployees } from "@/lib/services/employee/getEmployees";
-import { createEmployee } from "@/lib/services/employee/createEmployee";
+import { createEmployeeAccount } from "@/lib/services/employee/createEmployeeAccount";
 import { getEmployeeById } from "@/lib/services/employee/getEmployeeById";
 import { updateEmployee } from "@/lib/services/employee/updateEmployee";
 import { getDocumentsByEmployee } from "@/lib/services/employee/getDocumentsByEmployee";
-import { employeeSchema } from "@/lib/validations/employeeValidations";
+import {
+  employeeAccountCreateSchema,
+} from "@/lib/validations/employeeValidations";
 import { createActivity } from "@/lib/logActivity";
 import { requireJWT } from "@/backend/lib/auth";
 
@@ -43,39 +45,35 @@ router.post("/api/employees", async (req, res) => {
   try {
     const { role, userId } = await requireJWT(req);
 
-    if (role !== "admin" && role !== "employee" && role !== "hr") {
+    if (role?.toLowerCase() !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    const shouldLinkToCurrentUser = req.body?.linkToCurrentUser === true;
-    const process = employeeSchema.safeParse(req.body);
+    const process = employeeAccountCreateSchema.safeParse(req.body);
 
     if (!process.success) {
-      return res.status(400).json({ message: process.error.issues });
-    }
-
-    const employee = await createEmployee(process.data);
-
-    if ((role === "employee" || shouldLinkToCurrentUser) && userId) {
-      await prisma.users.update({
-        where: { id: String(userId) },
-        data: { employee_id: employee.id },
+      return res.status(400).json({
+        message: process.error.issues[0]?.message ?? "Data pegawai tidak valid",
       });
     }
 
+    const { employee, user } = await createEmployeeAccount(process.data);
+
     await createActivity({
       userId: userId === null || userId === undefined ? null : String(userId),
-      action: "create_employee",
+      action: "create_employee_account",
       description: {
         employeeId: employee.id,
+        accountId: user.id,
+        username: user.username,
         name: (employee.nama as string | null) ?? null,
-        message: "created",
+        message: "employee and account created",
       },
     });
 
     return res.status(201).json({
-      message: "Employee created successfully",
-      data: employee,
+      message: "Pegawai dan akun berhasil dibuat",
+      data: { employee, user },
     });
   } catch (error) {
     console.error("ERROR:", error);
@@ -90,6 +88,12 @@ router.post("/api/employees", async (req, res) => {
       ].includes(error.message)
     ) {
       return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if ((error as { code?: string })?.code === "P2002") {
+      return res.status(409).json({
+        message: "Username atau NIP sudah digunakan.",
+      });
     }
 
     if (error instanceof Error) {

@@ -4,7 +4,6 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { signToken, verifyToken } from "@/lib/jwt";
 import { createActivity } from "@/lib/logActivity";
-import { registerPublicUser } from "@/lib/services/auth/registerPublicUser";
 import {
   getClearedSessionCookieOptions,
   getSessionCookieOptions,
@@ -14,6 +13,7 @@ import {
   hashPassword,
   isTemporaryPasswordHash,
 } from "@/lib/password";
+import { PASSWORD_MIN_LENGTH, PASSWORD_REGEX } from "@/lib/validations/userRules";
 import { requireJWT } from "@/backend/lib/auth";
 
 const router = Router();
@@ -30,30 +30,6 @@ function getCookieValue(cookieHeader: string | undefined, key: string) {
 
   return null;
 }
-
-router.post("/api/register", async (req, res) => {
-  try {
-    const user = await registerPublicUser({
-      username: req.body?.username,
-      password: req.body?.password,
-      nip: req.body?.nip,
-      email: req.body?.email,
-    });
-
-    return res.status(201).json({
-      message: "Registrasi berhasil. Silakan login.",
-      data: user,
-    });
-  } catch (error: unknown) {
-    console.error("Public register error:", error);
-
-    if (error instanceof Error) {
-      return res.status(400).json({ message: error.message });
-    }
-
-    return res.status(500).json({ message: "Internal server error" });
-  }
-});
 
 router.post("/api/login", async (req, res) => {
   try {
@@ -101,7 +77,9 @@ router.post("/api/login", async (req, res) => {
     });
 
     if (!user) {
-      return res.status(401).json({ message: "User tidak ditemukan" });
+      return res
+        .status(401)
+        .json({ message: "Username atau password salah" });
     }
 
     const passwordMatch = await compareStoredPassword(
@@ -161,8 +139,14 @@ router.post("/api/change-password", async (req, res) => {
         .json({ message: "Konfirmasi password tidak sama" });
     }
 
-    if (String(newPassword).trim().length < 8) {
+    if (String(newPassword).length < PASSWORD_MIN_LENGTH) {
       return res.status(400).json({ message: "Password minimal 8 karakter" });
+    }
+
+    if (!PASSWORD_REGEX.test(String(newPassword))) {
+      return res.status(400).json({
+        message: "Password harus mengandung huruf dan angka tanpa spasi",
+      });
     }
 
     const user = await prisma.users.findUnique({

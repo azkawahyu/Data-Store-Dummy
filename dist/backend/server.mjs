@@ -2,7 +2,6 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import path4 from "path";
 import { createProxyMiddleware } from "http-proxy-middleware";
 
 // backend/routes/auth.ts
@@ -20,7 +19,7 @@ var config = {
   "clientVersion": "7.4.2",
   "engineVersion": "94a226be1cf2967af2541cca5529f0f7ba866919",
   "activeProvider": "postgresql",
-  "inlineSchema": 'generator client {\n  provider = "prisma-client"\n  output   = "../lib/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nenum DocumentStatus {\n  pending\n  verified\n  rejected\n}\n\nmodel activity_logs {\n  id          String    @id @default(uuid()) @db.Uuid\n  user_id     String?   @db.Uuid\n  action      String?   @db.VarChar(100)\n  description String?\n  created_at  DateTime? @default(now()) @db.Timestamp(6)\n  users       users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n\nmodel documents {\n  id            String         @id @default(uuid()) @db.Uuid\n  employee_id   String?        @db.Uuid\n  document_type String         @db.VarChar(50)\n  file_path     String\n  file_name     String\n  file_size     Int\n  mime_type     String\n  status        DocumentStatus @default(pending)\n  uploaded_at   DateTime?      @default(now()) @db.Timestamp(6)\n  verified_by   String?        @db.Uuid\n  verified_at   DateTime?      @db.Timestamp(6)\n  employees     employees?     @relation(fields: [employee_id], references: [id], onDelete: Cascade, onUpdate: NoAction)\n  users         users?         @relation(fields: [verified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n\nmodel employees {\n  id         String      @id @default(uuid()) @db.Uuid\n  nip        String      @unique @db.VarChar(50)\n  nama       String      @db.VarChar(150)\n  jabatan    String?     @db.VarChar(100)\n  unit       String?     @db.VarChar(100)\n  status     String?     @db.VarChar(50)\n  alamat     String?\n  no_hp      String?     @db.VarChar(20)\n  email      String?     @db.VarChar(150)\n  created_at DateTime?   @default(now()) @db.Timestamp(6)\n  updated_at DateTime?   @updatedAt\n  documents  documents[]\n  users      users?\n}\n\nmodel roles {\n  id    String  @id @default(uuid()) @db.Uuid\n  name  String  @unique @db.VarChar(50)\n  users users[]\n}\n\nmodel users {\n  id            String          @id @default(uuid()) @db.Uuid\n  employee_id   String?         @unique @db.Uuid\n  role_id       String?         @db.Uuid\n  username      String          @unique @db.VarChar(100)\n  password_hash String\n  nip           String?         @unique @db.VarChar(50)\n  email         String?         @db.VarChar(150)\n  created_at    DateTime?       @default(now()) @db.Timestamp(6)\n  activity_logs activity_logs[]\n  documents     documents[]\n  employees     employees?      @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n  roles         roles?          @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n',
+  "inlineSchema": 'generator client {\n  provider = "prisma-client"\n  output   = "../lib/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n}\n\nenum DocumentStatus {\n  pending\n  verified\n  rejected\n}\n\nmodel activity_logs {\n  id          String    @id @default(uuid()) @db.Uuid\n  user_id     String?   @db.Uuid\n  action      String?   @db.VarChar(100)\n  description String?\n  created_at  DateTime? @default(now()) @db.Timestamp(6)\n  users       users?    @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: NoAction)\n}\n\nmodel documents {\n  id            String         @id @default(uuid()) @db.Uuid\n  employee_id   String?        @db.Uuid\n  document_type String         @db.VarChar(50)\n  file_path     String\n  file_name     String\n  file_size     Int\n  mime_type     String\n  status        DocumentStatus @default(pending)\n  uploaded_at   DateTime?      @default(now()) @db.Timestamp(6)\n  verified_by   String?        @db.Uuid\n  verified_at   DateTime?      @db.Timestamp(6)\n  employees     employees?     @relation(fields: [employee_id], references: [id], onDelete: Cascade, onUpdate: NoAction)\n  users         users?         @relation(fields: [verified_by], references: [id], onDelete: SetNull, onUpdate: NoAction)\n}\n\nmodel employees {\n  id         String      @id @default(uuid()) @db.Uuid\n  nip        String      @unique @db.VarChar(50)\n  nama       String      @db.VarChar(150)\n  jabatan    String?     @db.VarChar(100)\n  unit       String?     @db.VarChar(100)\n  status     String?     @db.VarChar(50)\n  alamat     String?\n  no_hp      String?     @db.VarChar(20)\n  email      String?     @db.VarChar(150)\n  created_at DateTime?   @default(now()) @db.Timestamp(6)\n  updated_at DateTime?   @updatedAt\n  documents  documents[]\n  users      users?\n}\n\nmodel roles {\n  id    String  @id @default(uuid()) @db.Uuid\n  name  String  @unique @db.VarChar(50)\n  users users[]\n}\n\nmodel users {\n  id            String          @id @default(uuid()) @db.Uuid\n  employee_id   String?         @unique @db.Uuid\n  role_id       String?         @db.Uuid\n  username      String          @unique @db.VarChar(100)\n  password_hash String\n  nip           String?         @unique @db.VarChar(50)\n  email         String?         @db.VarChar(150)\n  created_at    DateTime?       @default(now()) @db.Timestamp(6)\n  activity_logs activity_logs[]\n  documents     documents[]\n  employees     employees?      @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n  roles         roles?          @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)\n}\n',
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -105,11 +104,288 @@ async function createActivity(opts) {
   });
 }
 
-// lib/services/auth/registerPublicUser.ts
-import { z as z2 } from "zod";
+// lib/cookie-options.ts
+var DEFAULT_MAX_AGE = 60 * 60 * 24 * 1e3;
+function parseBoolean(value, fallback) {
+  if (value === void 0) return fallback;
+  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
+}
+function parseSameSite(value, fallback) {
+  const normalized = value?.toLowerCase();
+  if (normalized === "strict") return "strict";
+  if (normalized === "none") return "none";
+  if (normalized === "lax") return "lax";
+  return fallback;
+}
+function parseMaxAge(value) {
+  const parsed = Number.parseInt(value ?? "", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed * 1e3 : DEFAULT_MAX_AGE;
+}
+function getSessionCookieOptions(overrides = {}) {
+  return {
+    httpOnly: true,
+    secure: parseBoolean(
+      process.env.SESSION_COOKIE_SECURE,
+      process.env.NODE_ENV === "production"
+    ),
+    sameSite: parseSameSite(process.env.SESSION_COOKIE_SAMESITE, "lax"),
+    path: "/",
+    maxAge: parseMaxAge(process.env.SESSION_COOKIE_MAX_AGE),
+    domain: process.env.SESSION_COOKIE_DOMAIN || void 0,
+    ...overrides
+  };
+}
+function getClearedSessionCookieOptions() {
+  return getSessionCookieOptions({ expires: /* @__PURE__ */ new Date(0), maxAge: 0 });
+}
 
-// lib/services/users/createUser.ts
+// lib/password.ts
 import bcrypt from "bcrypt";
+import { randomBytes } from "crypto";
+var TEMP_PASSWORD_PREFIX = "TEMP::";
+function isTemporaryPasswordHash(value) {
+  return value.startsWith(TEMP_PASSWORD_PREFIX);
+}
+function unwrapPasswordHash(value) {
+  return isTemporaryPasswordHash(value) ? value.slice(TEMP_PASSWORD_PREFIX.length) : value;
+}
+async function hashPassword(password) {
+  return bcrypt.hash(password, 10);
+}
+async function hashTemporaryPassword(password) {
+  const hash = await bcrypt.hash(password, 10);
+  return `${TEMP_PASSWORD_PREFIX}${hash}`;
+}
+async function compareStoredPassword(password, storedHash) {
+  return bcrypt.compare(password, unwrapPasswordHash(storedHash));
+}
+function generateTemporaryPassword() {
+  return `Tmp${randomBytes(6).toString("hex")}`;
+}
+
+// lib/validations/userRules.ts
+var USERNAME_REGEX = /^[a-zA-Z0-9_.-]+$/;
+var NIP_REGEX = /^\d+$/;
+var PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)\S+$/;
+var UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+var USERNAME_MIN_LENGTH = 3;
+var USERNAME_MAX_LENGTH = 100;
+var NIP_MIN_LENGTH = 8;
+var NIP_MAX_LENGTH = 50;
+var PASSWORD_MIN_LENGTH = 8;
+var EMAIL_MAX_LENGTH = 150;
+function isValidUuid(value) {
+  return UUID_REGEX.test(value.trim());
+}
+
+// backend/lib/auth.ts
+function getCookieValue(cookieHeader, key) {
+  if (!cookieHeader) return null;
+  const pairs = cookieHeader.split(";");
+  for (const pair of pairs) {
+    const [rawName, ...rawValueParts] = pair.trim().split("=");
+    if (rawName !== key) continue;
+    return decodeURIComponent(rawValueParts.join("="));
+  }
+  return null;
+}
+async function requireJWT(req) {
+  const authHeader = req.headers.authorization;
+  const cookieHeader = req.headers.cookie;
+  const tokenFromCookie = getCookieValue(cookieHeader, "token");
+  const sessionIdFromCookie = getCookieValue(cookieHeader, "session_id");
+  const tokenFromHeader = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+  const token = tokenFromCookie ?? tokenFromHeader;
+  if (!token) {
+    throw new Error("TOKEN_NOT_FOUND");
+  }
+  if (tokenFromCookie && tokenFromHeader && tokenFromHeader !== tokenFromCookie) {
+    throw new Error("TOKEN_OUT_OF_SYNC");
+  }
+  const payload = verifyToken(token);
+  const user = await prisma.users.findUnique({
+    where: { id: String(payload.userId) },
+    select: { password_hash: true }
+  });
+  if (!user) {
+    throw new Error("INVALID_TOKEN");
+  }
+  if (payload.passwordHash !== user.password_hash) {
+    throw new Error("INVALID_TOKEN");
+  }
+  if (sessionIdFromCookie && payload.sessionId !== sessionIdFromCookie) {
+    throw new Error("SESSION_MISMATCH");
+  }
+  return payload;
+}
+
+// backend/routes/auth.ts
+var router = Router();
+function getCookieValue2(cookieHeader, key) {
+  if (!cookieHeader) return null;
+  const pairs = cookieHeader.split(";");
+  for (const pair of pairs) {
+    const [rawName, ...rawValueParts] = pair.trim().split("=");
+    if (rawName !== key) continue;
+    return decodeURIComponent(rawValueParts.join("="));
+  }
+  return null;
+}
+router.post("/api/login", async (req, res) => {
+  try {
+    const activeToken = getCookieValue2(req.headers.cookie, "token");
+    const activeSessionId = getCookieValue2(req.headers.cookie, "session_id");
+    if (activeToken && activeSessionId) {
+      try {
+        const payload = verifyToken(activeToken);
+        if (payload.sessionId === activeSessionId) {
+          const currentUser = await prisma.users.findUnique({
+            where: { id: String(payload.userId) },
+            select: { password_hash: true }
+          });
+          if (currentUser && currentUser.password_hash === payload.passwordHash) {
+            return res.json({
+              message: "Sesi aktif ditemukan",
+              token: activeToken,
+              alreadyLoggedIn: true,
+              mustChangePassword: Boolean(payload.mustChangePassword)
+            });
+          }
+        }
+      } catch (error) {
+        console.warn("Token verification failed:", error);
+      }
+    }
+    const { username, password } = req.body ?? {};
+    if (!username || !password) {
+      return res.status(400).json({
+        message: "Username dan password wajib diisi"
+      });
+    }
+    const user = await prisma.users.findUnique({
+      where: { username },
+      include: { roles: true }
+    });
+    if (!user) {
+      return res.status(401).json({ message: "Username atau password salah" });
+    }
+    const passwordMatch = await compareStoredPassword(
+      password,
+      user.password_hash
+    );
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Username atau Password salah" });
+    }
+    const mustChangePassword = isTemporaryPasswordHash(user.password_hash);
+    const sessionId = randomUUID();
+    const token = signToken({
+      userId: user.id,
+      username: user.username,
+      role: user.roles?.name,
+      sessionId,
+      passwordHash: user.password_hash,
+      mustChangePassword
+    });
+    await createActivity({
+      userId: user.id,
+      action: "login",
+      description: { username: user.username, message: "login" }
+    });
+    res.cookie("token", token, getSessionCookieOptions());
+    res.cookie("session_id", sessionId, getSessionCookieOptions());
+    return res.json({
+      message: "Login berhasil",
+      token,
+      mustChangePassword
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+router.post("/api/change-password", async (req, res) => {
+  try {
+    const auth = await requireJWT(req);
+    const { currentPassword, newPassword, confirmPassword } = req.body ?? {};
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).json({ message: "Password baru wajib diisi" });
+    }
+    if (String(newPassword) !== String(confirmPassword)) {
+      return res.status(400).json({ message: "Konfirmasi password tidak sama" });
+    }
+    if (String(newPassword).length < PASSWORD_MIN_LENGTH) {
+      return res.status(400).json({ message: "Password minimal 8 karakter" });
+    }
+    if (!PASSWORD_REGEX.test(String(newPassword))) {
+      return res.status(400).json({
+        message: "Password harus mengandung huruf dan angka tanpa spasi"
+      });
+    }
+    const user = await prisma.users.findUnique({
+      where: { id: String(auth.userId) },
+      select: { id: true, username: true, password_hash: true }
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+    if (!auth.mustChangePassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: "Password lama wajib diisi" });
+      }
+      const currentMatch = await compareStoredPassword(
+        String(currentPassword),
+        user.password_hash
+      );
+      if (!currentMatch) {
+        return res.status(401).json({ message: "Password lama salah" });
+      }
+    }
+    const nextPasswordHash = await hashPassword(String(newPassword));
+    const sessionId = randomUUID();
+    const nextToken = signToken({
+      userId: user.id,
+      username: auth.username,
+      role: auth.role,
+      sessionId,
+      passwordHash: nextPasswordHash,
+      mustChangePassword: false
+    });
+    await prisma.users.update({
+      where: { id: user.id },
+      data: { password_hash: nextPasswordHash }
+    });
+    await createActivity({
+      userId: user.id,
+      action: "change_password",
+      description: { username: user.username, message: "password changed" }
+    });
+    res.cookie("token", nextToken, getSessionCookieOptions());
+    res.cookie("session_id", sessionId, getSessionCookieOptions());
+    return res.json({
+      message: "Password berhasil diubah",
+      token: nextToken,
+      mustChangePassword: false
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "TOKEN_NOT_FOUND") {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    if (error instanceof Error && error.message === "INVALID_TOKEN") {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    console.error("Change password error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+router.post("/api/logout", async (_req, res) => {
+  res.cookie("token", "", getClearedSessionCookieOptions());
+  res.cookie("session_id", "", getClearedSessionCookieOptions());
+  return res.json({ message: "Logout berhasil" });
+});
+var auth_default = router;
+
+// backend/routes/users.ts
+import { Router as Router2 } from "express";
 
 // lib/services/users/employeeLinking.ts
 function normalizeValue(value) {
@@ -276,25 +552,31 @@ async function resolveUserLinkForEmployee(input) {
   };
 }
 
-// lib/validations/userValidations.ts
-import { z } from "zod";
-
-// lib/validations/userRules.ts
-var USERNAME_REGEX = /^[a-zA-Z0-9_.-]+$/;
-var NIP_REGEX = /^\d+$/;
-var PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)\S+$/;
-var UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-var USERNAME_MIN_LENGTH = 3;
-var USERNAME_MAX_LENGTH = 100;
-var NIP_MIN_LENGTH = 8;
-var NIP_MAX_LENGTH = 50;
-var PASSWORD_MIN_LENGTH = 8;
-var EMAIL_MAX_LENGTH = 150;
-function isValidUuid(value) {
-  return UUID_REGEX.test(value.trim());
+// lib/services/users/getAllUsers.ts
+async function getUsers() {
+  const users = await prisma.users.findMany({ orderBy: { id: "desc" } });
+  const mappedUsers = await Promise.all(
+    users.map(async (user) => {
+      const resolution = await resolveEmployeeLinkForUser({
+        nip: user.nip,
+        email: user.email,
+        manualEmployeeId: user.employee_id
+      });
+      return {
+        ...user,
+        link_status: resolution.status,
+        link_message: resolution.message
+      };
+    })
+  );
+  return mappedUsers;
 }
 
+// lib/services/users/createUser.ts
+import bcrypt2 from "bcrypt";
+
 // lib/validations/userValidations.ts
+import { z } from "zod";
 var usernameSchema = z.string({ error: "Username wajib diisi" }).trim().min(1, "Username wajib diisi").min(USERNAME_MIN_LENGTH, "Username minimal 3 karakter").max(USERNAME_MAX_LENGTH, "Username maksimal 100 karakter").regex(
   USERNAME_REGEX,
   "Username hanya boleh huruf, angka, titik, garis bawah, atau strip"
@@ -336,7 +618,7 @@ async function createUser(data) {
   if (existingUser) {
     throw new Error("Username sudah digunakan");
   }
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt2.hash(password, 10);
   const linkResolution = await resolveEmployeeLinkForUser({
     nip,
     email,
@@ -357,342 +639,6 @@ async function createUser(data) {
     link_status: linkResolution.status,
     link_message: linkResolution.message
   };
-}
-
-// lib/services/auth/registerPublicUser.ts
-var publicRegisterSchema = z2.object({
-  username: z2.string(),
-  password: z2.string(),
-  nip: z2.string(),
-  email: z2.string()
-});
-async function registerPublicUser(input) {
-  const parsed = publicRegisterSchema.parse(input);
-  const employeeRole = await prisma.roles.findUnique({
-    where: { name: "employee" },
-    select: { id: true }
-  });
-  if (!employeeRole) {
-    throw new Error("Role employee belum tersedia. Hubungi admin.");
-  }
-  const user = await createUser({
-    username: parsed.username,
-    password: parsed.password,
-    nip: parsed.nip,
-    email: parsed.email,
-    role_id: employeeRole.id,
-    employee_id: null
-  });
-  return {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    link_status: user.link_status,
-    link_message: user.link_message
-  };
-}
-
-// lib/cookie-options.ts
-var DEFAULT_MAX_AGE = 60 * 60 * 24;
-function parseBoolean(value, fallback) {
-  if (value === void 0) return fallback;
-  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
-}
-function parseSameSite(value, fallback) {
-  const normalized = value?.toLowerCase();
-  if (normalized === "strict") return "strict";
-  if (normalized === "none") return "none";
-  if (normalized === "lax") return "lax";
-  return fallback;
-}
-function parseMaxAge(value) {
-  const parsed = Number.parseInt(value ?? "", 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_MAX_AGE;
-}
-function getSessionCookieOptions(overrides = {}) {
-  return {
-    httpOnly: true,
-    secure: parseBoolean(
-      process.env.SESSION_COOKIE_SECURE,
-      process.env.NODE_ENV === "production"
-    ),
-    sameSite: parseSameSite(process.env.SESSION_COOKIE_SAMESITE, "lax"),
-    path: "/",
-    maxAge: parseMaxAge(process.env.SESSION_COOKIE_MAX_AGE),
-    domain: process.env.SESSION_COOKIE_DOMAIN || void 0,
-    ...overrides
-  };
-}
-function getClearedSessionCookieOptions() {
-  return getSessionCookieOptions({ expires: /* @__PURE__ */ new Date(0), maxAge: 0 });
-}
-
-// lib/password.ts
-import bcrypt2 from "bcrypt";
-import { randomBytes } from "crypto";
-var TEMP_PASSWORD_PREFIX = "TEMP::";
-function isTemporaryPasswordHash(value) {
-  return value.startsWith(TEMP_PASSWORD_PREFIX);
-}
-function unwrapPasswordHash(value) {
-  return isTemporaryPasswordHash(value) ? value.slice(TEMP_PASSWORD_PREFIX.length) : value;
-}
-async function hashPassword(password) {
-  return bcrypt2.hash(password, 10);
-}
-async function hashTemporaryPassword(password) {
-  const hash = await bcrypt2.hash(password, 10);
-  return `${TEMP_PASSWORD_PREFIX}${hash}`;
-}
-async function compareStoredPassword(password, storedHash) {
-  return bcrypt2.compare(password, unwrapPasswordHash(storedHash));
-}
-function generateTemporaryPassword() {
-  return `Tmp${randomBytes(6).toString("hex")}`;
-}
-
-// backend/lib/auth.ts
-function getCookieValue(cookieHeader, key) {
-  if (!cookieHeader) return null;
-  const pairs = cookieHeader.split(";");
-  for (const pair of pairs) {
-    const [rawName, ...rawValueParts] = pair.trim().split("=");
-    if (rawName !== key) continue;
-    return decodeURIComponent(rawValueParts.join("="));
-  }
-  return null;
-}
-async function requireJWT(req) {
-  const authHeader = req.headers.authorization;
-  const cookieHeader = req.headers.cookie;
-  const tokenFromCookie = getCookieValue(cookieHeader, "token");
-  const sessionIdFromCookie = getCookieValue(cookieHeader, "session_id");
-  const tokenFromHeader = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
-  const token = tokenFromCookie ?? tokenFromHeader;
-  if (!token) {
-    throw new Error("TOKEN_NOT_FOUND");
-  }
-  if (tokenFromCookie && tokenFromHeader && tokenFromHeader !== tokenFromCookie) {
-    throw new Error("TOKEN_OUT_OF_SYNC");
-  }
-  const payload = verifyToken(token);
-  const user = await prisma.users.findUnique({
-    where: { id: String(payload.userId) },
-    select: { password_hash: true }
-  });
-  if (!user) {
-    throw new Error("INVALID_TOKEN");
-  }
-  if (payload.passwordHash !== user.password_hash) {
-    throw new Error("INVALID_TOKEN");
-  }
-  if (sessionIdFromCookie && payload.sessionId !== sessionIdFromCookie) {
-    throw new Error("SESSION_MISMATCH");
-  }
-  return payload;
-}
-
-// backend/routes/auth.ts
-var router = Router();
-function getCookieValue2(cookieHeader, key) {
-  if (!cookieHeader) return null;
-  const pairs = cookieHeader.split(";");
-  for (const pair of pairs) {
-    const [rawName, ...rawValueParts] = pair.trim().split("=");
-    if (rawName !== key) continue;
-    return decodeURIComponent(rawValueParts.join("="));
-  }
-  return null;
-}
-router.post("/api/register", async (req, res) => {
-  try {
-    const user = await registerPublicUser({
-      username: req.body?.username,
-      password: req.body?.password,
-      nip: req.body?.nip,
-      email: req.body?.email
-    });
-    return res.status(201).json({
-      message: "Registrasi berhasil. Silakan login.",
-      data: user
-    });
-  } catch (error) {
-    console.error("Public register error:", error);
-    if (error instanceof Error) {
-      return res.status(400).json({ message: error.message });
-    }
-    return res.status(500).json({ message: "Internal server error" });
-  }
-});
-router.post("/api/login", async (req, res) => {
-  try {
-    const activeToken = getCookieValue2(req.headers.cookie, "token");
-    const activeSessionId = getCookieValue2(req.headers.cookie, "session_id");
-    if (activeToken && activeSessionId) {
-      try {
-        const payload = verifyToken(activeToken);
-        if (payload.sessionId === activeSessionId) {
-          const currentUser = await prisma.users.findUnique({
-            where: { id: String(payload.userId) },
-            select: { password_hash: true }
-          });
-          if (currentUser && currentUser.password_hash === payload.passwordHash) {
-            return res.json({
-              message: "Sesi aktif ditemukan",
-              token: activeToken,
-              alreadyLoggedIn: true,
-              mustChangePassword: Boolean(payload.mustChangePassword)
-            });
-          }
-        }
-      } catch (error) {
-        console.warn("Token verification failed:", error);
-      }
-    }
-    const { username, password } = req.body ?? {};
-    if (!username || !password) {
-      return res.status(400).json({
-        message: "Username dan password wajib diisi"
-      });
-    }
-    const user = await prisma.users.findUnique({
-      where: { username },
-      include: { roles: true }
-    });
-    if (!user) {
-      return res.status(401).json({ message: "User tidak ditemukan" });
-    }
-    const passwordMatch = await compareStoredPassword(
-      password,
-      user.password_hash
-    );
-    if (!passwordMatch) {
-      return res.status(401).json({ message: "Username atau Password salah" });
-    }
-    const mustChangePassword = isTemporaryPasswordHash(user.password_hash);
-    const sessionId = randomUUID();
-    const token = signToken({
-      userId: user.id,
-      username: user.username,
-      role: user.roles?.name,
-      sessionId,
-      passwordHash: user.password_hash,
-      mustChangePassword
-    });
-    await createActivity({
-      userId: user.id,
-      action: "login",
-      description: { username: user.username, message: "login" }
-    });
-    res.cookie("token", token, getSessionCookieOptions());
-    res.cookie("session_id", sessionId, getSessionCookieOptions());
-    return res.json({
-      message: "Login berhasil",
-      token,
-      mustChangePassword
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-});
-router.post("/api/change-password", async (req, res) => {
-  try {
-    const auth = await requireJWT(req);
-    const { currentPassword, newPassword, confirmPassword } = req.body ?? {};
-    if (!newPassword || !confirmPassword) {
-      return res.status(400).json({ message: "Password baru wajib diisi" });
-    }
-    if (String(newPassword) !== String(confirmPassword)) {
-      return res.status(400).json({ message: "Konfirmasi password tidak sama" });
-    }
-    if (String(newPassword).trim().length < 8) {
-      return res.status(400).json({ message: "Password minimal 8 karakter" });
-    }
-    const user = await prisma.users.findUnique({
-      where: { id: String(auth.userId) },
-      select: { id: true, username: true, password_hash: true }
-    });
-    if (!user) {
-      return res.status(404).json({ message: "User tidak ditemukan" });
-    }
-    if (!auth.mustChangePassword) {
-      if (!currentPassword) {
-        return res.status(400).json({ message: "Password lama wajib diisi" });
-      }
-      const currentMatch = await compareStoredPassword(
-        String(currentPassword),
-        user.password_hash
-      );
-      if (!currentMatch) {
-        return res.status(401).json({ message: "Password lama salah" });
-      }
-    }
-    const nextPasswordHash = await hashPassword(String(newPassword));
-    const sessionId = randomUUID();
-    const nextToken = signToken({
-      userId: user.id,
-      username: auth.username,
-      role: auth.role,
-      sessionId,
-      passwordHash: nextPasswordHash,
-      mustChangePassword: false
-    });
-    await prisma.users.update({
-      where: { id: user.id },
-      data: { password_hash: nextPasswordHash }
-    });
-    await createActivity({
-      userId: user.id,
-      action: "change_password",
-      description: { username: user.username, message: "password changed" }
-    });
-    res.cookie("token", nextToken, getSessionCookieOptions());
-    res.cookie("session_id", sessionId, getSessionCookieOptions());
-    return res.json({
-      message: "Password berhasil diubah",
-      token: nextToken,
-      mustChangePassword: false
-    });
-  } catch (error) {
-    if (error instanceof Error && error.message === "TOKEN_NOT_FOUND") {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    if (error instanceof Error && error.message === "INVALID_TOKEN") {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    console.error("Change password error:", error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-});
-router.post("/api/logout", async (_req, res) => {
-  res.cookie("token", "", getClearedSessionCookieOptions());
-  res.cookie("session_id", "", getClearedSessionCookieOptions());
-  return res.json({ message: "Logout berhasil" });
-});
-var auth_default = router;
-
-// backend/routes/users.ts
-import { Router as Router2 } from "express";
-
-// lib/services/users/getAllUsers.ts
-async function getUsers() {
-  const users = await prisma.users.findMany({ orderBy: { id: "desc" } });
-  const mappedUsers = await Promise.all(
-    users.map(async (user) => {
-      const resolution = await resolveEmployeeLinkForUser({
-        nip: user.nip,
-        email: user.email,
-        manualEmployeeId: user.employee_id
-      });
-      return {
-        ...user,
-        link_status: resolution.status,
-        link_message: resolution.message
-      };
-    })
-  );
-  return mappedUsers;
 }
 
 // lib/services/users/getUserById.ts
@@ -785,11 +731,20 @@ async function updateUser(id, data) {
 
 // lib/services/users/deleteUser.ts
 async function deleteUser(id) {
-  return prisma.users.delete({
-    where: {
-      id
-    }
-  });
+  const [, , deletedUser] = await prisma.$transaction([
+    prisma.activity_logs.updateMany({
+      where: { user_id: id },
+      data: { user_id: null }
+    }),
+    prisma.documents.updateMany({
+      where: { verified_by: id },
+      data: { verified_by: null }
+    }),
+    prisma.users.delete({
+      where: { id }
+    })
+  ]);
+  return deletedUser;
 }
 
 // lib/require-role.ts
@@ -811,6 +766,14 @@ router2.get("/api/user", async (req, res) => {
     const users = await getUsers();
     return res.json(users);
   } catch (error) {
+    if (error instanceof Error && [
+      "TOKEN_NOT_FOUND",
+      "TOKEN_OUT_OF_SYNC",
+      "SESSION_MISMATCH",
+      "INVALID_TOKEN"
+    ].includes(error.message)) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     if (error instanceof Error && error.message === "FORBIDDEN") {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -1019,11 +982,14 @@ router2.post("/api/user/:id/reset-password", async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
     }
     const { id } = req.params;
-    const user = await getUserById(id);
+    const user = await prisma.users.findUnique({
+      where: { id },
+      include: { employees: { select: { nip: true } } }
+    });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    const temporaryPassword = generateTemporaryPassword();
+    const temporaryPassword = user.employees?.nip ?? generateTemporaryPassword();
     const temporaryPasswordHash = await hashTemporaryPassword(temporaryPassword);
     await prisma.users.update({
       where: { id },
@@ -1035,7 +1001,7 @@ router2.post("/api/user/:id/reset-password", async (req, res) => {
       description: {
         userId: id,
         username: user.username,
-        message: "password reset"
+        message: user.employees?.nip ? "password reset to employee NIP" : "password reset"
       }
     });
     return res.json({
@@ -1043,6 +1009,14 @@ router2.post("/api/user/:id/reset-password", async (req, res) => {
       temporaryPassword
     });
   } catch (error) {
+    if (error instanceof Error && [
+      "TOKEN_NOT_FOUND",
+      "TOKEN_OUT_OF_SYNC",
+      "SESSION_MISMATCH",
+      "INVALID_TOKEN"
+    ].includes(error.message)) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     if (error instanceof Error && error.message === "FORBIDDEN") {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -1097,22 +1071,58 @@ async function getEmployees() {
   return prisma.employees.findMany({ orderBy: { id: "desc" } });
 }
 
-// lib/services/employee/createEmployee.ts
-async function createEmployee(data) {
-  const employee = await prisma.employees.create({
-    data
-  });
-  const resolution = await resolveUserLinkForEmployee({
-    nip: employee.nip,
-    email: employee.email
-  });
-  if (resolution.userId) {
-    await prisma.users.update({
-      where: { id: resolution.userId },
-      data: { employee_id: employee.id }
+// lib/services/employee/createEmployeeAccount.ts
+async function createEmployeeAccount(data) {
+  const username = data.username.trim();
+  const nip = data.nip.trim();
+  const email = data.email.trim();
+  const passwordHash = await hashTemporaryPassword(nip);
+  return prisma.$transaction(async (tx) => {
+    const [existingUsername, existingEmail] = await Promise.all([
+      tx.users.findUnique({ where: { username }, select: { id: true } }),
+      tx.employees.findFirst({
+        where: { email: { equals: email, mode: "insensitive" } },
+        select: { id: true }
+      })
+    ]);
+    if (existingUsername) {
+      throw new Error("Username sudah digunakan");
+    }
+    if (existingEmail) {
+      throw new Error("Email sudah digunakan");
+    }
+    const employeeRole = await tx.roles.findUnique({
+      where: { name: "employee" },
+      select: { id: true }
     });
-  }
-  return employee;
+    if (!employeeRole) {
+      throw new Error("Role employee belum tersedia. Hubungi admin.");
+    }
+    const employee = await tx.employees.create({
+      data: {
+        nip,
+        nama: data.nama.trim(),
+        jabatan: data.jabatan.trim(),
+        unit: data.unit.trim(),
+        status: data.status.trim(),
+        alamat: data.alamat.trim(),
+        no_hp: data.no_hp.trim(),
+        email
+      }
+    });
+    const user = await tx.users.create({
+      data: {
+        username,
+        password_hash: passwordHash,
+        nip,
+        email,
+        role_id: employeeRole.id,
+        employee_id: employee.id
+      },
+      select: { id: true, username: true }
+    });
+    return { employee, user };
+  });
 }
 
 // lib/services/employee/getEmployeeById.ts
@@ -1208,18 +1218,24 @@ async function getDocumentsByEmployee(employeeId) {
 }
 
 // lib/validations/employeeValidations.ts
-import { z as z3 } from "zod";
-var employeeSchema = z3.object({
-  nip: z3.string().min(1, "NIP wajib diisi"),
-  nama: z3.string().min(1, "Nama wajib diisi"),
-  jabatan: z3.string().min(1, "Jabatan wajib diisi"),
-  unit: z3.string().min(1, "Unit wajib diisi"),
-  status: z3.string().min(1, "Status wajib diisi"),
-  alamat: z3.string().min(1, "Alamat wajib diisi"),
-  no_hp: z3.string().min(1, "No HP wajib diisi"),
-  email: z3.string({
+import { z as z2 } from "zod";
+var employeeSchema = z2.object({
+  nip: z2.string().min(1, "NIP wajib diisi"),
+  nama: z2.string().min(1, "Nama wajib diisi"),
+  jabatan: z2.string().min(1, "Jabatan wajib diisi"),
+  unit: z2.string().min(1, "Unit wajib diisi"),
+  status: z2.string().min(1, "Status wajib diisi"),
+  alamat: z2.string().min(1, "Alamat wajib diisi"),
+  no_hp: z2.string().min(1, "No HP wajib diisi"),
+  email: z2.string({
     error: "Email wajib diisi"
   }).min(1, "Email wajib diisi").email("Format email tidak valid")
+});
+var employeeAccountCreateSchema = employeeSchema.extend({
+  username: z2.string({ error: "Username wajib diisi" }).trim().min(USERNAME_MIN_LENGTH, "Username minimal 3 karakter").max(USERNAME_MAX_LENGTH, "Username maksimal 100 karakter").regex(
+    USERNAME_REGEX,
+    "Username hanya boleh huruf, angka, titik, garis bawah, atau strip"
+  )
 });
 
 // backend/routes/employees.ts
@@ -1248,33 +1264,30 @@ router4.get("/api/employees", async (req, res) => {
 router4.post("/api/employees", async (req, res) => {
   try {
     const { role, userId } = await requireJWT(req);
-    if (role !== "admin" && role !== "employee" && role !== "hr") {
+    if (role?.toLowerCase() !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
-    const shouldLinkToCurrentUser = req.body?.linkToCurrentUser === true;
-    const process2 = employeeSchema.safeParse(req.body);
+    const process2 = employeeAccountCreateSchema.safeParse(req.body);
     if (!process2.success) {
-      return res.status(400).json({ message: process2.error.issues });
-    }
-    const employee = await createEmployee(process2.data);
-    if ((role === "employee" || shouldLinkToCurrentUser) && userId) {
-      await prisma.users.update({
-        where: { id: String(userId) },
-        data: { employee_id: employee.id }
+      return res.status(400).json({
+        message: process2.error.issues[0]?.message ?? "Data pegawai tidak valid"
       });
     }
+    const { employee, user } = await createEmployeeAccount(process2.data);
     await createActivity({
       userId: userId === null || userId === void 0 ? null : String(userId),
-      action: "create_employee",
+      action: "create_employee_account",
       description: {
         employeeId: employee.id,
+        accountId: user.id,
+        username: user.username,
         name: employee.nama ?? null,
-        message: "created"
+        message: "employee and account created"
       }
     });
     return res.status(201).json({
-      message: "Employee created successfully",
-      data: employee
+      message: "Pegawai dan akun berhasil dibuat",
+      data: { employee, user }
     });
   } catch (error) {
     console.error("ERROR:", error);
@@ -1285,6 +1298,11 @@ router4.post("/api/employees", async (req, res) => {
       "INVALID_TOKEN"
     ].includes(error.message)) {
       return res.status(401).json({ message: "Unauthorized" });
+    }
+    if (error?.code === "P2002") {
+      return res.status(409).json({
+        message: "Username atau NIP sudah digunakan."
+      });
     }
     if (error instanceof Error) {
       return res.status(400).json({ message: error.message });
@@ -1488,7 +1506,7 @@ var activity_default = router5;
 import { Router as Router6 } from "express";
 import { unlink } from "fs/promises";
 import path2 from "path";
-import z5 from "zod";
+import z4 from "zod";
 
 // lib/services/document/getDocuments.ts
 async function getDocuments() {
@@ -1555,31 +1573,31 @@ async function getRoleById(id) {
 }
 
 // lib/validations/documentValidations.ts
-import { z as z4 } from "zod";
-var documentCreateSchema = z4.object({
+import { z as z3 } from "zod";
+var documentCreateSchema = z3.object({
   // employee IDs are UUID strings in the DB
-  employee_id: z4.string({
+  employee_id: z3.string({
     error: "Employee ID harus diisi sebagai string"
   }).min(1).optional(),
-  document_type: z4.string({
+  document_type: z3.string({
     error: "Tipe dokumen wajib diisi"
   }).min(1, "Tipe dokumen tidak boleh kosong").max(50, "Tipe dokumen maksimal 50 karakter"),
-  file_path: z4.string({
+  file_path: z3.string({
     error: "File path wajib diisi"
   }).min(1, "File path tidak boleh kosong"),
-  uploaded_at: z4.coerce.date().optional(),
-  verified_by: z4.string({
+  uploaded_at: z3.coerce.date().optional(),
+  verified_by: z3.string({
     error: "Verified by harus berupa string"
   }).min(1).optional(),
-  verified_at: z4.coerce.date().optional()
+  verified_at: z3.coerce.date().optional()
 });
-var documentUpdateSchema = z4.object({
-  employee_id: z4.string().min(1).optional(),
-  document_type: z4.string().min(1, "Tipe dokumen tidak boleh kosong").max(50).optional(),
-  file_path: z4.string().min(1, "File path tidak boleh kosong").optional(),
-  uploaded_at: z4.coerce.date().optional(),
-  verified_by: z4.string().min(1).optional(),
-  verified_at: z4.coerce.date().optional()
+var documentUpdateSchema = z3.object({
+  employee_id: z3.string().min(1).optional(),
+  document_type: z3.string().min(1, "Tipe dokumen tidak boleh kosong").max(50).optional(),
+  file_path: z3.string().min(1, "File path tidak boleh kosong").optional(),
+  uploaded_at: z3.coerce.date().optional(),
+  verified_by: z3.string().min(1).optional(),
+  verified_at: z3.coerce.date().optional()
 });
 
 // backend/routes/documents.ts
@@ -1587,7 +1605,7 @@ var router6 = Router6();
 router6.get("/api/documents", async (req, res) => {
   try {
     const { role } = await requireJWT(req);
-    if (role !== "admin" && role !== "hr") {
+    if (role !== "admin" && role !== "hr" && role !== "employee") {
       return res.status(403).json({ message: "Forbidden" });
     }
     const documents = await getDocuments();
@@ -1636,7 +1654,7 @@ router6.post("/api/documents", async (req, res) => {
     });
   } catch (error) {
     console.error("ERROR:", error);
-    if (error instanceof z5.ZodError) {
+    if (error instanceof z4.ZodError) {
       return res.status(400).json({ message: error.issues });
     }
     if (error instanceof Error && [
@@ -1654,12 +1672,11 @@ router6.get("/api/documents/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const documentGet = await getDocumentById(id);
-    const getRole = await getRoleById(
-      documentGet?.verified_by?.toString() || "0"
-    );
     if (!documentGet) {
       return res.status(404).json({ message: "Document not found" });
     }
+    const verifiedById = documentGet.verified_by === null || documentGet.verified_by === void 0 ? null : String(documentGet.verified_by);
+    const getRole = verifiedById ? await getRoleById(verifiedById) : null;
     const result = {
       id: documentGet.id,
       employee_id: documentGet.employee_id,
@@ -1785,17 +1802,21 @@ var documents_default = router6;
 import { Router as Router7 } from "express";
 import multer from "multer";
 import { mkdir, writeFile } from "fs/promises";
-import path3 from "path";
+import path4 from "path";
 import { v4 as uuidv4 } from "uuid";
 
 // lib/validations/document.schema.ts
-import { z as z6 } from "zod";
-var uploadDocumentSchema = z6.object({
+import { z as z5 } from "zod";
+var uploadDocumentSchema = z5.object({
   // employees.id is a UUID string in the database, accept non-empty string
-  employee_id: z6.string().min(1),
-  employeeName: z6.string().min(2).max(100).optional(),
-  document_type: z6.string().min(2).max(100)
+  employee_id: z5.string().min(1),
+  employeeName: z5.string().min(2).max(100).optional(),
+  document_type: z5.string().min(2).max(100)
 });
+
+// backend/lib/uploads.ts
+import path3 from "path";
+var uploadsRoot = process.env.UPLOADS_ROOT ? path3.resolve(process.env.UPLOADS_ROOT) : path3.join(process.cwd(), "public", "uploads");
 
 // utils/fileUpload.ts
 var MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -1813,7 +1834,7 @@ function validateFile(file) {
 var router7 = Router7();
 var upload = multer({ storage: multer.memoryStorage() });
 var uploadFields = upload.array("files");
-var uploadsRoot = path3.join(process.cwd(), "public", "uploads", "documents");
+var documentsUploadsRoot = path4.join(uploadsRoot, "documents");
 function sanitizeSegment(value) {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "").replace(/_{2,}/g, "_");
 }
@@ -1860,17 +1881,17 @@ router7.post("/api/documents/upload", (req, res) => {
       const docTypeSegment = sanitizeSegment(parsed.data.document_type);
       const otherTypeSegment = sanitizeSegment(otherTypeLabel);
       const baseDisplayName = isOtherType ? `${employeeSegment}_${docTypeSegment}_${otherTypeSegment}` : `${employeeSegment}_${docTypeSegment}`;
-      const uploadPath = path3.join(uploadsRoot, employeeFolder);
+      const uploadPath = path4.join(documentsUploadsRoot, employeeFolder);
       await mkdir(uploadPath, { recursive: true });
       const documentsData = [];
       for (let index = 0; index < files.length; index++) {
         const file = files[index];
         validateFile({ type: file.mimetype, size: file.size });
-        const ext = path3.extname(file.originalname);
+        const ext = path4.extname(file.originalname);
         const fileName = `${uuidv4()}${ext}`;
         const sequenceSuffix = files.length > 1 ? `_${index + 1}` : "";
         const displayFileName = `${baseDisplayName}${sequenceSuffix}${ext}`;
-        const filePath = path3.join(uploadPath, fileName);
+        const filePath = path4.join(uploadPath, fileName);
         await writeFile(filePath, file.buffer);
         documentsData.push({
           employee_id: String(parsed.data.employee_id),
@@ -2154,14 +2175,13 @@ var rolesId_default = router9;
 
 // backend/server.ts
 var port = Number.parseInt(process.env.BACKEND_PORT ?? "12000", 10);
-var upstream = (process.env.BACKEND_UPSTREAM_URL ?? "http://localhost:3000").replace(/\/$/, "");
+var upstream = (process.env.BACKEND_UPSTREAM_URL ?? "http://localhost:12000").replace(/\/$/, "");
 var corsOrigin = process.env.CORS_ORIGIN ?? upstream;
 var proxyEnabled = process.env.BACKEND_PROXY_TO_UPSTREAM === "true";
 var app = express();
-var uploadsDir = path4.join(process.cwd(), "public", "uploads");
 app.set("trust proxy", true);
 app.use(morgan("dev"));
-app.use("/uploads", express.static(uploadsDir));
+app.use("/uploads", express.static(uploadsRoot));
 app.use(
   cors({
     origin: corsOrigin === "*" ? true : corsOrigin,

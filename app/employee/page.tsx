@@ -205,7 +205,10 @@ export default function EmployeePage() {
     setDeleteOpen(true);
   }
 
-  async function handleFormSubmit(form: EmployeeForm) {
+  async function handleFormSubmit(
+    form: EmployeeForm,
+    account?: { username: string },
+  ) {
     try {
       if (editTarget) {
         const updated = await apiFetch(`/api/employees/${editTarget.id}`, {
@@ -220,9 +223,12 @@ export default function EmployeePage() {
       } else {
         await apiFetch("/api/employees", {
           method: "POST",
-          body: JSON.stringify(form),
+          body: JSON.stringify({ ...form, username: account?.username }),
         });
-        toast.push("Pegawai berhasil ditambahkan.", "success");
+        toast.push(
+          "Pegawai dan akun berhasil dibuat. Password sementara menggunakan NIP.",
+          "success",
+        );
         await refreshEmployees();
       }
     } catch {
@@ -385,6 +391,7 @@ export default function EmployeePage() {
       <EmployeeFormModal
         open={formOpen}
         initial={editTarget}
+        createAccount={!editTarget && role === "admin"}
         onClose={() => setFormOpen(false)}
         onSubmit={handleFormSubmit}
       />
